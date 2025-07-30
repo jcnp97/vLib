@@ -1,0 +1,3 @@
+# VLib's seasons system is not an alternative to any Seasons plugin.
+# It does nothing other than setting a scheduled season for vSkills.
+enable: false
