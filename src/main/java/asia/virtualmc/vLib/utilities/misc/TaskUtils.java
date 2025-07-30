@@ -4,6 +4,7 @@ import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.plugin.Plugin;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TaskUtils {
 
@@ -73,6 +74,36 @@ public class TaskUtils {
                 intervalMillis,
                 intervalMillis,
                 TimeUnit.MILLISECONDS
+        );
+    }
+
+    /**
+     * Runs a repeating task using the Paper GlobalRegionScheduler at a fixed interval,
+     * and cancels it automatically after executing the specified number of times.
+     *
+     * @param plugin   the plugin instance running the task
+     * @param task     the task to execute
+     * @param interval the interval between executions in seconds
+     * @param count    the number of times the task should execute before cancelling
+     * @return the scheduled repeating task
+     */
+    public static ScheduledTask repeating(Plugin plugin, Runnable task, double interval, int count) {
+        long intervalTicks = (long) (interval * 20);
+        AtomicInteger executionCount = new AtomicInteger(0);
+
+        return plugin.getServer().getGlobalRegionScheduler().runAtFixedRate(
+                plugin,
+                scheduledTask -> {
+                    // increment and run
+                    if (executionCount.incrementAndGet() >= count) {
+                        task.run();
+                        scheduledTask.cancel();
+                    } else {
+                        task.run();
+                    }
+                },
+                intervalTicks,
+                intervalTicks
         );
     }
 }

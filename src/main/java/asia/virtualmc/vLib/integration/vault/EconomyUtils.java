@@ -17,6 +17,10 @@ import java.util.UUID;
 public class EconomyUtils {
     private static Economy economy;
 
+    /**
+     * Initializes the Vault economy integration by attempting to hook into a registered Economy provider.
+     * Logs appropriate messages if Vault or the provider is missing.
+     */
     public static void load() {
         Plugin plugin = Main.getInstance();
         if (plugin.getServer().getPluginManager().getPlugin("Vault") == null) {
@@ -36,6 +40,13 @@ public class EconomyUtils {
         ConsoleUtils.info("Successfully hooked into: " + economy.getName());
     }
 
+    /**
+     * Adds the specified amount of money to a player's balance using Vault.
+     *
+     * @param player the player to deposit money to
+     * @param value  the amount to deposit (double)
+     * @return true if the transaction was successful, false otherwise
+     */
     public static boolean add(@NotNull Player player, double value) {
         if (economy == null) {
             ConsoleUtils.severe("Trying to use economy module but it is disabled!");
@@ -60,6 +71,13 @@ public class EconomyUtils {
         }
     }
 
+    /**
+     * Removes the specified amount of money from a player's balance using Vault.
+     *
+     * @param player the player to withdraw money from
+     * @param value  the amount to withdraw (double)
+     * @return true if the transaction was successful and the player had sufficient funds, false otherwise
+     */
     public boolean remove(@NotNull Player player, double value) {
         if (economy == null) {
             ConsoleUtils.severe("Trying to use economy module but it is disabled!");
@@ -88,6 +106,15 @@ public class EconomyUtils {
         }
     }
 
+    /**
+     * Deducts a percentage-based tax from the player's balance, calculated from a given transaction value.
+     *
+     * @param player the player to deduct the tax from
+     * @param tax    the percentage rate of tax (between 0 and 100)
+     * @param value  the base value to calculate tax on
+     * @return the actual tax amount paid, or -1 if payment failed or invalid parameters
+     * @throws IllegalArgumentException if tax is out of bounds (not between 0.0 and 100.0)
+     */
     public double tax(@NotNull Player player, double tax, double value) {
         if (economy == null) {
             ConsoleUtils.severe("Trying to use economy module but it is disabled!");
@@ -117,6 +144,12 @@ public class EconomyUtils {
         return toPay;
     }
 
+    /**
+     * Retrieves the player's current balance using Vault.
+     *
+     * @param player the player whose balance is to be retrieved
+     * @return the player's balance as a double, or 0 if economy is disabled
+     */
     public double get(@NotNull Player player) {
         if (economy == null) {
             ConsoleUtils.severe("Trying to use economy module but it is disabled!");
@@ -126,6 +159,11 @@ public class EconomyUtils {
         return DecimalUtils.toDouble(economy.balance(Main.getPluginName(), player.getUniqueId()));
     }
 
+    /**
+     * Returns the current Vault Economy provider that is hooked, if any.
+     *
+     * @return the economy provider, or null if not initialized
+     */
     public static Economy getEconomy() {
         return economy;
     }

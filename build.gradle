@@ -69,6 +69,7 @@ dependencies {
     implementation "jfree:jfreechart:1.0.13"
     implementation "com.github.f4b6a3:ulid-creator:5.2.3"
     implementation "redis.clients:jedis:5.2.0"
+    implementation 'com.jeff-media:MorePersistentDataTypes:2.4.0'
 
     // system scope → file dependency
     compileOnly files("libs/RealisticSeasons-api.jar")
@@ -109,10 +110,11 @@ processResources {
 
 tasks.shadowJar {
     archiveClassifier.set('')
-    relocate "com.zaxxer.hikari", "asia.virtualmc.vLibrary.libs.hikaricp"
-    relocate "dev.jorel.commandapi", "asia.virtualmc.vLibrary.libs.commandapi"
-    relocate "com.github.stefvanschie.inventoryframework", "asia.virtualmc.vLibrary.libs.inventoryframework"
-    relocate "dev.dejvokep.boostedyaml", "asia.virtualmc.vLibrary.libs.boostedyaml"
+    relocate "com.zaxxer.hikari", "asia.virtualmc.vLib.libs.hikaricp"
+    relocate "dev.jorel.commandapi", "asia.virtualmc.vLib.libs.commandapi"
+    relocate "com.github.stefvanschie.inventoryframework", "asia.virtualmc.vLib.libs.inventoryframework"
+    relocate "dev.dejvokep.boostedyaml", "asia.virtualmc.vLib.libs.boostedyaml"
+    relocate 'com.jeff_media.morepersistentdatatypes', 'asia.virtualmc.vLib.libs.morepersistentdatatypes'
 }
 
 tasks.build {
