@@ -7,9 +7,6 @@ modules:
   worldguard: false
   vault: false
   realistic_seasons: false
-  luckperms: false
-  better_model: false
-  packet_events: false
 # --------------------------------------------------------------------------------------
 
 # MySQL Database - required for vSkills.

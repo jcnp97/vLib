@@ -71,7 +71,7 @@ dependencies {
     implementation "redis.clients:jedis:5.2.0"
 
     // system scope → file dependency
-    //compileOnly files("lib/RealisticSeasons-11.8.1.jar")
+    compileOnly files("libs/RealisticSeasons-api.jar")
 }
 
 tasks {

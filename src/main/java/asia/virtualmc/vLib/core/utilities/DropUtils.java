@@ -5,7 +5,7 @@ import asia.virtualmc.vLib.utilities.digit.RandomUtils;
 
 public class DropUtils {
 
-    public static int getDrop(double[] weights) {
+    public static int get(double[] weights) {
         double totalWeight = MathUtils.sum(weights);
         if (totalWeight <= 0) return 0;
 
@@ -19,6 +19,6 @@ public class DropUtils {
             }
         }
 
-        throw new IllegalStateException("Unexpected state in RandomUtils.getDrop()");
+        throw new IllegalStateException("Unexpected state in DropUtils.get()");
     }
 }

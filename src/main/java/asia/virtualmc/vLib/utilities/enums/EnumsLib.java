@@ -22,7 +22,6 @@ public class EnumsLib {
         DAILY(86400),
         WEEKLY(604800),
         MONTHLY(2592000);
-
         private final long seconds;
         TimeUnits(long seconds) {
             this.seconds = seconds;
@@ -35,5 +34,13 @@ public class EnumsLib {
     public enum RayTraceType {
         ENTITY,
         BLOCK
+    }
+
+    public enum Seasons {
+        SPRING,
+        SUMMER,
+        FALL,
+        WINTER,
+        DISABLED
     }
 }
