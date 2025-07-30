@@ -56,5 +56,10 @@
       <option name="name" value="com.nexomc" />
       <option name="url" value="https://repo.nexomc.com/releases" />
     </remote-repository>
+    <remote-repository>
+      <option name="id" value="craft-engine" />
+      <option name="name" value="craft-engine" />
+      <option name="url" value="https://repo.momirealms.net/releases/" />
+    </remote-repository>
   </component>
 </project>
