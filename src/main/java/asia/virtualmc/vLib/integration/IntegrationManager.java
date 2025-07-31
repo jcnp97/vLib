@@ -3,6 +3,7 @@ package asia.virtualmc.vLib.integration;
 import asia.virtualmc.vLib.integration.realistic_seasons.RealisticSeasonsUtils;
 import asia.virtualmc.vLib.integration.vault.EconomyUtils;
 import asia.virtualmc.vLib.integration.vault.PermissionUtils;
+import asia.virtualmc.vLib.integration.worldguard.utilities.WorldGuardUtils;
 
 import java.util.Map;
 
@@ -18,6 +19,10 @@ public class IntegrationManager {
             PermissionUtils.load();
         }
 
-        // Todo: Add HologramLib & WorldGuard
+        if (Boolean.TRUE.equals(modules.get("worldguard"))) {
+            WorldGuardUtils.load();
+        }
+
+        // Todo: Add HologramLib
     }
 }

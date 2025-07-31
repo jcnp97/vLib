@@ -3,7 +3,7 @@ package asia.virtualmc.vLib.utilities.string;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TextUtils {
+public class StringUtils {
 
     /**
      * Formats a string by replacing underscores with spaces, converting all characters to lowercase,

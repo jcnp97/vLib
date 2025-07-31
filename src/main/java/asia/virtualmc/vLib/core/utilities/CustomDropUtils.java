@@ -3,7 +3,7 @@ package asia.virtualmc.vLib.core.utilities;
 import asia.virtualmc.vLib.utilities.digit.MathUtils;
 import asia.virtualmc.vLib.utilities.digit.RandomUtils;
 
-public class DropUtils {
+public class CustomDropUtils {
 
     public static int get(double[] weights) {
         double totalWeight = MathUtils.sum(weights);
