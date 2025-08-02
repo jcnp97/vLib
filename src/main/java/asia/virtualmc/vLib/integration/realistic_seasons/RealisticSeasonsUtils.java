@@ -17,13 +17,13 @@ public class RealisticSeasonsUtils {
      */
     public static void load() {
         Plugin plugin = Main.getInstance();
-        if (plugin.getServer().getPluginManager().getPlugin("RealisticSeasons") == null) {
+        if (!plugin.getServer().getPluginManager().isPluginEnabled("RealisticSeasons")) {
             ConsoleUtils.severe("RealisticSeasons not found. Disabling integration hooks..");
             return;
         }
 
         seasonsAPI = SeasonsAPI.getInstance();
-        ConsoleUtils.info("RealisticSeasons found. Applying integration hooks..");
+        ConsoleUtils.info("Successfully hooked into: RealisticSeasons");
     }
 
     /**

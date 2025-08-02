@@ -1,11 +1,14 @@
 package asia.virtualmc.vLib.utilities.files;
 
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
+import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.Collections;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 public class FileUtils {
 
@@ -72,6 +75,51 @@ public class FileUtils {
         } else {
             ConsoleUtils.severe("Failed to rename file: " + file.getAbsolutePath());
             return null;
+        }
+    }
+
+    /**
+     * Copies all resource files (excluding class files and META-INF entries) from the plugin jar
+     * into the plugin's data folder. This is typically used to extract default YAML configs.
+     * <p>
+     * Skips extraction if the plugin folder already exists.
+     * </p>
+     *
+     * @param plugin   the plugin instance
+     * @param jarFile  the plugin's jar file
+     */
+    public static void copyAllResource(JavaPlugin plugin, File jarFile) {
+        File pluginFolder = plugin.getDataFolder();
+        if (pluginFolder.exists()) return;
+        pluginFolder.mkdirs();
+
+        try (JarFile jar = new JarFile(jarFile)) {
+            for (JarEntry entry : Collections.list(jar.entries())) {
+                String name = entry.getName();
+
+                if (name.startsWith("META-INF") || name.equals("plugin.yml")) continue;
+                if (entry.isDirectory()) continue;
+                if (name.endsWith(".class")) continue;
+                if (!name.endsWith(".yml") && !name.contains("/")) continue;
+
+                File outFile = new File(pluginFolder, name);
+                if (!outFile.getParentFile().exists()) {
+                    outFile.getParentFile().mkdirs();
+                }
+
+                try (InputStream in = plugin.getResource(name);
+                     OutputStream out = new FileOutputStream(outFile)) {
+                    if (in == null) continue;
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = in.read(buffer)) > 0) {
+                        out.write(buffer, 0, len);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            ConsoleUtils.severe(plugin.getName(), "Failed to extract default resources: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

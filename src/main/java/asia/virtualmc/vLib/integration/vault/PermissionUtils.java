@@ -18,7 +18,7 @@ public class PermissionUtils {
      */
     public static void load() {
         Plugin plugin = Main.getInstance();
-        if (plugin.getServer().getPluginManager().getPlugin("Vault") == null) {
+        if (!plugin.getServer().getPluginManager().isPluginEnabled("Vault")) {
             ConsoleUtils.severe("Vault not found. Disabling integration hooks..");
             return;
         }

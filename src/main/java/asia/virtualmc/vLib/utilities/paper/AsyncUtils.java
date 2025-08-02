@@ -1,4 +1,4 @@
-package asia.virtualmc.vLib.utilities.helpers;
+package asia.virtualmc.vLib.utilities.paper;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;

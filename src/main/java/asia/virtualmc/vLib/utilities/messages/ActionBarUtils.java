@@ -12,10 +12,10 @@ public class ActionBarUtils {
      * Sends an action bar message to the specified player using Adventure components.
      *
      * @param player  The player to send the message to.
-     * @param message The message string to convert and send as an action bar.
+     * @param message The message string to toComponent and send as an action bar.
      */
     public static void send(Player player, String message) {
-        Component component = AdventureUtils.convert(message);
+        Component component = AdventureUtils.toComponent(message);
         player.sendActionBar(component);
     }
 
@@ -31,9 +31,9 @@ public class ActionBarUtils {
     public static void send(@NotNull Player player, String message, EnumsLib.MessageType type) {
         if (player.isOnline()) {
             switch (type) {
-                case RED -> player.sendActionBar(AdventureUtils.convert("<white>ꐩ <red>" + message));
-                case GREEN -> player.sendActionBar(AdventureUtils.convert("<white>ꐪ <green>" + message));
-                case YELLOW -> player.sendActionBar(AdventureUtils.convert("<white>ꐫ <gold>" + message));
+                case GREEN -> player.sendActionBar(AdventureUtils.toComponent(MessageUtils.info() + message));
+                case YELLOW -> player.sendActionBar(AdventureUtils.toComponent(MessageUtils.warning() + message));
+                case RED -> player.sendActionBar(AdventureUtils.toComponent(MessageUtils.severe() + message));
             }
         }
     }
@@ -48,9 +48,9 @@ public class ActionBarUtils {
     public static void sendAll(String message, EnumsLib.MessageType type) {
         for (Player player : Bukkit.getOnlinePlayers()) {
             switch (type) {
-                case RED -> player.sendActionBar(AdventureUtils.convert("<white>ꐩ <red>" + message));
-                case GREEN -> player.sendActionBar(AdventureUtils.convert("<white>ꐪ <green>" + message));
-                case YELLOW -> player.sendActionBar(AdventureUtils.convert("<white>ꐫ <gold>" + message));
+                case GREEN -> player.sendActionBar(AdventureUtils.toComponent(MessageUtils.info() + message));
+                case YELLOW -> player.sendActionBar(AdventureUtils.toComponent(MessageUtils.warning() + message));
+                case RED -> player.sendActionBar(AdventureUtils.toComponent(MessageUtils.severe() + message));
             }
         }
     }

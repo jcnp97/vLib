@@ -27,7 +27,7 @@ public class WorldGuardUtils {
      */
     public static void load() {
         Plugin plugin = Main.getInstance();
-        if (plugin.getServer().getPluginManager().getPlugin("WorldGuard") == null) {
+        if (!plugin.getServer().getPluginManager().isPluginEnabled("WorldGuard")) {
             ConsoleUtils.severe("WorldGuard not found. Disabling integration hooks..");
             return;
         }
@@ -49,6 +49,7 @@ public class WorldGuardUtils {
         }
 
         container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+        ConsoleUtils.info("Successfully hooked into: WorldGuard");
     }
 
     /**
@@ -104,6 +105,38 @@ public class WorldGuardUtils {
         for (ProtectedRegion region : regionSet) {
             String regionName = region.getId().toLowerCase();
             if (regions.contains(regionName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if the given player is currently located within a specific WorldGuard region.
+     *
+     * @param player     the player to check
+     * @param regionName the name of the region to match (case-insensitive)
+     * @return {@code true} if the player is inside the specified region, {@code false} otherwise
+     *
+     * <p>Logs a severe error and returns {@code false} if WorldGuard integration is disabled.</p>
+     */
+    public static boolean isInRegion(Player player, String regionName) {
+        if (container == null) {
+            ConsoleUtils.severe("Trying to use worldguard module but it is disabled!");
+            return false;
+        }
+
+        Location loc = player.getLocation();
+        RegionManager regionManager = container.get(BukkitAdapter.adapt(loc.getWorld()));
+
+        if (regionManager == null) return false;
+        ApplicableRegionSet regionSet = regionManager
+                .getApplicableRegions(BukkitAdapter.asBlockVector(loc));
+
+        for (ProtectedRegion region : regionSet) {
+            String id = region.getId().toLowerCase();
+            if (id.equals(regionName)) {
                 return true;
             }
         }

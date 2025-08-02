@@ -1,19 +1,27 @@
 package asia.virtualmc.vLib.utilities.files;
 
-import asia.virtualmc.vLibrary.utilities.messages.ConsoleUtils;
+import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.util.*;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 public class YAMLUtils {
 
+    /**
+     * Loads a YAML file from the plugin's data folder.
+     * <p>
+     * If a default resource is available in the plugin jar, it will be used to create the configuration.
+     * Otherwise, it will attempt to load an existing file without defaults.
+     * </p>
+     *
+     * @param plugin   the plugin instance
+     * @param fileName the name of the YAML file to load
+     * @return the loaded {@link YamlDocument}, or {@code null} if an error occurs
+     */
     public static YamlDocument getYaml(@NotNull Plugin plugin, @NotNull String fileName) {
         File file = new File(plugin.getDataFolder(), fileName);
 
@@ -37,140 +45,198 @@ public class YAMLUtils {
         return null;
     }
 
-    public static Section getSection(@NotNull YamlDocument yaml, @NotNull String sectionPath) {
-        return yaml.getSection(sectionPath);
-    }
+    /**
+     * Retrieves a {@code Map<String, String>} from a YAML section.
+     * <p>
+     * Keys and their string values are read from the given route.
+     * If {@code debug} is true, the resulting map is logged using {@code ConsoleUtils.debugMap()}.
+     * </p>
+     *
+     * @param yaml  the YAML document to read from
+     * @param route the path to the target section
+     * @param debug whether to print the resulting map for debugging
+     * @return a map of key-value string pairs from the specified section, or an empty map if the section is missing
+     */
+    public static Map<String, String> getMap(@NotNull YamlDocument yaml, String route, boolean debug) {
+        Map<String, String> map = new HashMap<>();
 
-    public static Section getSection(@NotNull Plugin plugin, @NotNull String fileName, @NotNull String sectionPath) {
-        File file = new File(plugin.getDataFolder(), fileName);
-
-        try {
-            InputStream defaultFile = plugin.getResource(fileName);
-            YamlDocument config;
-
-            if (defaultFile != null) {
-                config = YamlDocument.create(file, defaultFile);
-            } else {
-                config = YamlDocument.create(file);
-            }
-
-            Section section = config.getSection(sectionPath);
-
-            if (section == null) {
-                plugin.getLogger().severe("Missing " + sectionPath + " section in " + fileName + "!");
-                return null;
-            }
-
-            return section;
-        } catch (IOException e) {
-            plugin.getLogger().severe("An error occurred when trying to read " + fileName);
-            e.getCause();
+        Section section = yaml.getSection(route);
+        if (section == null) {
+            ConsoleUtils.severe("Unable to find route " + route + " from " + yaml.getNameAsString() + ". Returning an empty map..");
+            return map;
         }
 
-        return null;
-    }
-
-    public static List<String> getList(Plugin plugin, String fileName, String mainKey, String subKey) {
-        List<String> list = new ArrayList<>();
-
-        YamlDocument yaml = getYaml(plugin, fileName);
-        if (yaml == null) return null;
-
-        Section section = getSection(yaml, mainKey);
-        if (section == null) return null;
-
-        Set<String> subKeys = section.getRoutesAsStrings(false);
-        if (subKeys.isEmpty()) return null;
-
-        for (String key : subKeys) {
-            String path = mainKey + "." + key + "." + subKey;
-            List<String> items = yaml.getStringList(path);
-            if (items != null && !items.isEmpty()) {
-                list.addAll(items);
+        Set<String> keys = section.getRoutesAsStrings(false);
+        if (!keys.isEmpty()) {
+            for (String key : keys) {
+                map.put(key, section.getString(key));
             }
         }
 
-        return list;
-    }
-
-    public static List<String> getList(Plugin plugin, String fileName, String sectionPath) {
-        YamlDocument yaml = getYaml(plugin, fileName);
-        if (yaml == null) {
-            ConsoleUtils.severe("Unable to find " + fileName + "!");
-            return null;
+        if (debug) {
+            ConsoleUtils.debugMap(map);
         }
 
-        List<String> items = yaml.getStringList(sectionPath);
-        if (items == null || items.isEmpty()) {
-            ConsoleUtils.severe("Unable to find list at section path " + sectionPath + "!");
-            return null;
-        }
-
-        return items;
+        return map;
     }
 
-    public static int[] getArray(String string) {
-        if (string == null) return null;
-
-        return Arrays.stream(string.split(","))
-                .map(String::trim)
-                .mapToInt(Integer::parseInt)
-                .toArray();
-    }
-
-    public static Map<String, Integer> getIntMap(Plugin plugin, String fileName, String path) {
+    /**
+     * Retrieves a {@code Map<String, Integer>} from a YAML section.
+     * <p>
+     * Keys and their integer values are read from the given route.
+     * If {@code debug} is true, the resulting map is logged using {@code ConsoleUtils.debugMap()}.
+     * </p>
+     *
+     * @param yaml  the YAML document to read from
+     * @param route the path to the target section
+     * @param debug whether to print the resulting map for debugging
+     * @return a map of key-integer pairs from the specified section, or an empty map if the section is missing
+     */
+    public static Map<String, Integer> getIntMap(@NotNull YamlDocument yaml, String route, boolean debug) {
         Map<String, Integer> map = new HashMap<>();
 
-        YamlDocument yaml = getYaml(plugin, fileName);
-        if (yaml == null) return null;
-
-        Section section = getSection(yaml, path);
-        if (section == null) return null;
-
-        Set<String> keys = section.getRoutesAsStrings(false);
-        for (String key : keys) {
-            map.put(key, section.getInt(key));
+        Section section = yaml.getSection(route);
+        if (section == null) {
+            ConsoleUtils.severe("Unable to find route " + route + " from " + yaml.getNameAsString() + ". Returning an empty map..");
+            return map;
         }
 
-        return map;
-    }
-
-    public static Map<String, Double> getDoubleMap(@NotNull YamlDocument yaml,
-                                                   @NotNull String route) {
-        Map<String, Double> map = new HashMap<>();
-
-        Section section = getSection(yaml, route);
-        if (section == null) return map;
-
         Set<String> keys = section.getRoutesAsStrings(false);
-        for (String key : keys) {
-            map.put(key, section.getDouble(key));
-        }
-
-        return map;
-    }
-
-    public static Map<Integer, String> getStringMap(@NotNull YamlDocument yaml,
-                                                    @NotNull String route) {
-
-        Map<Integer, String> map = new HashMap<>();
-        Section section = getSection(yaml, route);
-        if (section == null) return map;
-
-        for (String key : section.getRoutesAsStrings(false)) {
-            try {
-                int intKey = Integer.parseInt(key);
-                map.put(intKey, section.getString(key));
-            } catch (NumberFormatException ex) {
-                ConsoleUtils.severe("Skipping non-integer key " + key + " in section " + route);
+        if (!keys.isEmpty()) {
+            for (String key : keys) {
+                map.put(key, section.getInt(key));
             }
         }
 
+        if (debug) {
+            ConsoleUtils.debugMap(map);
+        }
+
         return map;
     }
 
-    public static List<YamlDocument> getFiles(@NotNull Plugin plugin, @NotNull String dirPath) {
-        List<YamlDocument> documents = new ArrayList<>();
+    /**
+     * Retrieves a {@code Map<String, Double>} from a YAML section.
+     * <p>
+     * Keys and their double values are read from the given route.
+     * If {@code debug} is true, the resulting map is logged using {@code ConsoleUtils.debugMap()}.
+     * </p>
+     *
+     * @param yaml  the YAML document to read from
+     * @param route the path to the target section
+     * @param debug whether to print the resulting map for debugging
+     * @return a map of key-double pairs from the specified section, or an empty map if the section is missing
+     */
+    public static Map<String, Double> getDoubleMap(@NotNull YamlDocument yaml, String route, boolean debug) {
+        Map<String, Double> map = new HashMap<>();
+
+        Section section = yaml.getSection(route);
+        if (section == null) {
+            ConsoleUtils.severe("Unable to find route " + route + " from " + yaml.getNameAsString() + ". Returning an empty map..");
+            return map;
+        }
+
+        Set<String> keys = section.getRoutesAsStrings(false);
+        if (!keys.isEmpty()) {
+            for (String key : keys) {
+                map.put(key, section.getDouble(key));
+            }
+        }
+
+        if (debug) {
+            ConsoleUtils.debugMap(map);
+        }
+
+        return map;
+    }
+
+    /**
+     * Retrieves a map of boolean values from a specified section in a YAML document.
+     * <p>
+     * Each key in the section will be mapped to its corresponding boolean value.
+     * If the section does not exist, an empty map is returned and an error is logged.
+     * Optionally prints the resulting map for debugging.
+     *
+     * @param yaml  the {@link YamlDocument} to read from
+     * @param route the YAML path to the section containing boolean values
+     * @param debug if true, prints the resulting map using {@link ConsoleUtils#debugMap(Map)}
+     * @return a map of keys to boolean values from the specified YAML section, or an empty map if not found
+     */
+    public static Map<String, Boolean> getBooleanMap(@NotNull YamlDocument yaml, String route, boolean debug) {
+        Map<String, Boolean> map = new HashMap<>();
+
+        Section section = yaml.getSection(route);
+        if (section == null) {
+            ConsoleUtils.severe("Unable to find route " + route + " from " + yaml.getNameAsString() + ". Returning an empty map..");
+            return map;
+        }
+
+        Set<String> keys = section.getRoutesAsStrings(false);
+        if (!keys.isEmpty()) {
+            for (String key : keys) {
+                map.put(key, section.getBoolean(key));
+            }
+        }
+
+        if (debug) {
+            ConsoleUtils.debugMap(map);
+        }
+
+        return map;
+    }
+
+    /**
+     * Retrieves a {@code Map<Integer, String>} from a YAML section.
+     * <p>
+     * Keys are expected to be parseable as integers; non-integer keys will be skipped with a warning.
+     * If {@code debug} is true, the resulting map is logged using {@code ConsoleUtils.debugMap()}.
+     * </p>
+     *
+     * @param yaml  the YAML document to read from
+     * @param route the path to the target section
+     * @param debug whether to print the resulting map for debugging
+     * @return a map of integer-string pairs from the specified section, or an empty map if the section is missing
+     */
+    public static Map<Integer, String> getStringMap(@NotNull YamlDocument yaml, String route, boolean debug) {
+        Map<Integer, String> map = new HashMap<>();
+
+        Section section = yaml.getSection(route);
+        if (section == null) {
+            ConsoleUtils.severe("Unable to find route " + route + " from " + yaml.getNameAsString() + ". Returning an empty map..");
+            return map;
+        }
+
+        Set<String> keys = section.getRoutesAsStrings(false);
+        if (!keys.isEmpty()) {
+            for (String key : keys) {
+                try {
+                    int intKey = Integer.parseInt(key);
+                    map.put(intKey, section.getString(key));
+                } catch (NumberFormatException ex) {
+                    ConsoleUtils.severe("Skipping non-integer key " + key + " in section " + route);
+                }
+            }
+        }
+
+        if (debug) {
+            ConsoleUtils.debugMap(map);
+        }
+
+        return map;
+    }
+
+    /**
+     * Loads all {@code .yml} files from a given subdirectory of the plugin's data folder.
+     * <p>
+     * Each file is parsed into a {@link YamlDocument} and stored in a map keyed by filename.
+     * </p>
+     *
+     * @param plugin  the plugin instance
+     * @param dirPath the relative subdirectory to search within the plugin's data folder
+     * @return a map of filename to loaded {@link YamlDocument}, or an empty map if no valid files are found
+     */
+    public static Map<String, YamlDocument> getFiles(@NotNull Plugin plugin, @NotNull String dirPath) {
+        Map<String, YamlDocument> documents = new HashMap<>();
 
         File directory = new File(plugin.getDataFolder(), dirPath);
         if (!directory.exists() || !directory.isDirectory()) {
@@ -187,7 +253,7 @@ public class YAMLUtils {
         for (File file : ymlFiles) {
             try {
                 YamlDocument yaml = YamlDocument.create(file);
-                documents.add(yaml);
+                documents.put(file.getName(), yaml);
             } catch (IOException e) {
                 ConsoleUtils.severe("Failed to load YAML file: " + file.getName());
                 e.printStackTrace();
@@ -195,40 +261,5 @@ public class YAMLUtils {
         }
 
         return documents;
-    }
-
-    public static void copyAllResources(JavaPlugin plugin, File jarFile) {
-        File pluginFolder = plugin.getDataFolder();
-        if (pluginFolder.exists()) return;
-        pluginFolder.mkdirs();
-
-        try (JarFile jar = new JarFile(jarFile)) {
-            for (JarEntry entry : Collections.list(jar.entries())) {
-                String name = entry.getName();
-
-                if (name.startsWith("META-INF") || name.equals("plugin.yml")) continue;
-                if (entry.isDirectory()) continue;
-                if (name.endsWith(".class")) continue;
-                if (!name.endsWith(".yml") && !name.contains("/")) continue;
-
-                File outFile = new File(pluginFolder, name);
-                if (!outFile.getParentFile().exists()) {
-                    outFile.getParentFile().mkdirs();
-                }
-
-                try (InputStream in = plugin.getResource(name);
-                     OutputStream out = new FileOutputStream(outFile)) {
-                    if (in == null) continue;
-                    byte[] buffer = new byte[1024];
-                    int len;
-                    while ((len = in.read(buffer)) > 0) {
-                        out.write(buffer, 0, len);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            ConsoleUtils.severe(plugin.getName(), "Failed to extract default resources: " + e.getMessage());
-            e.printStackTrace();
-        }
     }
 }

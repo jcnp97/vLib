@@ -11,7 +11,7 @@ public class BossbarUtils {
     /**
      * Converts a custom {@link EnumsLib.BossBarColor} to an Adventure {@link net.kyori.adventure.bossbar.BossBar.Color}.
      *
-     * @param color The custom color enum to convert.
+     * @param color The custom color enum to toComponent.
      * @return The corresponding BossBar.Color value.
      */
     public static BossBar.Color getColor(EnumsLib.BossBarColor color) {
@@ -28,7 +28,7 @@ public class BossbarUtils {
 
     /**
      * Creates a new {@link net.kyori.adventure.bossbar.BossBar} with the given message, color, and progress.
-     * The message is converted using AdventureUtils, and progress is clamped between 0.0 and 1.0.
+     * The message is toComponented using AdventureUtils, and progress is clamped between 0.0 and 1.0.
      *
      * @param message  The text to display in the boss bar.
      * @param color    The custom color to use.
@@ -36,7 +36,7 @@ public class BossbarUtils {
      * @return A configured BossBar instance.
      */
     public static BossBar get(String message, EnumsLib.BossBarColor color, float progress) {
-        Component component = AdventureUtils.convert(message);
+        Component component = AdventureUtils.toComponent(message);
         float progressLimit = Math.max(0.0f, Math.min(progress, 1.0f));
 
         return BossBar.bossBar(
@@ -49,14 +49,14 @@ public class BossbarUtils {
 
     /**
      * Updates the name and progress of an existing {@link net.kyori.adventure.bossbar.BossBar}.
-     * The message is re-converted and progress clamped between 0.0 and 1.0.
+     * The message is re-toComponented and progress clamped between 0.0 and 1.0.
      *
      * @param bossBar  The BossBar to modify.
      * @param message  The new message to display.
      * @param progress The new progress value (clamped between 0.0 and 1.0).
      */
     public static void modify(BossBar bossBar, String message, float progress) {
-        Component component = AdventureUtils.convert(message);
+        Component component = AdventureUtils.toComponent(message);
         float progressLimit = Math.max(0.0f, Math.min(progress, 1.0f));
 
         bossBar.name(component);

@@ -1,7 +1,6 @@
-package asia.virtualmc.vLib.utilities.files;
+package asia.virtualmc.vLib.utilities.files.sqlite;
 
-import asia.virtualmc.vLibrary.helpers.DriverShim;
-import asia.virtualmc.vLibrary.utilities.messages.ConsoleUtils;
+import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.plugin.Plugin;
@@ -29,9 +28,9 @@ public class SQLiteUtils {
      * @param plugin the plugin instance
      * @return true if initialization was successful
      */
-    public static boolean initialize(Plugin plugin) {
+    public static boolean load(Plugin plugin) {
         try {
-            File libFolder = new File(plugin.getDataFolder(), "lib");
+            File libFolder = new File(plugin.getDataFolder(), "libs");
             if (!libFolder.exists() && !libFolder.mkdirs()) {
                 ConsoleUtils.severe("Failed to create lib directory for SQLite JDBC driver");
                 return false;
@@ -60,7 +59,7 @@ public class SQLiteUtils {
             );
             Class<?> driverClass = Class.forName("org.sqlite.JDBC", true, sqliteClassLoader);
             Driver driverInstance = (Driver) driverClass.getDeclaredConstructor().newInstance();
-            DriverManager.registerDriver(new DriverShim(driverInstance));
+            DriverManager.registerDriver(new DriverShimUtils(driverInstance));
             return true;
         } catch (Exception e) {
             ConsoleUtils.severe("Failed to initialize SQLite: " + e.getMessage());

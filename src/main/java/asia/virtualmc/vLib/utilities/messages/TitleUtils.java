@@ -19,8 +19,8 @@ public class TitleUtils {
      */
     public static void send(@NotNull Player player, String title, String subtitle) {
         if (player.isOnline()) {
-            Title fullTitle = Title.title(AdventureUtils.convert(title),
-                    AdventureUtils.convert(subtitle));
+            Title fullTitle = Title.title(AdventureUtils.toComponent(title),
+                    AdventureUtils.toComponent(subtitle));
             player.showTitle(fullTitle);
         }
     }
@@ -38,8 +38,8 @@ public class TitleUtils {
     public static void send(@NotNull Player player, String title, String subtitle, long duration) {
         if (player.isOnline()) {
             Title.Times TITLE_TIMES = Title.Times.times(Duration.ZERO, Duration.ofMillis(duration), Duration.ZERO);
-            Title fullTitle = Title.title(AdventureUtils.convert(title),
-                    AdventureUtils.convert(subtitle), TITLE_TIMES);
+            Title fullTitle = Title.title(AdventureUtils.toComponent(title),
+                    AdventureUtils.toComponent(subtitle), TITLE_TIMES);
             player.showTitle(fullTitle);
         }
     }
@@ -52,8 +52,8 @@ public class TitleUtils {
      */
     public static void sendAll(String title, String subtitle) {
         Title fullTitle = Title.title(
-                AdventureUtils.convert(title),
-                AdventureUtils.convert(subtitle)
+                AdventureUtils.toComponent(title),
+                AdventureUtils.toComponent(subtitle)
         );
 
         for (Player player : Bukkit.getOnlinePlayers()) {
@@ -77,8 +77,8 @@ public class TitleUtils {
         );
 
         Title fullTitle = Title.title(
-                AdventureUtils.convert(title),
-                AdventureUtils.convert(subtitle),
+                AdventureUtils.toComponent(title),
+                AdventureUtils.toComponent(subtitle),
                 times
         );
 

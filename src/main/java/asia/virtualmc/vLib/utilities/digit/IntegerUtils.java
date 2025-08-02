@@ -1,7 +1,5 @@
 package asia.virtualmc.vLib.utilities.digit;
 
-import java.time.Duration;
-
 public class IntegerUtils {
 
     /**
@@ -36,29 +34,6 @@ public class IntegerUtils {
      */
     public static String toInt(double value) {
         return String.format("%,d", (int) value);
-    }
-
-    /**
-     * Converts a duration in seconds into a human-readable format.
-     *
-     * @param seconds The total number of seconds to convert.
-     * @return A string in the format of "Xd Xh Xm Xs", omitting units with zero values.
-     */
-    public static String getReadableTime(long seconds) {
-        Duration duration = Duration.ofSeconds(seconds);
-
-        long days = duration.toDays();
-        long hours = duration.toHours() % 24;
-        long minutes = duration.toMinutes() % 60;
-        long secs = duration.getSeconds() % 60;
-
-        StringBuilder formatted = new StringBuilder();
-        if (days > 0) formatted.append(days).append("d ");
-        if (hours > 0) formatted.append(hours).append("h ");
-        if (minutes > 0) formatted.append(minutes).append("m ");
-        if (secs > 0 || formatted.isEmpty()) formatted.append(secs).append("s");
-
-        return formatted.toString().trim();
     }
 
     /**

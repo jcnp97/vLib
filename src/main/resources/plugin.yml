@@ -2,3 +2,9 @@ name: vLib
 version: '1.0'
 main: asia.virtualmc.vLib.Main
 api-version: '1.21'
+softdepend:
+  - BetterModel
+  - Vault
+  - WorldGuard
+  - SkinsRestorer
+  - RealisticSeasons

@@ -1,4 +1,4 @@
-package asia.virtualmc.vLib.utilities.misc;
+package asia.virtualmc.vLib.utilities.paper;
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.plugin.Plugin;

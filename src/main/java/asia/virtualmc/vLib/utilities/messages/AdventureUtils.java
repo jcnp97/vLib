@@ -21,7 +21,7 @@ public class AdventureUtils {
      * @param string The input string to convert.
      * @return A Component representing the formatted message.
      */
-    public static Component convert(String string) {
+    public static Component toComponent(String string) {
         Component component;
         if (string.contains("&")) {
             component = legacyAmpersand.deserialize(string);
@@ -36,18 +36,31 @@ public class AdventureUtils {
 
     /**
      * Converts a list of formatted strings into a list of Adventure {@link net.kyori.adventure.text.Component}s.
-     * Each string is converted using {@link #convert(String)} and has italic formatting disabled.
+     * Each string is converted using {@link #toComponent(String)} and has italic formatting disabled.
      *
      * @param strings The list of strings to convert.
      * @return A list of Components representing the formatted messages.
      */
-    public static List<Component> convert(List<String> strings) {
+    public static List<Component> toComponent(List<String> strings) {
         List<Component> components = new ArrayList<>();
 
         for (String string : strings) {
-            components.add(convert(string));
+            components.add(toComponent(string));
         }
 
         return components;
+    }
+
+    /**
+     * Converts a {@link net.kyori.adventure.text.Component} to a plain text {@link String}.
+     * <p>
+     * If the component is {@code null}, an empty string {@code ""} is returned.
+     *
+     * @param component the component to convert
+     * @return the plain text representation of the component, or an empty string if null
+     */
+    public static String toString(Component component) {
+        if (component == null) return "";
+        return LegacyComponentSerializer.legacySection().serialize(component);
     }
 }

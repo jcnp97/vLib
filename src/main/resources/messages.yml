@@ -1,0 +1,4 @@
+prefix:
+  info: "<white> <#6EFFB2>"
+  warning: "<white> <#FCD05C>"
+  severe: "<white> <#FF6262>"

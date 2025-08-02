@@ -1,12 +1,17 @@
 # List of Modules
 # By default, all integrations are disabled. You must enable them manually when needed.
 # Requires a restart to take effect.
+# All modules are required (except SkinsRestorer) for vSkills plugins.
 # --------------------------------------------------------------------------------------
 modules:
   mysql: false
   worldguard: false
   vault: false
   realistic_seasons: false
+  skins_restorer: false
+  better_model: false
+  hologram_lib: false
+  ultimate_advancement: false
 # --------------------------------------------------------------------------------------
 
 # MySQL Database - required for vSkills.

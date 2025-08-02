@@ -1,7 +1,7 @@
 package asia.virtualmc.vLib.utilities.bukkit;
 
 import asia.virtualmc.vLib.Main;
-import asia.virtualmc.vLib.utilities.misc.TaskUtils;
+import asia.virtualmc.vLib.utilities.paper.TaskUtils;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Location;

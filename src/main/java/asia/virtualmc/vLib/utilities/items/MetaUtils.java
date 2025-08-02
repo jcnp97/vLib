@@ -1,20 +1,55 @@
 package asia.virtualmc.vLib.utilities.items;
 
-import org.bukkit.NamespacedKey;
-import org.bukkit.enchantments.Enchantment;
+import asia.virtualmc.vLib.utilities.messages.AdventureUtils;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class MetaUtils {
 
-    public
+    /**
+     * Represents simplified item metadata for display purposes.
+     */
+    public static class Item {
+        public String name;
+        public List<String> lore;
+        public int modelData;
 
-    public static String getDisplayName(ItemStack item) {
+        public Item(String name, List<String> lore, int modelData) {
+            this.name = name;
+            this.lore = lore;
+            this.modelData = modelData;
+        }
+    }
+
+    /**
+     * Extracts a simplified {@link Item} metadata wrapper from the provided {@link ItemStack}.
+     *
+     * @param item the item to extract metadata from
+     * @return an {@link Item} containing the display name, lore, and model data
+     */
+    public static Item get(@NotNull ItemStack item) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            String name = getDisplayName(item);
+            return new Item(name, null, 0);
+        }
+
+        return new Item(getDisplayName(item), meta.getLore(), meta.getCustomModelData());
+    }
+
+    /**
+     * Retrieves the display name of the provided {@link ItemStack}.
+     * If no display name is set, it generates one based on the item's material name.
+     *
+     * @param item the item to read the display name from
+     * @return the display name, or a formatted fallback name if not set
+     */
+    public static String getDisplayName(@NotNull ItemStack item) {
         ItemMeta meta = item.getItemMeta();
         if (meta == null || !meta.hasDisplayName()) {
             return Arrays.stream(item.getType().toString().toLowerCase().split("_"))
@@ -25,83 +60,19 @@ public class MetaUtils {
         return meta.getDisplayName();
     }
 
-    public static int getCustomModelData(ItemStack item) {
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) return 1;
+    /**
+     * Applies a simplified {@link Item} metadata wrapper to the given {@link ItemMeta},
+     * including Adventure-style components for name and lore.
+     *
+     * @param meta  the {@link ItemMeta} to apply to
+     * @param item  the {@link Item} metadata to apply
+     * @return a cloned {@link ItemMeta} with the applied values
+     */
+    public static ItemMeta apply(@NotNull ItemMeta meta, @NotNull Item item) {
+        meta.displayName(AdventureUtils.toComponent(item.name));
+        meta.lore(AdventureUtils.toComponent(item.lore));
+        meta.setCustomModelData(item.modelData);
 
-        return meta.getCustomModelData();
-    }
-
-    public static List<String> getLore(ItemStack item) {
-        List<String> lore = new ArrayList<>();
-
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) return null;
-
-        return meta.getLore();
-    }
-
-    public static void setDisplayName(ItemMeta meta, String displayName) {
-        if (meta == null || displayName == null) return;
-        meta.displayName(AdventureUtils.convertToComponent(displayName));
-    }
-
-    public static void setCustomModelData(ItemMeta meta, int modelData) {
-        if (meta == null) return;
-        meta.setCustomModelData(modelData);
-    }
-
-    public static void setLore(ItemMeta meta, List<String> lore) {
-        if (meta == null || lore == null) return;
-        meta.lore(AdventureUtils.convertToComponent(lore));
-    }
-
-    public static void setUnbreakable(ItemMeta meta) {
-        if (meta == null) return;
-        meta.setUnbreakable(true);
-    }
-
-    public static ItemStack modify(ItemStack item, String displayName, List<String> lore, int modelData) {
-        if (item == null) {
-            throw new IllegalArgumentException("Item cannot be null");
-        }
-        ItemStack clone = item.clone();
-        ItemMeta meta = clone.getItemMeta();
-        if (meta == null) {
-            return clone;
-        }
-
-        setDisplayName(meta, displayName);
-        setLore(meta, lore);
-        setCustomModelData(meta, modelData);
-        clone.setItemMeta(meta);
-
-        return clone;
-    }
-
-    public static void addEnchantments(List<String> enchantsList, ItemMeta meta) {
-        String toolName = meta.getDisplayName();
-
-        for (String enchantEntry : enchantsList) {
-            String[] parts = enchantEntry.split(":");
-            if (parts.length == 2) {
-                String enchantName = parts[0];
-                int level;
-                try {
-                    level = Integer.parseInt(parts[1]);
-                    Enchantment enchant = Enchantment.getByKey(NamespacedKey.minecraft(enchantName.toLowerCase()));
-
-                    if (enchant != null) {
-                        meta.addEnchant(enchant, level, true);
-                    } else {
-                        ConsoleUtils.severe("Invalid enchantment '" + enchantName + "' for tool: " + toolName);
-                    }
-                } catch (NumberFormatException e) {
-                    ConsoleUtils.severe("Invalid enchantment level for '" + enchantEntry + "' in tool: " + toolName);
-                }
-            } else {
-                ConsoleUtils.severe("Invalid enchantment format '" + enchantEntry + "' for tool: " + toolName);
-            }
-        }
+        return meta.clone();
     }
 }

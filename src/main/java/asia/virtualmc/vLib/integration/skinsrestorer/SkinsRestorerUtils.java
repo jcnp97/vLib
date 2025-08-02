@@ -1,5 +1,6 @@
 package asia.virtualmc.vLib.integration.skinsrestorer;
 
+import asia.virtualmc.vLib.Main;
 import asia.virtualmc.vLib.utilities.enums.EnumsLib;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import asia.virtualmc.vLib.utilities.messages.MessageUtils;
@@ -11,6 +12,7 @@ import net.skinsrestorer.api.property.MojangSkinDataResult;
 import net.skinsrestorer.api.property.SkinProperty;
 import net.skinsrestorer.api.storage.SkinStorage;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 import java.io.*;
 import java.net.URL;
@@ -18,6 +20,25 @@ import java.util.Optional;
 
 public class SkinsRestorerUtils {
     private static SkinsRestorer skinsRestorer;
+
+    /**
+     * Initializes the SkinsRestorer integration by checking for the plugin's presence
+     * and obtaining the SkinsRestorer API instance.
+     * <p>
+     * If SkinsRestorer is not found, integration is disabled and a severe error is logged.
+     * Otherwise, a success message is printed to the console.
+     * </p>
+     */
+    public static void load() {
+        Plugin plugin = Main.getInstance();
+        if (!plugin.getServer().getPluginManager().isPluginEnabled("SkinsRestorer")) {
+            ConsoleUtils.severe("SkinsRestorer not found. Disabling integration hooks..");
+            return;
+        }
+
+        skinsRestorer = SkinsRestorerProvider.get();
+        ConsoleUtils.info("Successfully hooked into: SkinsRestorer");
+    }
 
     /**
      * Downloads the current Minecraft skin of the specified player using SkinsRestorer API
@@ -31,7 +52,8 @@ public class SkinsRestorerUtils {
      */
     public static void getSkin(Player player, File outputDir) {
         if (skinsRestorer == null) {
-            skinsRestorer = SkinsRestorerProvider.get();
+            ConsoleUtils.severe("Trying to use skinsrestorer module but it is disabled!");
+            return;
         }
 
         SkinStorage storage = skinsRestorer.getSkinStorage();
