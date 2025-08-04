@@ -21,6 +21,14 @@ public class MySQLConnection {
     private static DatabaseConfig databaseConfig;
     private record DatabaseConfig(String host, int port, String dbName, String user, String password) {}
 
+    /**
+     * Loads MySQL configuration from the plugin's {@code config.yml}.
+     * <p>
+     * Parses the {@code mysql} section and stores connection parameters in memory.
+     * </p>
+     *
+     * @return true if configuration was successfully loaded; false otherwise
+     */
     public static boolean load() {
         YamlDocument yaml = YAMLUtils.getYaml(Main.getInstance(), "config.yml");
         if (yaml == null) {
@@ -50,24 +58,55 @@ public class MySQLConnection {
         return true;
     }
 
+    /**
+     * Retrieves a {@link Connection} for the specified plugin.
+     * <p>
+     * If the connection pool does not exist yet for the plugin, a new {@link HikariDataSource}
+     * will be created and cached. Subsequent calls reuse the connection pool.
+     * </p>
+     *
+     * @param pluginName the plugin requesting the MySQL connection
+     * @return a valid SQL connection, or null if connection fails
+     * @throws SQLException if the connection cannot be established
+     */
     public static Connection get(@NotNull String pluginName) throws SQLException {
-        HikariDataSource source = dataSourceMap.computeIfAbsent(pluginName, name -> {
-            create(pluginName);
-            return dataSourceMap.get(name);
-        });
-
-        if (source == null || source.isClosed()) {
-            ConsoleUtils.severe("Failed to retrieve connection: HikariDataSource is null or closed for " + pluginName);
-            throw new SQLException("HikariDataSource not initialized for " + pluginName);
+        if (dataSourceMap.containsKey(pluginName)) {
+            return dataSourceMap.get(pluginName).getConnection();
         }
 
-        return source.getConnection();
+        try {
+            HikariDataSource source = create(pluginName);
+            if (source == null) {
+                throw new SQLException("Failed to initialize HikariDataSource for plugin: " + pluginName);
+            }
+
+            Connection conn = source.getConnection();
+            if (conn != null && !conn.isClosed()) {
+                ConsoleUtils.info("[" + pluginName + "]", "Successfully connected to the MySQL database.");
+            }
+            return conn;
+
+        } catch (SQLException e) {
+            ConsoleUtils.severe("Failed to retrieve connection: HikariDataSource is null or closed for " + pluginName);
+        }
+
+        return null;
     }
 
-    private static void create(@NotNull String pluginName) {
+    /**
+     * Creates and caches a new {@link HikariDataSource} for the given plugin.
+     * <p>
+     * Reads from the previously loaded database configuration and applies
+     * standard HikariCP settings.
+     * </p>
+     *
+     * @param pluginName the plugin initializing the MySQL pool
+     * @return the created data source, or null if configuration is invalid
+     */
+    private static HikariDataSource create(@NotNull String pluginName) {
         if (databaseConfig == null) {
             ConsoleUtils.severe("MySQL config not loaded. Aborting MySQL connection setup for " + pluginName);
-            return;
+            return null;
         }
 
         try {
@@ -87,19 +126,24 @@ public class MySQLConnection {
 
             HikariDataSource dataSource = new HikariDataSource(config);
             dataSourceMap.put(pluginName, dataSource);
+            return dataSource;
 
-            try (Connection connection = dataSource.getConnection()) {
-                if (connection != null && !connection.isClosed()) {
-                    ConsoleUtils.info("[" + pluginName + "] Successfully connected to the MySQL database.");
-                }
-            }
-        } catch (SQLException e) {
-            ConsoleUtils.severe("[" + pluginName + "] Failed to connect to database: " + e.getMessage());
         } catch (Exception e) {
-            ConsoleUtils.severe("[" + pluginName + "] Error during database setup: " + e.getMessage());
+            ConsoleUtils.severe("[" + pluginName + "]", "Error during database setup: " + e.getMessage());
+            ConsoleUtils.severe("[" + pluginName + "]", "Make sure you have configured the MySQL section on config.yml correctly!");
         }
+
+        return null;
     }
 
+    /**
+     * Closes and removes the connection pool associated with a specific plugin.
+     * <p>
+     * Useful when a plugin is disabled or unloaded dynamically.
+     * </p>
+     *
+     * @param pluginName the name of the plugin to disconnect
+     */
     public static void close(@NotNull String pluginName) {
         HikariDataSource source = dataSourceMap.remove(pluginName);
         if (source != null && !source.isClosed()) {
@@ -107,6 +151,12 @@ public class MySQLConnection {
         }
     }
 
+    /**
+     * Closes all existing plugin-specific MySQL connection pools.
+     * <p>
+     * Should only be used internally by the core library during shutdown.
+     * </p>
+     */
     @Internal
     public static void closeAll() {
         for (Map.Entry<String, HikariDataSource> entry : dataSourceMap.entrySet()) {

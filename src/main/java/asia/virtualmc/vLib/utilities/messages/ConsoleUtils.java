@@ -15,7 +15,7 @@ public class ConsoleUtils {
      */
     public static void info(String message) {
         CommandSender console = Bukkit.getConsoleSender();
-        console.sendMessage(AdventureUtils.toComponent("<green>" + Main.getPrefix() + message));
+        console.sendMessage(AdventureUtils.toComponent("<green>" + Main.getPrefix() + " " + message));
     }
 
     /**
@@ -25,7 +25,7 @@ public class ConsoleUtils {
      */
     public static void warning(String message) {
         CommandSender console = Bukkit.getConsoleSender();
-        console.sendMessage(AdventureUtils.toComponent("<yellow>" + Main.getPrefix() + message));
+        console.sendMessage(AdventureUtils.toComponent("<yellow>" + Main.getPrefix() + " " + message));
     }
 
     /**
@@ -35,7 +35,7 @@ public class ConsoleUtils {
      */
     public static void severe(String message) {
         CommandSender console = Bukkit.getConsoleSender();
-        console.sendMessage(AdventureUtils.toComponent("<red>" + Main.getPrefix() + message));
+        console.sendMessage(AdventureUtils.toComponent("<red>" + Main.getPrefix() + " " + message));
     }
 
     /**
@@ -46,7 +46,7 @@ public class ConsoleUtils {
      */
     public static void info(String prefix, String message) {
         CommandSender console = Bukkit.getConsoleSender();
-        console.sendMessage(AdventureUtils.toComponent("<green>" + prefix + message));
+        console.sendMessage(AdventureUtils.toComponent("<green>" + prefix + " " + message));
     }
 
     /**
@@ -57,7 +57,7 @@ public class ConsoleUtils {
      */
     public static void warning(String prefix, String message) {
         CommandSender console = Bukkit.getConsoleSender();
-        console.sendMessage(AdventureUtils.toComponent("<yellow>" + prefix + message));
+        console.sendMessage(AdventureUtils.toComponent("<yellow>" + prefix + " " + message));
     }
 
     /**
@@ -68,7 +68,7 @@ public class ConsoleUtils {
      */
     public static void severe(String prefix, String message) {
         CommandSender console = Bukkit.getConsoleSender();
-        console.sendMessage(AdventureUtils.toComponent("<red>" + prefix + message));
+        console.sendMessage(AdventureUtils.toComponent("<red>" + prefix + " " + message));
     }
 
     /**

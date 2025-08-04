@@ -8,7 +8,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class Main extends JavaPlugin {
     private static Main plugin;
     private static final String name = "vLib";
-    private static final String prefix = "[vLib] ";
+    private static final String prefix = "[vLib]";
     private Registry registry;
 
     @Override
@@ -21,7 +21,6 @@ public final class Main extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        HologramLib.onLoad(this);
         CommandAPI.onLoad(new CommandAPIBukkitConfig(this)
                 .verboseOutput(false)
                 .silentLogs(true)

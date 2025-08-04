@@ -18,13 +18,13 @@ public class StorageManager {
         Map<String, Boolean> modules = Registry.getModules();
         if (Boolean.TRUE.equals(modules.get("sqlite"))) {
             if (SQLiteUtils.load()) {
-                ConsoleUtils.info("Successfully loaded SQLite!");
+                ConsoleUtils.info("Successfully loaded SQLite module!");
             }
         }
 
         if (Boolean.TRUE.equals(modules.get("mysql"))) {
             if (MySQLConnection.load()) {
-                ConsoleUtils.info("Successfully loaded MySQL Database!");
+                ConsoleUtils.info("Successfully loaded MySQL module!");
                 PlayerIDUtils.create();
             }
         }

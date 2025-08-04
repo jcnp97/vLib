@@ -27,8 +27,10 @@ public class CommandManager {
             enabledCommands.add("BetterModel");
         }
 
-        command.register();
-        ConsoleUtils.info("Registered commands: " + enabledCommands);
+        if (!enabledCommands.isEmpty()) {
+            command.register();
+            ConsoleUtils.info("Registered commands: " + enabledCommands);
+        }
     }
 
     public void disable() {
