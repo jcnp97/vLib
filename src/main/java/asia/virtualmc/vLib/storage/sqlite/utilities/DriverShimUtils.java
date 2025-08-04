@@ -1,4 +1,4 @@
-package asia.virtualmc.vLib.utilities.files.sqlite;
+package asia.virtualmc.vLib.storage.sqlite.utilities;
 
 import java.sql.*;
 import java.util.Properties;

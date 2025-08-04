@@ -29,7 +29,7 @@ public class ModelFileUtils {
 
         List<String> modified = StringListUtils.replace(content, "{to_replace}", texturePath);
         File outputDir = new File(output.getDataFolder(), outputPath);
-        if (JSONStringListUtils.generate(outputDir, modified, fileName)) {
+        if (JSONStringListUtils.generate(modified, outputDir, fileName)) {
             ConsoleUtils.info("Successfully generated " + fileName + ".json to " + outputDir.getPath());
         }
     }

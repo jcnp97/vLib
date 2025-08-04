@@ -1,6 +1,8 @@
 package asia.virtualmc.vLib.integration;
 
+import asia.virtualmc.vLib.Registry;
 import asia.virtualmc.vLib.integration.better_model.BMCommands;
+import asia.virtualmc.vLib.integration.hologram_lib.HologramUtils;
 import asia.virtualmc.vLib.integration.realistic_seasons.RealisticSeasonsUtils;
 import asia.virtualmc.vLib.integration.skinsrestorer.SkinsRestorerUtils;
 import asia.virtualmc.vLib.integration.ultimate_advancement.UAdvancementUtils;
@@ -12,7 +14,13 @@ import java.util.Map;
 
 public class IntegrationManager {
 
-    public IntegrationManager(Map<String, Boolean> modules) {
+    public IntegrationManager() {
+        enable();
+    }
+
+    public void enable() {
+        Map<String, Boolean> modules = Registry.getModules();
+
         if (Boolean.TRUE.equals(modules.get("realistic_seasons"))) {
             RealisticSeasonsUtils.load();
         }
@@ -39,7 +47,11 @@ public class IntegrationManager {
         }
 
         if (Boolean.TRUE.equals(modules.get("hologram_lib"))) {
-            // Todo: Add HologramLib
+            HologramUtils.load();
         }
+    }
+
+    public void disable() {
+        HologramUtils.clearAll();
     }
 }

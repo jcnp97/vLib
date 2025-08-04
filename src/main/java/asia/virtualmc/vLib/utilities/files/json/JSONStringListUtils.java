@@ -40,7 +40,7 @@ public class JSONStringListUtils {
      * @param fileName  the name of the JSON file to create (e.g. "clone.json")
      * @return true if the file was successfully written; false otherwise
      */
-    public static boolean generate(File outputDir, List<String> content, String fileName) {
+    public static boolean generate(List<String> content, File outputDir, String fileName) {
         try {
             if (!outputDir.exists()) {
                 outputDir.mkdirs();

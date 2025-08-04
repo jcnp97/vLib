@@ -4,6 +4,7 @@
 # All modules are required (except SkinsRestorer) for vSkills plugins.
 # --------------------------------------------------------------------------------------
 modules:
+  sqlite: true
   mysql: false
   worldguard: false
   vault: false

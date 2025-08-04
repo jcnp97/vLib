@@ -9,14 +9,14 @@ public final class Main extends JavaPlugin {
     private static Main plugin;
     private static final String name = "vLib";
     private static final String prefix = "[vLib] ";
-    private ClassRegistry registry;
+    private Registry registry;
 
     @Override
     public void onEnable() {
         plugin = this;
         CommandAPI.onEnable();
 
-        this.registry = new ClassRegistry(this);
+        this.registry = new Registry(this);
     }
 
     @Override
@@ -30,7 +30,7 @@ public final class Main extends JavaPlugin {
 
     @Override
     public void onDisable() {
-
+        registry.disable();
     }
 
     public static Main getInstance() {

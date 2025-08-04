@@ -12,28 +12,22 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 public class BMCommands {
-    private static boolean isEnable = false;
+    private static boolean enabled = false;
 
     public static void load() {
-        Plugin plugin = Main.getInstance();
+        Main plugin = Main.getInstance();
         if (!plugin.getServer().getPluginManager().isPluginEnabled("BetterModel")) {
             ConsoleUtils.severe("BetterModel not found. Disabling integration hooks..");
             return;
         }
 
-        isEnable = true;
+        enabled = true;
         ConsoleUtils.info("Successfully hooked into: BetterModel");
     }
 
     public static CommandAPICommand spawnModel() {
-        if (!isEnable) {
-            ConsoleUtils.severe("Trying to use bettermodel module but BetterModel is not found!");
-            return null;
-        }
-
         return new CommandAPICommand("spawn_bm")
                 .withPermission("vlib.admin")
                 .withArguments(new StringArgument("modelName"))
@@ -62,11 +56,6 @@ public class BMCommands {
     }
 
     public static CommandAPICommand changeModel() {
-        if (!isEnable) {
-            ConsoleUtils.severe("Trying to use bettermodel module but BetterModel is not found!");
-            return null;
-        }
-
         return new CommandAPICommand("change_bm")
                 .withPermission("vlib.admin")
                 .withArguments(new StringArgument("modelName"))
@@ -90,5 +79,9 @@ public class BMCommands {
                         sender.sendMessage("This command can only be used by players.");
                     }
                 });
+    }
+
+    public static boolean isEnabled() {
+        return enabled;
     }
 }

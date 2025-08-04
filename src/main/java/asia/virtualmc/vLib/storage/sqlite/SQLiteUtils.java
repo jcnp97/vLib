@@ -1,5 +1,8 @@
-package asia.virtualmc.vLib.utilities.files.sqlite;
+package asia.virtualmc.vLib.storage.sqlite;
 
+import asia.virtualmc.vLib.Main;
+import asia.virtualmc.vLib.storage.sqlite.utilities.DriverShimUtils;
+import asia.virtualmc.vLib.utilities.annotations.Internal;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -25,12 +28,12 @@ public class SQLiteUtils {
 
     /**
      * Initialize the SQLite driver by downloading the dependency at runtime
-     * @param plugin the plugin instance
      * @return true if initialization was successful
      */
-    public static boolean load(Plugin plugin) {
+    @Internal
+    public static boolean load() {
         try {
-            File libFolder = new File(plugin.getDataFolder(), "libs");
+            File libFolder = new File(Main.getInstance().getDataFolder(), "libs");
             if (!libFolder.exists() && !libFolder.mkdirs()) {
                 ConsoleUtils.severe("Failed to create lib directory for SQLite JDBC driver");
                 return false;
@@ -92,13 +95,15 @@ public class SQLiteUtils {
                 return null;
             }
 
+            String poolKey = plugin.getName() + ":" + dbFile.getAbsolutePath();
             String jdbcUrl = "jdbc:sqlite:" + dbFile.getAbsolutePath() + "?journal_mode=WAL&busy_timeout=5000";
-            HikariDataSource ds = dataSources.computeIfAbsent(fileName, key -> {
+            HikariDataSource ds = dataSources.computeIfAbsent(poolKey, key -> {
                 HikariConfig config = new HikariConfig();
                 config.setDriverClassName("org.sqlite.JDBC");
                 config.setJdbcUrl(jdbcUrl);
                 config.setMaximumPoolSize(10);
-                config.setPoolName("SQLitePool-" + fileName);
+                config.setPoolName("SQLitePool-" + plugin.getName() + "-" + fileName);
+
                 // SQLite PRAGMA via data source properties
                 config.addDataSourceProperty("journal_mode", "WAL");
                 config.addDataSourceProperty("busy_timeout", "5000");
@@ -144,8 +149,32 @@ public class SQLiteUtils {
     }
 
     /**
+     * Closes all SQLite connection pools associated with the given plugin.
+     *
+     * @param plugin the plugin whose SQLite pools should be closed
+     */
+    public static void close(Plugin plugin) {
+        String prefix = plugin.getName() + ":";
+
+        dataSources.entrySet().removeIf(entry -> {
+            String poolKey = entry.getKey();
+            if (poolKey.startsWith(prefix)) {
+                try {
+                    entry.getValue().close();
+                    ConsoleUtils.info("Closed SQLite pool for " + poolKey);
+                } catch (Exception e) {
+                    ConsoleUtils.severe("Failed to close SQLite pool: " + e.getMessage());
+                }
+                return true;
+            }
+            return false;
+        });
+    }
+
+    /**
      * Close all HikariCP pools and clear references.
      */
+    @Internal
     public static void closeAll() {
         for (HikariDataSource ds : dataSources.values()) {
             try {
