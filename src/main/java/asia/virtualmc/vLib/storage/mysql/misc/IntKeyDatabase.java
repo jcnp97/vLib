@@ -1,7 +1,10 @@
 package asia.virtualmc.vLib.storage.mysql.misc;
 
 import asia.virtualmc.vLib.storage.mysql.utilities.MySQLConnection;
+import asia.virtualmc.vLib.storage.mysql.vlib_data.PlayerIDData;
+import asia.virtualmc.vLib.utilities.annotations.Internal;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
@@ -13,19 +16,20 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class IntegerKeyUtils {
+public class IntKeyDatabase {
 
     /**
-     * Creates the necessary tables for storing integer-keyed data types and player data mappings.
+     * Creates the required MySQL tables for storing plugin data definitions and player-specific values.
      * <p>
-     * Creates a definition table (e.g., {@code pluginName}) containing unique {@code data_name} entries,
-     * and a composite player data table (e.g., {@code pluginName_data}) referencing both player IDs and data IDs.
-     * </p>
+     * This includes:
+     * - A main table to register stat types (`pluginName`)
+     * - A data table mapping players to stats (`pluginName_data`)
      *
-     * @param dataList    list of all possible data names to register in the definition table
-     * @param pluginName  the plugin prefix used for naming the tables
+     * @param plugin   The plugin instance using this utility.
+     * @param dataList A list of stat identifiers (data_name) to insert into the table.
      */
-    public static void createTable(@NotNull List<String> dataList, @NotNull String pluginName) {
+    public static void createTable(@NotNull Plugin plugin, @NotNull List<String> dataList) {
+        String pluginName = plugin.getName();
         try (Connection conn = MySQLConnection.get(pluginName)) {
 
             // Create data definition table
@@ -69,17 +73,17 @@ public class IntegerKeyUtils {
     }
 
     /**
-     * Saves the provided map of data values for a specific player.
+     * Saves or updates the given stat data for a specific player in the MySQL database.
      * <p>
-     * Uses {@code INSERT ... ON DUPLICATE KEY UPDATE} to insert or update values per data ID.
-     * </p>
+     * Will insert new rows or update existing ones using `ON DUPLICATE KEY UPDATE`.
      *
-     * @param uuid         the UUID of the player whose data is being saved
-     * @param pluginName   the plugin prefix used for table names
-     * @param playerData   a map where the key is the data ID and the value is the amount
+     * @param plugin     The plugin instance saving the data.
+     * @param uuid       The UUID of the player.
+     * @param playerData A map of data_id to amount values for the player.
      */
-    public static void savePlayerData(@NotNull UUID uuid, @NotNull String pluginName,
+    public static void savePlayerData(@NotNull Plugin plugin, @NotNull UUID uuid,
                                       @NotNull Map<Integer, Integer> playerData) {
+        String pluginName = plugin.getName();
         if (playerData.isEmpty()) {
             ConsoleUtils.warning("[" + pluginName + "]", "Attempted to update data for player " +
                     uuid + " but the provided data map is empty.");
@@ -91,7 +95,7 @@ public class IntegerKeyUtils {
 
         try (Connection conn = MySQLConnection.get(pluginName)) {
             conn.setAutoCommit(false);
-            int playerId = PlayerIDUtils.get(uuid);
+            int playerId = PlayerIDData.get(uuid);
 
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 for (Map.Entry<Integer, Integer> entry : playerData.entrySet()) {
@@ -113,19 +117,18 @@ public class IntegerKeyUtils {
     }
 
     /**
-     * Saves all player data provided in a nested map structure.
+     * Saves or updates stat data for all players in the provided dataset.
      * <p>
-     * Iterates through all players and their respective data entries, updating each row one-by-one.
-     * Uses {@code INSERT ... ON DUPLICATE KEY UPDATE}.
-     * </p>
+     * Uses a single prepared statement for performance, but executes each update individually.
      *
-     * @param pluginName     the plugin prefix used for table names
-     * @param allPlayerData  a map of player UUIDs to their data maps (dataID -> amount)
+     * @param plugin        The plugin instance saving the data.
+     * @param allPlayerData A map of UUIDs to their respective stat data maps.
      */
-    public static void saveAllData(@NotNull String pluginName,
+    public static void saveAllData(@NotNull Plugin plugin,
                                    @NotNull Map<UUID, Map<Integer, Integer>> allPlayerData) {
         if (allPlayerData.isEmpty()) return;
 
+        String pluginName = plugin.getName();
         String sql = "INSERT INTO " + pluginName + "_data (player_id, data_id, amount) " +
                 "VALUES (?, ?, ?) " +
                 "ON DUPLICATE KEY UPDATE amount = VALUES(amount)";
@@ -134,7 +137,7 @@ public class IntegerKeyUtils {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             for (Map.Entry<UUID, Map<Integer, Integer>> playerEntry : allPlayerData.entrySet()) {
-                int playerId = PlayerIDUtils.get(playerEntry.getKey());
+                int playerId = PlayerIDData.get(playerEntry.getKey());
                 for (Map.Entry<Integer, Integer> dataEntry : playerEntry.getValue().entrySet()) {
                     ps.setInt(1, playerId);
                     ps.setInt(2, dataEntry.getKey());
@@ -150,19 +153,19 @@ public class IntegerKeyUtils {
     }
 
     /**
-     * Initializes default data entries for a new player.
+     * Creates default stat rows (all zero) for a player if they don't already exist in the data table.
      * <p>
-     * Inserts zeroed values for every defined data ID from the data definition table,
-     * skipping existing combinations via {@code WHERE NOT EXISTS}.
-     * </p>
+     * This ensures the player has entries for every existing data_id in the plugin’s definition table.
      *
-     * @param uuid         the UUID of the player to initialize
-     * @param pluginName   the plugin prefix used for table names
+     * @param uuid       The player's UUID.
+     * @param pluginName The name of the plugin.
+     * @apiNote Only for internal library use.
      */
-    public static void createNewPlayerData(@NotNull UUID uuid, @NotNull String pluginName) {
+    @Internal
+    private static void createNewPlayerData(@NotNull UUID uuid, @NotNull String pluginName) {
         try (Connection conn = MySQLConnection.get(pluginName)) {
             conn.setAutoCommit(false);
-            int playerId = PlayerIDUtils.get(uuid);
+            int playerId = PlayerIDData.get(uuid);
 
             String insertQuery =
                     "INSERT INTO " + pluginName + "_data (player_id, data_id, amount) " +
@@ -186,24 +189,22 @@ public class IntegerKeyUtils {
     }
 
     /**
-     * Loads all integer-keyed data values for a specific player into memory.
+     * Loads all stat data for a player from the database.
      * <p>
-     * If no data is found, {@link #createNewPlayerData(UUID, String)} is called to initialize the player.
-     * Returns a thread-safe {@link ConcurrentHashMap} of dataID-to-amount.
-     * </p>
+     * If no data exists, a new row for each data_id will be initialized with 0.
      *
-     * @param uuid         the UUID of the player
-     * @param pluginName   the plugin prefix used for table names
-     * @return a concurrent map of data ID to amount for the player
+     * @param plugin The plugin requesting the data.
+     * @param uuid   The UUID of the player.
+     * @return A {@link ConcurrentHashMap} mapping data_id to amount for the player.
      */
-    public static ConcurrentHashMap<Integer, Integer> loadPlayerData(@NotNull UUID uuid,
-                                                                     @NotNull String pluginName) {
-
+    public static ConcurrentHashMap<Integer, Integer> loadPlayerData(@NotNull Plugin plugin,
+                                                                     @NotNull UUID uuid) {
         ConcurrentHashMap<Integer, Integer> playerDataMap = new ConcurrentHashMap<>();
+        String pluginName = plugin.getName();
 
         try (Connection conn = MySQLConnection.get(pluginName)) {
             // Retrieve playerID using the external vlib_players table
-            int playerId = PlayerIDUtils.get(uuid);
+            int playerId = PlayerIDData.get(uuid);
 
             // Check if player data exists
             String countQuery = "SELECT COUNT(*) FROM " + pluginName + "_data WHERE player_id = ?";

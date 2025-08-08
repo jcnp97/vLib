@@ -1,7 +1,8 @@
-package asia.virtualmc.vLib.storage.mysql.misc;
+package asia.virtualmc.vLib.storage.mysql.vlib_data;
 
 import asia.virtualmc.vLib.Main;
 import asia.virtualmc.vLib.storage.mysql.utilities.MySQLConnection;
+import asia.virtualmc.vLib.utilities.annotations.Internal;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,16 +13,16 @@ import java.sql.SQLException;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class PlayerIDUtils {
+public class PlayerIDData {
     private static final ConcurrentHashMap<UUID, Integer> playerIDMap = new ConcurrentHashMap<>();
 
     /**
-     * Creates the `vlib_players` table in the database if it does not already exist.
-     * <p>
-     * The table stores a unique integer `playerID` and the corresponding player's UUID.
-     * Ensures `uuid` is unique and auto-generates the `playerID`.
-     * </p>
+     * Creates the `vlib_players` table in the MySQL database if it does not already exist.
+     * The table stores player IDs linked to UUIDs.
+     *
+     * @apiNote This method is intended for internal library use only.
      */
+    @Internal
     public static void create() {
         String sql = "CREATE TABLE IF NOT EXISTS vlib_players (" +
                 "playerID INT NOT NULL AUTO_INCREMENT, " +
@@ -30,40 +31,40 @@ public class PlayerIDUtils {
                 "UNIQUE KEY (uuid)" +
                 ")";
 
-        try (Connection connection = MySQLConnection.get(Main.getPluginName());
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.executeUpdate();
-            ConsoleUtils.info("Table 'vlib_players' checked/created successfully.");
+        try {
+            Connection conn = MySQLConnection.get(Main.getPluginName());
+            if (conn != null) {
+                PreparedStatement statement = conn.prepareStatement(sql);
+                statement.executeUpdate();
+                ConsoleUtils.info("Table 'vlib_players' checked/created successfully.");
+            }
         } catch (SQLException e) {
-            ConsoleUtils.severe("Error creating table: " + e.getMessage());
+            ConsoleUtils.severe("Error creating vlib_players table: " + e.getMessage());
         }
     }
 
     /**
-     * Retrieves the internal player ID for the given UUID.
-     * <p>
-     * If the UUID is already cached, it is returned directly. Otherwise,
-     * inserts the UUID into the database if not present, retrieves the associated playerID,
-     * caches it, and returns it.
-     * </p>
+     * Retrieves the internal player ID for the given UUID from memory or the database.
+     * If the UUID is not yet in the database, it will be inserted automatically.
      *
-     * @param uuid the UUID of the player
-     * @return the internal player ID associated with the UUID
-     * @throws IllegalStateException if the playerID could not be retrieved or inserted
+     * @param uuid The UUID of the player.
+     * @return The associated internal player ID.
+     * @throws IllegalStateException if the player ID could not be retrieved or inserted.
      */
     @NotNull
     public static Integer get(UUID uuid) {
-        if (playerIDMap.containsKey(uuid)) {
-            return playerIDMap.get(uuid);
+        Integer id = playerIDMap.get(uuid);
+        if (id != null) {
+            return id;
         }
 
         String insertQuery = "INSERT INTO vlib_players (uuid) VALUES (?) " +
                 "ON DUPLICATE KEY UPDATE playerID = LAST_INSERT_ID(playerID)";
         String selectQuery = "SELECT playerID FROM vlib_players WHERE uuid = ?";
 
-        try (Connection connection = MySQLConnection.get(Main.getPluginName());
-             PreparedStatement insertStmt = connection.prepareStatement(insertQuery, PreparedStatement.RETURN_GENERATED_KEYS)) {
-
+        try (Connection conn = MySQLConnection.get(Main.getPluginName())) {
+            PreparedStatement insertStmt = conn.prepareStatement(
+                    insertQuery, PreparedStatement.RETURN_GENERATED_KEYS);
             insertStmt.setString(1, uuid.toString());
             insertStmt.executeUpdate();
 
@@ -75,7 +76,7 @@ public class PlayerIDUtils {
                 }
             }
 
-            try (PreparedStatement selectStmt = connection.prepareStatement(selectQuery)) {
+            try (PreparedStatement selectStmt = conn.prepareStatement(selectQuery)) {
                 selectStmt.setString(1, uuid.toString());
                 try (ResultSet rs = selectStmt.executeQuery()) {
                     if (rs.next()) {
@@ -85,7 +86,6 @@ public class PlayerIDUtils {
                     }
                 }
             }
-
         } catch (SQLException e) {
             ConsoleUtils.severe("Error fetching/inserting playerID: " + e.getMessage());
         }
@@ -94,26 +94,24 @@ public class PlayerIDUtils {
     }
 
     /**
-     * Updates the UUID associated with the given internal player ID.
-     * <p>
-     * This can be used to change the UUID stored for a player in case of migration or correction.
-     * </p>
+     * Replaces the UUID associated with the given internal player ID in the database.
      *
-     * @param playerID the internal player ID to update
-     * @param newUUID the new UUID to associate with the playerID
-     * @return true if the update was successful, false otherwise
+     * @param playerID The internal player ID.
+     * @param newUUID  The new UUID to associate.
+     * @return true if the update was successful, false otherwise.
      */
     public static boolean replace(int playerID, UUID newUUID) {
         String updateQuery = "UPDATE vlib_players SET uuid = ? WHERE playerID = ?";
-        try (Connection connection = MySQLConnection.get(Main.getPluginName());
-             PreparedStatement statement = connection.prepareStatement(updateQuery)) {
+        try (Connection conn = MySQLConnection.get(Main.getPluginName())) {
+            PreparedStatement statement = conn.prepareStatement(updateQuery);
             statement.setString(1, newUUID.toString());
             statement.setInt(2, playerID);
             int affectedRows = statement.executeUpdate();
             return affectedRows == 1;
         } catch (SQLException e) {
             ConsoleUtils.severe("Error updating uuid for playerID " + playerID + ": " + e.getMessage());
-            return false;
         }
+
+        return false;
     }
 }

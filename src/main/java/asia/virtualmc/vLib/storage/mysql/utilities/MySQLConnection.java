@@ -8,6 +8,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
@@ -22,13 +23,13 @@ public class MySQLConnection {
     private record DatabaseConfig(String host, int port, String dbName, String user, String password) {}
 
     /**
-     * Loads MySQL configuration from the plugin's {@code config.yml}.
-     * <p>
-     * Parses the {@code mysql} section and stores connection parameters in memory.
-     * </p>
+     * Loads the MySQL configuration from config.yml.
+     * Populates the internal {@code databaseConfig} record with parsed values.
      *
-     * @return true if configuration was successfully loaded; false otherwise
+     * @return true if the configuration was successfully loaded; false otherwise.
+     * @apiNote This method is intended for internal library use only.
      */
+    @Internal
     public static boolean load() {
         YamlDocument yaml = YAMLUtils.getYaml(Main.getInstance(), "config.yml");
         if (yaml == null) {
@@ -59,50 +60,14 @@ public class MySQLConnection {
     }
 
     /**
-     * Retrieves a {@link Connection} for the specified plugin.
-     * <p>
-     * If the connection pool does not exist yet for the plugin, a new {@link HikariDataSource}
-     * will be created and cached. Subsequent calls reuse the connection pool.
-     * </p>
+     * Creates a new HikariCP connection pool for the specified plugin.
+     * The connection uses the settings defined in the loaded MySQL configuration.
      *
-     * @param pluginName the plugin requesting the MySQL connection
-     * @return a valid SQL connection, or null if connection fails
-     * @throws SQLException if the connection cannot be established
+     * @param pluginName The plugin's name used as a key for the connection pool.
+     * @return A new {@link HikariDataSource} instance, or null if creation fails.
+     * @apiNote This method is intended for internal library use only.
      */
-    public static Connection get(@NotNull String pluginName) throws SQLException {
-        if (dataSourceMap.containsKey(pluginName)) {
-            return dataSourceMap.get(pluginName).getConnection();
-        }
-
-        try {
-            HikariDataSource source = create(pluginName);
-            if (source == null) {
-                throw new SQLException("Failed to initialize HikariDataSource for plugin: " + pluginName);
-            }
-
-            Connection conn = source.getConnection();
-            if (conn != null && !conn.isClosed()) {
-                ConsoleUtils.info("[" + pluginName + "]", "Successfully connected to the MySQL database.");
-            }
-            return conn;
-
-        } catch (SQLException e) {
-            ConsoleUtils.severe("Failed to retrieve connection: HikariDataSource is null or closed for " + pluginName);
-        }
-
-        return null;
-    }
-
-    /**
-     * Creates and caches a new {@link HikariDataSource} for the given plugin.
-     * <p>
-     * Reads from the previously loaded database configuration and applies
-     * standard HikariCP settings.
-     * </p>
-     *
-     * @param pluginName the plugin initializing the MySQL pool
-     * @return the created data source, or null if configuration is invalid
-     */
+    @Internal
     private static HikariDataSource create(@NotNull String pluginName) {
         if (databaseConfig == null) {
             ConsoleUtils.severe("MySQL config not loaded. Aborting MySQL connection setup for " + pluginName);
@@ -137,14 +102,50 @@ public class MySQLConnection {
     }
 
     /**
-     * Closes and removes the connection pool associated with a specific plugin.
-     * <p>
-     * Useful when a plugin is disabled or unloaded dynamically.
-     * </p>
+     * Retrieves a MySQL connection for the specified plugin name.
+     * If the pool is missing or closed, it attempts to recreate it.
      *
-     * @param pluginName the name of the plugin to disconnect
+     * @param pluginName The name of the plugin requesting the connection.
+     * @return A valid {@link Connection}, or null if connection fails.
+     * @apiNote This method is intended for internal library use only.
      */
-    public static void close(@NotNull String pluginName) {
+    @Internal
+    public static Connection get(String pluginName) {
+        HikariDataSource source = dataSourceMap.get(pluginName);
+
+        if (source == null || source.isClosed()) {
+            source = create(pluginName);
+            if (source == null || source.isClosed()) {
+                throw new IllegalStateException("Failed to create a MySQL connection pool for plugin: " + pluginName);
+            }
+        }
+
+        try {
+            return source.getConnection();
+        } catch (SQLException e) {
+            throw new IllegalStateException("Unable to obtain MySQL connection for plugin: " + pluginName, e);
+        }
+    }
+
+    /**
+     * Retrieves a MySQL connection for the given plugin.
+     * Delegates to {@link #get(String)} using the plugin's name.
+     *
+     * @param plugin The plugin requesting the connection.
+     * @return A valid {@link Connection}, or null if connection fails.
+     */
+    public static Connection get(@NotNull Plugin plugin) {
+        return get(plugin.getName());
+    }
+
+    /**
+     * Closes and removes the HikariCP connection pool associated with the given plugin name.
+     *
+     * @param pluginName The name of the plugin whose connection should be closed.
+     * @apiNote This method is intended for internal library use only.
+     */
+    @Internal
+    public static void close(String pluginName) {
         HikariDataSource source = dataSourceMap.remove(pluginName);
         if (source != null && !source.isClosed()) {
             source.close();
@@ -152,10 +153,19 @@ public class MySQLConnection {
     }
 
     /**
-     * Closes all existing plugin-specific MySQL connection pools.
-     * <p>
-     * Should only be used internally by the core library during shutdown.
-     * </p>
+     * Closes and removes the HikariCP connection pool associated with the given plugin.
+     * Delegates to {@link #close(String)}.
+     *
+     * @param plugin The plugin whose connection should be closed.
+     */
+    public static void close(@NotNull Plugin plugin) {
+        close(plugin.getName());
+    }
+
+    /**
+     * Closes all active MySQL connection pools and clears the internal connection map.
+     *
+     * @apiNote This method is intended for internal library use only.
      */
     @Internal
     public static void closeAll() {
