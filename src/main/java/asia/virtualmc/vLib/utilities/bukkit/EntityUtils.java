@@ -2,9 +2,12 @@ package asia.virtualmc.vLib.utilities.bukkit;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -38,6 +41,34 @@ public class EntityUtils {
         }
 
         return nearest;
+    }
+
+    /**
+     * Stores an integer value in the entity's PersistentDataContainer.
+     *
+     * @param entity the entity to attach data to
+     * @param key    the key under which to store the integer
+     * @param value  the integer value to store
+     */
+    public static void setInt(Entity entity, NamespacedKey key, int value) {
+        PersistentDataContainer pdc = entity.getPersistentDataContainer();
+        pdc.set(key, PersistentDataType.INTEGER, value);
+    }
+
+    /**
+     * Reads an integer value from the entity's PersistentDataContainer.
+     *
+     * @param entity the entity to read data from
+     * @param key    the key under which the integer was stored
+     * @return the stored integer, or 0 if none was found
+     */
+    public static int getInt(Entity entity, NamespacedKey key) {
+        PersistentDataContainer pdc = entity.getPersistentDataContainer();
+        if (pdc.has(key, PersistentDataType.INTEGER)) {
+            Integer stored = pdc.get(key, PersistentDataType.INTEGER);
+            return (stored != null) ? stored : 0;
+        }
+        return 0;
     }
 
     /**
