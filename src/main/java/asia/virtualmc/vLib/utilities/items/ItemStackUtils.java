@@ -32,7 +32,6 @@ public class ItemStackUtils {
                                    List<String> lore, int modelData) {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
-
         if (meta != null) {
             meta.displayName(AdventureUtils.toComponent(displayName));
             meta.lore(AdventureUtils.toComponent(lore));
@@ -42,6 +41,24 @@ public class ItemStackUtils {
         }
 
         return null;
+    }
+
+    /**
+     * Sets the custom model data value on the given {@link ItemStack}.
+     *
+     * @param item       the {@link ItemStack} to modify (must not be null)
+     * @param modelData  the custom model data value to apply
+     * @return a cloned {@link ItemStack} with the updated model data, or the original item if its meta is null
+     */
+    public static ItemStack setModelData(@NotNull ItemStack item, int modelData) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setCustomModelData(modelData);
+            item.setItemMeta(meta);
+            return item.clone();
+        }
+
+        return item;
     }
 
     /**

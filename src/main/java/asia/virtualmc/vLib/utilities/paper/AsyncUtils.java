@@ -1,5 +1,6 @@
 package asia.virtualmc.vLib.utilities.paper;
 
+import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
@@ -24,11 +25,10 @@ public class AsyncUtils {
     public static <T> void runAsyncThenSync(Plugin plugin, Supplier<T> asyncTask, Consumer<T> syncCallback) {
         plugin.getServer().getAsyncScheduler().runNow(plugin, task -> {
             T result;
-
             try {
                 result = asyncTask.get();
             } catch (Exception e) {
-                plugin.getLogger().severe("Async task failed: " + e.getMessage());
+                ConsoleUtils.severe("Async task failed: " + e.getMessage());
                 e.printStackTrace();
                 return;
             }
@@ -50,7 +50,7 @@ public class AsyncUtils {
             try {
                 asyncTask.run();
             } catch (Exception e) {
-                plugin.getLogger().severe("Async task failed: " + e.getMessage());
+                ConsoleUtils.severe("Async task failed: " + e.getMessage());
                 e.printStackTrace();
             }
         });

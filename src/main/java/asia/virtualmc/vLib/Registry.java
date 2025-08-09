@@ -1,5 +1,6 @@
 package asia.virtualmc.vLib;
 
+import asia.virtualmc.vLib.core.guis.GUIConfig;
 import asia.virtualmc.vLib.integration.IntegrationManager;
 import asia.virtualmc.vLib.storage.StorageManager;
 import asia.virtualmc.vLib.utilities.files.YAMLUtils;
@@ -33,6 +34,7 @@ public class Registry {
 
         // Reloadable
         MessageUtils.load(plugin);
+        GUIConfig.load();
     }
 
     public void disable() {

@@ -1,24 +1,24 @@
-invisible-item:
+invisible_item:
   material: PAPER
-  model-data: 10367
-guiTitles:
-  salvage-gui-title: "§f"
-  comp-gui-title: "§f"
-  trait-gui-title: "§f"
-  trait-up-gui-title: "§f"
-  rank-gui-title: "§f"
-  sell-gui-title: "§f"
-  confirm-gui-title: "§f"
-  collection-title: "§f"
-  collection-next-title: "§f"
-  collection-prev-title: "§f"
-  crafting-station-title: "§f"
-  talent-tree-title: "§f"
-  decoration-title: "§f"
-  # ARCHAEOLOGY EXCLUSIVES
-  artefact-interact-title: "§f"
-  artefact-restore-gui-title: "§f"
-  # FISHING EXCLUSIVES
-  deliveries-title: "§f"
-  deliveries-confirm: "§f"
-  deliveries-no-confirm: "§f"
+  model_data: 10367
+gui_titles:
+  decoration_gui_allow: ""
+  decoration_gui_deny: ""
+  ranks_gui_allow: ""
+  ranks_gui_deny: ""
+  collections_gui: ""
+  collections_gui_left: ""
+  collections_gui_right: ""
+  components_gui: ""
+  confirmation_gui: ""
+  crafting_gui_allow: ""
+  crafting_gui_deny: ""
+  deliveries_gui: ""
+  salvage_gui: ""
+  sell_gui: ""
+  talent_gui: ""
+  traits_gui: ""
+  traits_gui_upgrade: ""
+  # Others
+  components_gui_invention: ""
+  cooking_gui: ""
