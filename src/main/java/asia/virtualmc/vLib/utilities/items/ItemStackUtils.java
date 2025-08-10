@@ -1,6 +1,7 @@
 package asia.virtualmc.vLib.utilities.items;
 
 import asia.virtualmc.vLib.utilities.messages.AdventureUtils;
+import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -28,19 +29,21 @@ public class ItemStackUtils {
      * @param modelData    the custom model data to apply
      * @return a cloned {@link ItemStack} with the provided metadata, or {@code null} if the item meta could not be retrieved
      */
+    @NotNull
     public static ItemStack create(Material material, String displayName,
                                    List<String> lore, int modelData) {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.displayName(AdventureUtils.toComponent(displayName));
-            meta.lore(AdventureUtils.toComponent(lore));
             meta.setCustomModelData(modelData);
+            if (lore != null) meta.lore(AdventureUtils.toComponent(lore));
+
             item.setItemMeta(meta);
             return item.clone();
         }
 
-        return null;
+        return new ItemStack(material);
     }
 
     /**
@@ -128,5 +131,21 @@ public class ItemStackUtils {
 
             amount -= stackSize;
         }
+    }
+
+    /**
+     * Retrieves a {@link Material} from its name, ignoring case.
+     * If the name is invalid, logs an error and returns {@link Material#PAPER} as the default.
+     *
+     * @param materialName the name of the material to retrieve
+     * @return the matching {@link Material}, or {@link Material#PAPER} if invalid
+     */
+    public static Material getMaterial(String materialName) {
+        try {
+            return Material.valueOf(materialName.toUpperCase());
+        } catch (IllegalStateException e) {
+            ConsoleUtils.severe("Invalid material '" + materialName + "'. Returning default material..");
+        }
+        return Material.PAPER;
     }
 }

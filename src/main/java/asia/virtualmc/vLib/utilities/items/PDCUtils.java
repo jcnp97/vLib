@@ -7,6 +7,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Map;
 
 public class PDCUtils {
 
@@ -130,5 +134,73 @@ public class PDCUtils {
 
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
         pdc.set(key, PersistentDataType.STRING, value);
+    }
+
+    /**
+     * Adds a map of integer values to an item's PersistentDataContainer (PDC).
+     *
+     * @param plugin the plugin instance used to create the {@link NamespacedKey}
+     * @param meta the {@link ItemMeta} to store the data in
+     * @param map the map of string keys and integer values to store
+     */
+    public static void addIntMap(@NotNull Plugin plugin, @NotNull ItemMeta meta, Map<String, Integer> map) {
+        if (map.isEmpty()) return;
+
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        for (Map.Entry<String, Integer> entry : map.entrySet()) {
+            NamespacedKey key = new NamespacedKey(plugin, entry.getKey());
+            pdc.set(key, PersistentDataType.INTEGER, entry.getValue());
+        }
+    }
+
+    /**
+     * Adds a map of double values to an item's PersistentDataContainer (PDC).
+     *
+     * @param plugin the plugin instance used to create the {@link NamespacedKey}
+     * @param meta the {@link ItemMeta} to store the data in
+     * @param map the map of string keys and double values to store
+     */
+    public static void addDoubleMap(@NotNull Plugin plugin, @NotNull ItemMeta meta, Map<String, Double> map) {
+        if (map.isEmpty()) return;
+
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        for (Map.Entry<String, Double> entry : map.entrySet()) {
+            NamespacedKey key = new NamespacedKey(plugin, entry.getKey());
+            pdc.set(key, PersistentDataType.DOUBLE, entry.getValue());
+        }
+    }
+
+    /**
+     * Adds a map of string values to an item's PersistentDataContainer (PDC).
+     *
+     * @param plugin the plugin instance used to create the {@link NamespacedKey}
+     * @param meta the {@link ItemMeta} to store the data in
+     * @param map the map of string keys and string values to store
+     */
+    public static void addStringMap(@NotNull Plugin plugin, @NotNull ItemMeta meta, Map<String, String> map) {
+        if (map.isEmpty()) return;
+
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            NamespacedKey key = new NamespacedKey(plugin, entry.getKey());
+            pdc.set(key, PersistentDataType.STRING, entry.getValue());
+        }
+    }
+
+    /**
+     * Adds a map of string keys and integer array values to an item's PersistentDataContainer (PDC).
+     *
+     * @param plugin the plugin instance used to create the {@link NamespacedKey}
+     * @param meta   the {@link ItemMeta} to store the data in
+     * @param map    the map of string keys and integer array values to store
+     */
+    public static void addIntArrayMap(@NotNull Plugin plugin, @NotNull ItemMeta meta, Map<String, int[]> map) {
+        if (map.isEmpty()) return;
+
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        for (Map.Entry<String, int[]> entry : map.entrySet()) {
+            NamespacedKey key = new NamespacedKey(plugin, entry.getKey());
+            pdc.set(key, PersistentDataType.INTEGER_ARRAY, entry.getValue());
+        }
     }
 }

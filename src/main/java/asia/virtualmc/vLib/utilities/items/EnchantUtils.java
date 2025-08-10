@@ -1,69 +1,64 @@
 package asia.virtualmc.vLib.utilities.items;
 
-import asia.virtualmc.vLib.utilities.digit.IntegerUtils;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
-import asia.virtualmc.vLib.utilities.string.SplitUtils;
+import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.registry.RegistryKey;
+import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
 
 public class EnchantUtils {
+    private static final Registry<@NotNull Enchantment> registry = RegistryAccess
+            .registryAccess()
+            .getRegistry(RegistryKey.ENCHANTMENT);
 
     /**
-     * Represents a simplified enchantment with its name, Bukkit enchantment type, and level.
+     * Converts a string into an {@link Enchantment} from the Minecraft registry.
+     *
+     * @param string the enchantment name (without "minecraft:" prefix)
+     * @return the corresponding {@link Enchantment}, or {@code null} if not found
      */
-    public static class Enchant {
-        public String name;
-        public Enchantment enchantment;
-        public int level;
-
-        public Enchant(String name, Enchantment enchantment, int level) {
-            this.name = name;
-            this.enchantment = enchantment;
-            this.level = level;
-        }
+    @Nullable
+    public static Enchantment toEnchantment(@NotNull String string) {
+        return registry.get(RegistryKey.ENCHANTMENT.typedKey("minecraft" + string.toLowerCase()));
     }
 
     /**
-     * Converts a string in the format "ENCHANT_NAME:LEVEL" into an {@link Enchant} object.
-     * If the string is invalid or the enchantment name is not recognized, returns {@code null}.
+     * Adds a single enchantment to the given {@link ItemMeta}.
      *
-     * @param string the string representing the enchantment and level
-     * @return the parsed {@link Enchant}, or {@code null} if invalid
+     * @param meta        the item meta to apply the enchantment to
+     * @param enchantName the enchantment name (without "minecraft:" prefix)
+     * @param level       the enchantment level
      */
-    public static Enchant toEnchantment(String string) {
-        String[] parts = SplitUtils.split(string, ":");
-        if (parts.length != 2) {
-            return null;
-        }
-
-        Enchantment enchant = Enchantment.getByName(parts[0]);
-        int level = IntegerUtils.toInt(parts[1]);
-        if (enchant != null) {
-            return new Enchant(parts[0], enchant, level);
-        }
-
-        return null;
-    }
-
-    /**
-     * Adds the given {@link Enchant} to the provided {@link ItemMeta}, allowing unsafe levels.
-     * Logs a severe error if the enchantment is null or its level is non-positive.
-     *
-     * @param meta    the {@link ItemMeta} to apply the enchantment to
-     * @param enchant the enchantment to apply; if null or invalid, logs an error and does nothing
-     */
-    public static void add(ItemMeta meta, Enchant enchant) {
-        String itemName = meta.hasDisplayName() ? meta.getDisplayName() : "Unnamed Item";
-
-        if (enchant == null || enchant.enchantment == null || enchant.level <= 0) {
-            ConsoleUtils.severe("Invalid enchantment or level for item: " + itemName);
+    public static void add(@NotNull ItemMeta meta, String enchantName, int level) {
+        Enchantment enchant = toEnchantment(enchantName);
+        if (enchant == null) {
+            ConsoleUtils.severe("Unable to add enchantment into " + meta.getDisplayName() + " because " + enchantName + " is null!");
             return;
         }
 
-        try {
-            meta.addEnchant(enchant.enchantment, enchant.level, true);
-        } catch (Exception e) {
-            ConsoleUtils.severe("Failed to add enchantment to item: " + itemName + " | " + e.getMessage());
+        meta.addEnchant(enchant, level, true);
+    }
+
+    /**
+     * Adds multiple enchantments to the given {@link ItemMeta} using enchantment names as keys.
+     *
+     * @param meta     the item meta to apply the enchantments to
+     * @param enchants a map of enchantment names to their levels
+     */
+    public static void add(@NotNull ItemMeta meta, Map<String, Integer> enchants) {
+        for (Map.Entry<String, Integer> entry : enchants.entrySet()) {
+            Enchantment enchant = toEnchantment(entry.getKey());
+            if (enchant == null) {
+                ConsoleUtils.severe("Unable to add enchantment into " + meta.getDisplayName() + " because " + entry.getKey() + "is invalid!");
+                continue;
+            }
+
+            meta.addEnchant(enchant, entry.getValue(), true);
         }
     }
 }

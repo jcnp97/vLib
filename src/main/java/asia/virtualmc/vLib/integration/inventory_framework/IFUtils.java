@@ -2,14 +2,19 @@ package asia.virtualmc.vLib.integration.inventory_framework;
 
 import asia.virtualmc.vLib.core.guis.GUIConfig;
 import asia.virtualmc.vLib.core.guis.GUIUtils;
+import asia.virtualmc.vLib.utilities.items.ItemStackUtils;
+import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
+import com.github.stefvanschie.inventoryframework.gui.type.AnvilGui;
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.PaginatedPane;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 import com.github.stefvanschie.inventoryframework.pane.component.PagingButtons;
 import com.github.stefvanschie.inventoryframework.pane.util.Slot;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,5 +90,34 @@ public class IFUtils {
         gui.setOnGlobalClick(event -> event.setCancelled(true));
 
         return gui;
+    }
+
+    public static void inputGui(@NotNull Player player, String title, Consumer<String> onConfirm) {
+        AnvilGui gui = new AnvilGui(title);
+
+        ItemStack confirmItem = ItemStackUtils.create(Material.LIME_CONCRETE, "✔ Confirm", null, 1);
+        GuiItem confirmButton = new GuiItem(confirmItem, event -> {
+            event.setCancelled(true);
+            String input = gui.getRenameText();
+            try {
+                onConfirm.accept(input);
+            } catch (Throwable t) {
+                ConsoleUtils.severe("Exception in anvil input callback (title='" + title + "', player=" + player.getName() + "): " + t);
+            } finally {
+                event.getWhoClicked().closeInventory();
+            }
+        });
+
+        gui.getResultComponent().setItem(confirmButton, 0, 0);
+
+        gui.setOnGlobalClick(e -> e.setCancelled(true));
+        gui.setOnBottomClick(e -> e.setCancelled(true));
+        gui.setOnTopClick(e -> e.setCancelled(true));
+        gui.setOnClose(e -> {
+            onConfirm.accept("");
+        });
+
+        gui.setCost((short) 0);
+        gui.show(player);
     }
 }
