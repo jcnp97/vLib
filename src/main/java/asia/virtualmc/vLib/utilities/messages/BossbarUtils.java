@@ -49,7 +49,7 @@ public class BossbarUtils {
 
     /**
      * Updates the name and progress of an existing {@link net.kyori.adventure.bossbar.BossBar}.
-     * The message is re-toComponented and progress clamped between 0.0 and 1.0.
+     * The message is re-Componented and progress clamped between 0.0 and 1.0.
      *
      * @param bossBar  The BossBar to modify.
      * @param message  The new message to display.

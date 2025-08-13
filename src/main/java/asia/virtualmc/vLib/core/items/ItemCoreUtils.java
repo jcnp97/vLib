@@ -1,6 +1,7 @@
-package asia.virtualmc.vLib.core.utilities;
+package asia.virtualmc.vLib.core.items;
 
 import asia.virtualmc.vLib.utilities.items.ItemStackUtils;
+import asia.virtualmc.vLib.utilities.items.MaterialUtils;
 import asia.virtualmc.vLib.utilities.java.ArrayUtils;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
@@ -43,7 +44,7 @@ public class ItemCoreUtils {
     public static CustomItem get(@NotNull Section section) {
         try {
             String name = section.getString("name");
-            Material material = ItemStackUtils.getMaterial(section.getString("material"));
+            Material material = MaterialUtils.getMaterial(section.getString("material"));
             int modelData = section.getInt("custom-model-data");
             List<String> lore = section.getStringList("lore");
             return new CustomItem(name, material, modelData, lore);

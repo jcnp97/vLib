@@ -3,7 +3,7 @@ package asia.virtualmc.vLib.core.utilities;
 import asia.virtualmc.vLib.utilities.files.json.JSONFileUtils;
 import asia.virtualmc.vLib.utilities.files.json.JSONStringListUtils;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
-import asia.virtualmc.vLib.utilities.string.StringListUtils;
+import asia.virtualmc.vLib.utilities.text.StringListUtils;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;

@@ -1,6 +1,6 @@
-package asia.virtualmc.vLib.core.items;
+package asia.virtualmc.vLib.core.items.custom_items;
 
-import asia.virtualmc.vLib.core.utilities.ItemCoreUtils;
+import asia.virtualmc.vLib.core.items.ItemCoreUtils;
 import asia.virtualmc.vLib.utilities.items.EnchantUtils;
 import asia.virtualmc.vLib.utilities.items.ItemStackUtils;
 import asia.virtualmc.vLib.utilities.items.PDCUtils;

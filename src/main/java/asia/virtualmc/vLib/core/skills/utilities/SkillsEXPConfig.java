@@ -1,4 +1,4 @@
-package asia.virtualmc.vLib.core.skills;
+package asia.virtualmc.vLib.core.skills.utilities;
 
 import asia.virtualmc.vLib.Main;
 import asia.virtualmc.vLib.utilities.digit.IntegerUtils;
@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class EXPConfig {
+public class SkillsEXPConfig {
 
     /**
      * Loads the experience table from {@code experience-table.yml} in the given plugin's data folder.

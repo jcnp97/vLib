@@ -132,20 +132,4 @@ public class ItemStackUtils {
             amount -= stackSize;
         }
     }
-
-    /**
-     * Retrieves a {@link Material} from its name, ignoring case.
-     * If the name is invalid, logs an error and returns {@link Material#PAPER} as the default.
-     *
-     * @param materialName the name of the material to retrieve
-     * @return the matching {@link Material}, or {@link Material#PAPER} if invalid
-     */
-    public static Material getMaterial(String materialName) {
-        try {
-            return Material.valueOf(materialName.toUpperCase());
-        } catch (IllegalStateException e) {
-            ConsoleUtils.severe("Invalid material '" + materialName + "'. Returning default material..");
-        }
-        return Material.PAPER;
-    }
 }

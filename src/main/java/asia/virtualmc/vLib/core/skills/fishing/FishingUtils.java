@@ -1,4 +1,4 @@
-package asia.virtualmc.vLib.core.utilities.skills.fishing;
+package asia.virtualmc.vLib.core.skills.fishing;
 
 import org.bukkit.Material;
 import org.bukkit.entity.FishHook;

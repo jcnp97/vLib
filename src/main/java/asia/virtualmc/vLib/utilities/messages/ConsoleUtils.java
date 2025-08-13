@@ -5,6 +5,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 public class ConsoleUtils {
 
@@ -86,7 +88,20 @@ public class ConsoleUtils {
     public static <K, V> void debugMap(Map<K, V> map) {
         if (!map.isEmpty()) {
             for (Map.Entry<K, V> entry : map.entrySet()) {
-                info("key=" + entry.getKey() + ", value=" + entry.getValue());
+                info("Map debugging: key=" + entry.getKey() + ", value=" + entry.getValue());
+            }
+        }
+    }
+
+    /**
+     * Logs each element in the given set for debugging purposes.
+     *
+     * @param set the set of objects to log
+     */
+    public static void debugSet(Set<Object> set) {
+        if (!set.isEmpty()) {
+            for (Object object : set) {
+                info("Set debugging: " + object);
             }
         }
     }

@@ -7,9 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class InventoryUtils {
@@ -166,5 +164,53 @@ public class InventoryUtils {
         }
 
         return snapshot;
+    }
+
+    /**
+     * Retrieves a map of inventory slots and corresponding {@link ItemStack}s from the player's main inventory
+     * where the item's PersistentDataContainer (PDC) string value for the given key matches the specified value.
+     *
+     * @param player the {@link Player} whose inventory will be checked
+     * @param key    the {@link NamespacedKey} used to identify the PDC entry
+     * @param value  the string value to match against
+     * @return a map of slot indices to matching {@link ItemStack}s
+     */
+    public static Map<Integer, ItemStack> get(@NotNull Player player,
+                                              @NotNull NamespacedKey key,
+                                              @NotNull String value) {
+        Map<Integer, ItemStack> inventory = new HashMap<>();
+        for (int i = 0; i < 36; i++) {
+            ItemStack item = player.getInventory().getItem(i);
+            if (item == null || !item.hasItemMeta()) continue;
+
+            if (PDCUtils.getString(item, key).equals(value)) {
+                inventory.put(i, item);
+            }
+        }
+
+        return inventory;
+    }
+
+    /**
+     * Retrieves a map of inventory slots and corresponding {@link ItemStack}s from the player's main inventory
+     * where the item contains a PersistentDataContainer (PDC) entry for the specified key.
+     *
+     * @param player the {@link Player} whose inventory will be checked
+     * @param key    the {@link NamespacedKey} used to identify the PDC entry
+     * @return a map of slot indices to {@link ItemStack}s containing the given key
+     */
+    public static Map<Integer, ItemStack> get(@NotNull Player player,
+                                              @NotNull NamespacedKey key) {
+        Map<Integer, ItemStack> inventory = new HashMap<>();
+        for (int i = 0; i < 36; i++) {
+            ItemStack item = player.getInventory().getItem(i);
+            if (item == null || !item.hasItemMeta()) continue;
+
+            if (PDCUtils.has(item, key)) {
+                inventory.put(i, item);
+            }
+        }
+
+        return inventory;
     }
 }

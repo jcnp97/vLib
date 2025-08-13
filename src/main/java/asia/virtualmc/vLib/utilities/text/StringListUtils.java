@@ -1,4 +1,4 @@
-package asia.virtualmc.vLib.utilities.string;
+package asia.virtualmc.vLib.utilities.text;
 
 import java.util.List;
 import java.util.Map;
@@ -40,6 +40,4 @@ public class StringListUtils {
                 .map(str -> str.replace(oldString, newString))
                 .collect(Collectors.toList());
     }
-
-
 }

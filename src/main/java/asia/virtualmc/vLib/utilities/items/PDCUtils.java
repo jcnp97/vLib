@@ -22,12 +22,7 @@ public class PDCUtils {
      */
     public static PersistentDataContainer get(ItemStack item) {
         ItemMeta meta = item.getItemMeta();
-
-        if (meta != null) {
-            return meta.getPersistentDataContainer();
-        }
-
-        return null;
+        return meta != null ? meta.getPersistentDataContainer() : null;
     }
 
     /**
@@ -37,10 +32,9 @@ public class PDCUtils {
      * @param key  the key to check for
      * @return true if the key exists, false otherwise
      */
-    public static boolean has(ItemStack item, NamespacedKey key) {
-        if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) return false;
-        PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
-        return pdc.has(key);
+    public static boolean has(@NotNull ItemStack item, NamespacedKey key) {
+        if (item.getType() == Material.AIR || !item.hasItemMeta()) return false;
+        return item.getItemMeta().getPersistentDataContainer().has(key);
     }
 
     /**
@@ -51,8 +45,8 @@ public class PDCUtils {
      * @param key  the key associated with the value
      * @return the integer value or 0 if not present
      */
-    public static int getInt(ItemStack item, NamespacedKey key) {
-        if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) return 0;
+    public static int getInt(@NotNull ItemStack item, NamespacedKey key) {
+        if (item.getType() == Material.AIR || !item.hasItemMeta()) return 0;
         PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
         return pdc.getOrDefault(key, PersistentDataType.INTEGER, 0);
     }
@@ -65,8 +59,8 @@ public class PDCUtils {
      * @param key  the key associated with the value
      * @return the double value or 0.0 if not present
      */
-    public static double getDouble(ItemStack item, NamespacedKey key) {
-        if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) return 0.0;
+    public static double getDouble(@NotNull ItemStack item, NamespacedKey key) {
+        if (item.getType() == Material.AIR || !item.hasItemMeta()) return 0.0;
         PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
         return pdc.getOrDefault(key, PersistentDataType.DOUBLE, 0.0);
     }
@@ -79,8 +73,8 @@ public class PDCUtils {
      * @param key  the key associated with the value
      * @return the string value or empty string if not present
      */
-    public static String getString(ItemStack item, NamespacedKey key) {
-        if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) return "";
+    public static String getString(@NotNull ItemStack item, NamespacedKey key) {
+        if (item.getType() == Material.AIR || !item.hasItemMeta()) return "";
         PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
         return pdc.getOrDefault(key, PersistentDataType.STRING, "");
     }

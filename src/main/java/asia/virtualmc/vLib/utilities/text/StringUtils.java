@@ -1,4 +1,4 @@
-package asia.virtualmc.vLib.utilities.string;
+package asia.virtualmc.vLib.utilities.text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,5 +87,42 @@ public class StringUtils {
         }
 
         return formattedLore;
+    }
+
+    /**
+     * Replaces all occurrences of a specific substring within the given string.
+     * Returns a new string with the replacements applied.
+     *
+     * @param string    the original string to process
+     * @param oldString the substring to be replaced
+     * @param newString the string to replace with
+     * @return a new String where every occurrence of oldString has been replaced by newString
+     */
+    public static String replace(String string, String oldString, String newString) {
+        if (string == null) return null;
+        return string.replace(oldString, newString);
+    }
+
+    /**
+     * Replaces multiple substrings within the given string.
+     * <p>
+     * Each element in {@code oldStrings} is replaced by the corresponding element
+     * in {@code newStrings}, based on their index. If the two arrays are not the
+     * same length, the original string is returned without modification.
+     *
+     * @param string      the original string to modify
+     * @param oldStrings  an array of substrings to be replaced
+     * @param newStrings  an array of replacement strings, each corresponding to an element in {@code oldStrings}
+     * @return the modified string with replacements applied, or the original string if the array lengths differ
+     */
+    public static String replace(String string, String[] oldStrings, String[] newStrings) {
+        if (oldStrings.length != newStrings.length) return string;
+
+        String modified = string;
+        for (int i = 0; i < oldStrings.length; i++) {
+            modified = modified.replace(oldStrings[i], newStrings[i]);
+        }
+
+        return modified;
     }
 }

@@ -1,4 +1,4 @@
-package asia.virtualmc.vLib.utilities.string;
+package asia.virtualmc.vLib.utilities.text;
 
 import java.util.regex.Pattern;
 

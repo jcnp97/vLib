@@ -4,7 +4,7 @@ import asia.virtualmc.vLib.storage.mysql.utilities.MySQLConnection;
 import asia.virtualmc.vLib.storage.mysql.utilities.MySQLUtils;
 import asia.virtualmc.vLib.storage.mysql.vlib_data.PlayerIDData;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
-import asia.virtualmc.vLib.utilities.string.StringSetUtils;
+import asia.virtualmc.vLib.utilities.text.StringSetUtils;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 

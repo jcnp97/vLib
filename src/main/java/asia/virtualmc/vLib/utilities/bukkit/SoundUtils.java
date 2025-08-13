@@ -84,4 +84,43 @@ public class SoundUtils {
             player.stopSound(soundCache.get(name).asStop());
         }
     }
+
+    /**
+     * Gets a Sound object from the given name, volume, and pitch.
+     * Returns null if the name is invalid or cannot be parsed into a valid sound key.
+     *
+     * @param name   the namespaced sound identifier (e.g., "minecraft:block.note_block.pling")
+     * @param volume the volume of the sound
+     * @param pitch  the pitch of the sound
+     * @return the built Sound object, or null if invalid
+     */
+    public static Sound get(String name, float volume, float pitch) {
+        if (name == null || name.isEmpty()) return null;
+
+        try {
+            String[] parts = name.split(":", 2);
+            String namespace = parts.length > 1 ? parts[0] : "minecraft";
+            String key = parts.length > 1 ? parts[1] : parts[0];
+
+            return Sound.sound()
+                    .type(Key.key(namespace, key))
+                    .source(Sound.Source.PLAYER)
+                    .volume(volume)
+                    .pitch(pitch)
+                    .build();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Plays the given Sound object to the specified player.
+     *
+     * @param player the player to play the sound to
+     * @param sound  the Sound object to play
+     */
+    public static void play(Player player, Sound sound) {
+        if (player == null || !player.isOnline() || sound == null) return;
+        player.playSound(sound);
+    }
 }
