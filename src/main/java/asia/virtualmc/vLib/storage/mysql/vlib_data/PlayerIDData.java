@@ -2,7 +2,6 @@ package asia.virtualmc.vLib.storage.mysql.vlib_data;
 
 import asia.virtualmc.vLib.Main;
 import asia.virtualmc.vLib.storage.mysql.utilities.MySQLConnection;
-import asia.virtualmc.vLib.utilities.annotations.Internal;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,23 +15,23 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PlayerIDData {
     private static final ConcurrentHashMap<UUID, Integer> playerIDMap = new ConcurrentHashMap<>();
 
+    public PlayerIDData() {
+        create();
+    }
+
     /**
      * Creates the `vlib_players` table in the MySQL database if it does not already exist.
      * The table stores player IDs linked to UUIDs.
-     *
-     * @apiNote This method is intended for internal library use only.
      */
-    @Internal
-    public static void create() {
+    public void create() {
         String sql = "CREATE TABLE IF NOT EXISTS vlib_players (" +
                 "playerID INT NOT NULL AUTO_INCREMENT, " +
                 "uuid CHAR(36) NOT NULL, " +
                 "PRIMARY KEY (playerID), " +
                 "UNIQUE KEY (uuid)" +
                 ")";
-
         try {
-            Connection conn = MySQLConnection.get(Main.getPluginName());
+            Connection conn = MySQLConnection.get(Main.getInstance());
             if (conn != null) {
                 PreparedStatement statement = conn.prepareStatement(sql);
                 statement.executeUpdate();
@@ -62,7 +61,7 @@ public class PlayerIDData {
                 "ON DUPLICATE KEY UPDATE playerID = LAST_INSERT_ID(playerID)";
         String selectQuery = "SELECT playerID FROM vlib_players WHERE uuid = ?";
 
-        try (Connection conn = MySQLConnection.get(Main.getPluginName())) {
+        try (Connection conn = MySQLConnection.get(Main.getInstance())) {
             PreparedStatement insertStmt = conn.prepareStatement(
                     insertQuery, PreparedStatement.RETURN_GENERATED_KEYS);
             insertStmt.setString(1, uuid.toString());
@@ -102,7 +101,7 @@ public class PlayerIDData {
      */
     public static boolean replace(int playerID, UUID newUUID) {
         String updateQuery = "UPDATE vlib_players SET uuid = ? WHERE playerID = ?";
-        try (Connection conn = MySQLConnection.get(Main.getPluginName())) {
+        try (Connection conn = MySQLConnection.get(Main.getInstance())) {
             PreparedStatement statement = conn.prepareStatement(updateQuery);
             statement.setString(1, newUUID.toString());
             statement.setInt(2, playerID);

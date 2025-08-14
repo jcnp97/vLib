@@ -18,19 +18,20 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MySQLConnection {
     private static final Map<String, HikariDataSource> dataSourceMap = new ConcurrentHashMap<>();
-
     private static DatabaseConfig databaseConfig;
     private record DatabaseConfig(String host, int port, String dbName, String user, String password) {}
+
+    public MySQLConnection() {
+        load();
+    }
 
     /**
      * Loads the MySQL configuration from config.yml.
      * Populates the internal {@code databaseConfig} record with parsed values.
      *
      * @return true if the configuration was successfully loaded; false otherwise.
-     * @apiNote This method is intended for internal library use only.
      */
-    @Internal
-    public static boolean load() {
+    public boolean load() {
         YamlDocument yaml = YAMLUtils.getYaml(Main.getInstance(), "config.yml");
         if (yaml == null) {
             ConsoleUtils.severe("Unable to find or read config.yml, it might be missing!");
@@ -73,7 +74,6 @@ public class MySQLConnection {
             ConsoleUtils.severe("MySQL config not loaded. Aborting MySQL connection setup for " + pluginName);
             return null;
         }
-
         try {
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl("jdbc:mysql://" + databaseConfig.host + ":" + databaseConfig.port +
@@ -110,7 +110,7 @@ public class MySQLConnection {
      * @apiNote This method is intended for internal library use only.
      */
     @Internal
-    public static Connection get(String pluginName) {
+    private static Connection get(String pluginName) {
         HikariDataSource source = dataSourceMap.get(pluginName);
 
         if (source == null || source.isClosed()) {
@@ -119,7 +119,6 @@ public class MySQLConnection {
                 throw new IllegalStateException("Failed to create a MySQL connection pool for plugin: " + pluginName);
             }
         }
-
         try {
             return source.getConnection();
         } catch (SQLException e) {
@@ -145,7 +144,7 @@ public class MySQLConnection {
      * @apiNote This method is intended for internal library use only.
      */
     @Internal
-    public static void close(String pluginName) {
+    private static void close(String pluginName) {
         HikariDataSource source = dataSourceMap.remove(pluginName);
         if (source != null && !source.isClosed()) {
             source.close();
@@ -164,11 +163,8 @@ public class MySQLConnection {
 
     /**
      * Closes all active MySQL connection pools and clears the internal connection map.
-     *
-     * @apiNote This method is intended for internal library use only.
      */
-    @Internal
-    public static void closeAll() {
+    public void closeAll() {
         for (Map.Entry<String, HikariDataSource> entry : dataSourceMap.entrySet()) {
             HikariDataSource source = entry.getValue();
             if (source != null && !source.isClosed()) {

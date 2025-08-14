@@ -30,7 +30,7 @@ public class StringKeyDatabase {
         String pluginName = plugin.getName();
         String fullTableName = MySQLUtils.toSafeIdentifer(pluginName + "_" + tableName);
 
-        try (Connection conn = MySQLConnection.get(pluginName)) {
+        try (Connection conn = MySQLConnection.get(plugin)) {
             conn.createStatement().execute(
                     "CREATE TABLE IF NOT EXISTS "  + fullTableName + " (" +
                             "player_id INT NOT NULL," +
@@ -70,7 +70,7 @@ public class StringKeyDatabase {
 
         String sql = "INSERT INTO " + fullTableName + " (player_id, data_name, amount) VALUES (?, ?, ?) " +
                 "ON DUPLICATE KEY UPDATE amount = VALUES(amount)";
-        try (Connection conn = MySQLConnection.get(pluginName)) {
+        try (Connection conn = MySQLConnection.get(plugin)) {
             boolean old = conn.getAutoCommit();
             conn.setAutoCommit(false);
             int playerId = PlayerIDData.get(uuid);
@@ -115,7 +115,7 @@ public class StringKeyDatabase {
                 "VALUES (?, ?, ?) " +
                 "ON DUPLICATE KEY UPDATE amount = VALUES(amount)";
 
-        try (Connection conn = MySQLConnection.get(pluginName)) {
+        try (Connection conn = MySQLConnection.get(plugin)) {
             boolean old = conn.getAutoCommit();
             conn.setAutoCommit(false);
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -163,7 +163,7 @@ public class StringKeyDatabase {
         Set<String> sortedData = StringSetUtils.sortedSet(dataNames);
 
         String sql = "SELECT data_name, amount FROM " + fullTableName + " WHERE player_id = ?";
-        try (Connection conn = MySQLConnection.get(pluginName);
+        try (Connection conn = MySQLConnection.get(plugin);
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             int playerId = PlayerIDData.get(uuid);

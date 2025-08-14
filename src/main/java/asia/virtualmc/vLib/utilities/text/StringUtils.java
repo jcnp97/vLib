@@ -125,4 +125,27 @@ public class StringUtils {
 
         return modified;
     }
+
+    /**
+     * Removes the character at the specified index from the given string.
+     * <p>If the string is null or empty, it returns the original string.
+     * If the index is out of bounds, it will be adjusted to the nearest valid index.</p>
+     *
+     * @param string the original string from which a character will be removed
+     * @param index the position of the character to remove (adjusted if invalid)
+     * @return the modified string with the specified character removed
+     */
+    public static String deleteCharAt(String string, int index) {
+        if (string == null || string.isEmpty()) {
+            return string; // Nothing to delete
+        }
+
+        if (index < 0) {
+            index = 0;
+        } else if (index >= string.length()) {
+            index = string.length() - 1;
+        }
+
+        return string.substring(0, index) + string.substring(index + 1);
+    }
 }

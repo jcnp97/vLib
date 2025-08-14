@@ -1,4 +1,4 @@
-package asia.virtualmc.vLib.core.skills.utilities;
+package asia.virtualmc.vLib.core.configs;
 
 import asia.virtualmc.vLib.Main;
 import asia.virtualmc.vLib.utilities.digit.IntegerUtils;

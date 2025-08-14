@@ -24,7 +24,6 @@ public class YAMLUtils {
      */
     public static YamlDocument getYaml(@NotNull Plugin plugin, @NotNull String fileName) {
         File file = new File(plugin.getDataFolder(), fileName);
-
         try {
             InputStream defaultFile = plugin.getResource(fileName);
             YamlDocument config;
@@ -36,13 +35,30 @@ public class YAMLUtils {
             }
 
             return config;
-
         } catch (IOException e) {
-            plugin.getLogger().severe("An error occurred when trying to read " + fileName);
+            ConsoleUtils.severe("An error occurred when trying to read " + fileName);
             e.getCause();
         }
 
         return null;
+    }
+
+    /**
+     * Retrieves a section from the specified YAML document at the given route.
+     * Logs an error if the section is not found.
+     *
+     * @param yaml  the {@link YamlDocument} to retrieve the section from
+     * @param route the path to the section in the YAML file
+     * @return the {@link Section} if found, otherwise {@code null}
+     */
+    public static Section getSection(@NotNull YamlDocument yaml, @NotNull String route) {
+        Section section = yaml.getSection(route);
+        if (section == null) {
+            ConsoleUtils.severe(route + " section not found from Yaml File " + yaml.getNameAsString());
+            return null;
+        }
+
+        return section;
     }
 
     /**

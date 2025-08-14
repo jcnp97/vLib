@@ -145,6 +145,25 @@ public class SkillsDataUtils {
         }
     }
 
+    /**
+     * Updates the player's trait level based on the update type and value.
+     *
+     * @param type         The type of update (ADD, SUBTRACT, SET).
+     * @param traitLevel  The current trait level.
+     * @param value        The amount to add, subtract, or set.
+     * @return The updated wisdom level, never below 0.
+     */
+    public static int getTraitLevel(@NotNull EnumsLib.UpdateType type, int traitLevel, int value) {
+        if (value <= 0) return traitLevel;
+
+        switch (type) {
+            case ADD -> { return traitLevel + value; }
+            case SUBTRACT -> { return Math.max(0, traitLevel - value); }
+            case SET -> { return value; }
+            default -> { return traitLevel; }
+        }
+    }
+
     public static int getMinLevel() { return MIN_LEVEL; }
     public static int getMaxLevel() { return MAX_LEVEL; }
     public static int getMaxExp() { return MAX_EXP; }

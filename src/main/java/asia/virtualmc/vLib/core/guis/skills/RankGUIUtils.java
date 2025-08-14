@@ -13,7 +13,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class RankGUIUtils {
 
-    public static class PlayerData {
+    public static class RankData {
         public int numericalRank;
         public String currentRank;
         public String nextRank;
@@ -21,7 +21,7 @@ public class RankGUIUtils {
         public double current;
         public double next;
 
-        public PlayerData(int numericalRank, String currentRank, String nextRank,
+        public RankData(int numericalRank, String currentRank, String nextRank,
                           double previous, double current, double next) {
             this.numericalRank = numericalRank;
             this.currentRank = currentRank;
@@ -32,7 +32,7 @@ public class RankGUIUtils {
         }
     }
 
-    public static ChestGui get(Player player, PlayerData data, ItemStack progressLore) {
+    public static ChestGui get(Player player, RankData data, ItemStack progressLore) {
         ChestGui gui = new ChestGui(3, GUIConfig.get("rank-gui-title"));
         gui.setOnGlobalClick(event -> event.setCancelled(true));
         StaticPane staticPane = RankGUIUtils.getProgressBar(data.current, data.next,
@@ -62,7 +62,7 @@ public class RankGUIUtils {
         return gui;
     }
 
-    public static void process(Player player, PlayerData data) {
+    public static void process(Player player, RankData data) {
         MessageUtils.sendMessage(player, "Rank-up success!");
         player.closeInventory();
     }

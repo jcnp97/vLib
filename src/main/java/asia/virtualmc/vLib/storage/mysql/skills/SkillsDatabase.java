@@ -58,12 +58,13 @@ public class SkillsDatabase {
      *
      * @param uuid       The player's UUID.
      * @param name       The player's name.
-     * @param pluginName The plugin name used to identify the target table.
+     * @param plugin     The plugin used to identify the target table.
      * @apiNote Only for internal use by the library.
      */
     @Internal
-    private static void createNewPlayerData(@NotNull UUID uuid, String name, String pluginName) {
+    private static void createNewPlayerData(@NotNull UUID uuid, String name, Plugin plugin) {
         Integer playerID = PlayerIDData.get(uuid);
+        String pluginName = plugin.getName();
 
         String insertQuery =
                 "INSERT INTO " + pluginName + "_playerData" +
@@ -71,7 +72,7 @@ public class SkillsDatabase {
                         "playerLevel, playerLuck, traitPoints, talentPoints, wisdomTrait, " +
                         "charismaTrait, karmaTrait, dexterityTrait) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = MySQLConnection.get(pluginName)) {
+        try (Connection conn = MySQLConnection.get(plugin)) {
             conn.setAutoCommit(false);
             try (PreparedStatement ps = conn.prepareStatement(insertQuery)) {
                 ps.setInt(1, playerID);
@@ -122,7 +123,7 @@ public class SkillsDatabase {
                 "dexterityTrait INT DEFAULT 0, " +
                 "lastUpdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                 ")";
-        try (Connection conn = MySQLConnection.get(pluginName);
+        try (Connection conn = MySQLConnection.get(plugin);
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.execute();
         } catch (SQLException e) {
@@ -161,7 +162,7 @@ public class SkillsDatabase {
                 "lastUpdated = CURRENT_TIMESTAMP " +
                 "WHERE playerID = ?";
 
-        try (Connection conn = MySQLConnection.get(pluginName);
+        try (Connection conn = MySQLConnection.get(plugin);
              PreparedStatement ps = conn.prepareStatement(updateQuery)) {
 
             ps.setString(1, name);
@@ -181,7 +182,7 @@ public class SkillsDatabase {
             int rowsAffected = ps.executeUpdate();
             if (rowsAffected == 0) {
                 // If no rows were updated, the player's data row doesn't exist yet.
-                createNewPlayerData(uuid, name, pluginName);
+                createNewPlayerData(uuid, name, plugin);
             }
 
         } catch (SQLException e) {
@@ -211,7 +212,7 @@ public class SkillsDatabase {
                 "lastUpdated = CURRENT_TIMESTAMP " +
                 "WHERE playerID = ?";
 
-        try (Connection conn = MySQLConnection.get(pluginName);
+        try (Connection conn = MySQLConnection.get(plugin);
              PreparedStatement ps = conn.prepareStatement(updateQuery)) {
 
             conn.setAutoCommit(false);
@@ -269,7 +270,7 @@ public class SkillsDatabase {
         String pluginName = plugin.getName();
 
         String selectQuery = "SELECT * FROM " + pluginName + "_playerData WHERE playerID = ?";
-        try (Connection conn = MySQLConnection.get(pluginName);
+        try (Connection conn = MySQLConnection.get(plugin);
              PreparedStatement ps = conn.prepareStatement(selectQuery)) {
             ps.setInt(1, playerID);
 
@@ -293,7 +294,7 @@ public class SkillsDatabase {
             }
 
             // If no record is found, create one and try again.
-            createNewPlayerData(uuid, "Unknown", pluginName);
+            createNewPlayerData(uuid, "Unknown", plugin);
 
             // Try loading again.
             try (ResultSet rs = ps.executeQuery()) {

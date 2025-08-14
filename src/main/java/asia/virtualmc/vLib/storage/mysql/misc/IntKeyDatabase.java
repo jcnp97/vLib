@@ -34,7 +34,7 @@ public class IntKeyDatabase {
         String defTable = MySQLUtils.toSafeIdentifer(pluginName + "_" + tableName);
         String dataTable = MySQLUtils.toSafeIdentifer(pluginName + "_" + tableName + "_data");
 
-        try (Connection conn = MySQLConnection.get(pluginName)) {
+        try (Connection conn = MySQLConnection.get(plugin)) {
 
             // Create data definition table
             conn.createStatement().execute(
@@ -97,7 +97,7 @@ public class IntKeyDatabase {
 
         String sql = "INSERT INTO " + dataTable + " (player_id, data_id, amount) VALUES (?, ?, ?) " +
                 "ON DUPLICATE KEY UPDATE amount = VALUES(amount)";
-        try (Connection conn = MySQLConnection.get(pluginName)) {
+        try (Connection conn = MySQLConnection.get(plugin)) {
             conn.setAutoCommit(false);
             int playerId = PlayerIDData.get(uuid);
 
@@ -137,7 +137,7 @@ public class IntKeyDatabase {
                 "VALUES (?, ?, ?) " +
                 "ON DUPLICATE KEY UPDATE amount = VALUES(amount)";
 
-        try (Connection conn = MySQLConnection.get(pluginName);
+        try (Connection conn = MySQLConnection.get(plugin);
              PreparedStatement ps = conn.prepareStatement(sql)) {
             boolean old = conn.getAutoCommit();
             conn.setAutoCommit(false);
@@ -181,7 +181,7 @@ public class IntKeyDatabase {
         String defTable = MySQLUtils.toSafeIdentifer(pluginName + "_" + tableName);
         String dataTable = MySQLUtils.toSafeIdentifer(pluginName + "_" + tableName + "_data");
 
-        try (Connection conn = MySQLConnection.get(pluginName)) {
+        try (Connection conn = MySQLConnection.get(plugin)) {
             int playerId = PlayerIDData.get(uuid);
             updateRows(conn, defTable, dataTable, playerId);
 

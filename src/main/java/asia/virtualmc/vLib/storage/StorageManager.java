@@ -9,30 +9,40 @@ import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import java.util.Map;
 
 public class StorageManager {
+    private final MySQLConnection mySQLConnection;
+    private final SQLiteConnection sqLiteConnection;
+    private final PlayerIDData playerIDData;
 
     public StorageManager() {
+        this.mySQLConnection = new MySQLConnection();
+        this.sqLiteConnection = new SQLiteConnection();
+        this.playerIDData = new PlayerIDData();
+
         enable();
     }
 
     public void enable() {
         Map<String, Boolean> modules = Registry.getModules();
         if (Boolean.TRUE.equals(modules.get("sqlite"))) {
-            if (SQLiteConnection.load()) {
+            if (sqLiteConnection.load()) {
                 ConsoleUtils.info("Successfully loaded SQLite module!");
             }
         }
 
         if (Boolean.TRUE.equals(modules.get("mysql"))) {
-            if (MySQLConnection.load()) {
+            if (mySQLConnection.load()) {
                 ConsoleUtils.info("Successfully loaded MySQL module!");
-                PlayerIDData.create();
+                playerIDData.create();
             }
         }
     }
 
+    public void task() {
+        sqLiteConnection.closeAll();
+    }
+
     public void disable() {
-        SQLiteConnection.checkpointAll();
-        SQLiteConnection.closeAll();
-        MySQLConnection.closeAll();
+        sqLiteConnection.closeAll();
+        mySQLConnection.closeAll();
     }
 }

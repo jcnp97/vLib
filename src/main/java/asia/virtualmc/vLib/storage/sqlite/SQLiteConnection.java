@@ -2,7 +2,6 @@ package asia.virtualmc.vLib.storage.sqlite;
 
 import asia.virtualmc.vLib.Main;
 import asia.virtualmc.vLib.storage.sqlite.utilities.DriverShimUtils;
-import asia.virtualmc.vLib.utilities.annotations.Internal;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -24,18 +23,19 @@ public class SQLiteConnection {
     private static final String SQLITE_VERSION = "3.49.1.0";
     private static final String SQLITE_URL = "https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/" +
             SQLITE_VERSION + "/sqlite-jdbc-" + SQLITE_VERSION + ".jar";
-
     private static final Map<String, HikariDataSource> dataSourceMap = new ConcurrentHashMap<>();
+
+    public SQLiteConnection() {
+        load();
+    }
 
     /**
      * Downloads and loads the SQLite JDBC driver if not already present.
      * Registers the driver using a shim to work with DriverManager.
      *
      * @return true if the driver was loaded successfully, false otherwise.
-     * @apiNote This method is intended for internal library use only.
      */
-    @Internal
-    public static boolean load() {
+    public boolean load() {
         try {
             File libFolder = new File(Main.getInstance().getDataFolder(), "libs");
             if (!libFolder.exists() && !libFolder.mkdirs()) {
@@ -90,9 +90,7 @@ public class SQLiteConnection {
      * @param key     Unique identifier for the connection pool.
      * @param dbFile  SQLite database file to connect to.
      * @return A configured HikariDataSource or null if creation failed.
-     * @apiNote This method is intended for internal library use only.
      */
-    @Internal
     private static HikariDataSource create(@NotNull String key, @NotNull File dbFile) {
         try {
             if (!dbFile.exists()) {
@@ -156,11 +154,8 @@ public class SQLiteConnection {
     /**
      * Executes a WAL (Write-Ahead Logging) checkpoint on all managed SQLite connections.
      * This helps reduce WAL file size and commits changes to the main database file.
-     *
-     * @apiNote This method is intended for internal library use only.
      */
-    @Internal
-    public static void checkpointAll() {
+    public void checkpointAll() {
         for (Map.Entry<String, HikariDataSource> entry : dataSourceMap.entrySet()) {
             try (Connection conn = entry.getValue().getConnection();
                  Statement stmt = conn.createStatement()) {
@@ -173,11 +168,10 @@ public class SQLiteConnection {
 
     /**
      * Closes all active SQLite HikariCP connection pools and clears the internal map.
-     *
-     * @apiNote This method is intended for internal library use only.
      */
-    @Internal
-    public static void closeAll() {
+    public void closeAll() {
+        checkpointAll();
+
         for (Map.Entry<String, HikariDataSource> entry : dataSourceMap.entrySet()) {
             try {
                 entry.getValue().close();

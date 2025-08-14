@@ -43,12 +43,12 @@ public class InnateTraitUtils {
      * </p>
      *
      * @param plugin   The plugin instance used to locate the file.
-     * @param fileName The YAML file name containing innate trait definitions.
      * @return A map of trait keys to {@link InnateTrait} objects, or {@code null} if loading fails.
      */
-    public static Map<String, InnateTrait> load(@NotNull Plugin plugin, @NotNull String fileName) {
+    public static Map<String, InnateTrait> load(@NotNull Plugin plugin) {
         Map<String, InnateTrait> traitCache = new HashMap<>();
         String prefix = "[" + plugin.getName() + "]";
+        String fileName = "innate-traits.yml";
 
         YamlDocument yaml = YAMLUtils.getYaml(plugin, fileName);
         if (yaml == null) {

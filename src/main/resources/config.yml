@@ -1,5 +1,6 @@
+# --------------------------------------------------------------------------------------
 # List of Modules
-# By default, all integrations are disabled. You must enable them manually when needed.
+# By default, all integrations are disabled. You must enable them manually as needed.
 # Requires a restart to take effect.
 # All modules are required (except SkinsRestorer) for vSkills plugins.
 # --------------------------------------------------------------------------------------
@@ -15,7 +16,9 @@ modules:
   ultimate_advancement: false
 # --------------------------------------------------------------------------------------
 
-# MySQL Database - required for vSkills.
+# --------------------------------------------------------------------------------------
+# MySQL Database
+# If you are using any vSkills, this is required.
 # Requires a restart to take effect.
 # --------------------------------------------------------------------------------------
 mysql:
