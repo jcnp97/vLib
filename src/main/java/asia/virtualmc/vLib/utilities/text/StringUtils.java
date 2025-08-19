@@ -137,7 +137,7 @@ public class StringUtils {
      */
     public static String deleteCharAt(String string, int index) {
         if (string == null || string.isEmpty()) {
-            return string; // Nothing to delete
+            return string;
         }
 
         if (index < 0) {

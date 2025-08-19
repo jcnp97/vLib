@@ -5,6 +5,7 @@ import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.util.*;
@@ -22,6 +23,7 @@ public class YAMLUtils {
      * @param fileName the name of the YAML file to load
      * @return the loaded {@link YamlDocument}, or {@code null} if an error occurs
      */
+    @Deprecated
     public static YamlDocument getYaml(@NotNull Plugin plugin, @NotNull String fileName) {
         File file = new File(plugin.getDataFolder(), fileName);
         try {
@@ -51,6 +53,7 @@ public class YAMLUtils {
      * @param route the path to the section in the YAML file
      * @return the {@link Section} if found, otherwise {@code null}
      */
+    @Deprecated
     public static Section getSection(@NotNull YamlDocument yaml, @NotNull String route) {
         Section section = yaml.getSection(route);
         if (section == null) {
@@ -73,6 +76,7 @@ public class YAMLUtils {
      * @param debug whether to print the resulting map for debugging
      * @return a map of key-value string pairs from the specified section, or an empty map if the section is missing
      */
+    @Deprecated
     public static Map<String, String> getMap(@NotNull YamlDocument yaml, String route, boolean debug) {
         Map<String, String> map = new HashMap<>();
 
@@ -108,6 +112,7 @@ public class YAMLUtils {
      * @param debug whether to print the resulting map for debugging
      * @return a map of key-integer pairs from the specified section, or an empty map if the section is missing
      */
+    @Deprecated
     public static Map<String, Integer> getIntMap(@NotNull YamlDocument yaml, String route, boolean debug) {
         Map<String, Integer> map = new HashMap<>();
 
@@ -143,6 +148,7 @@ public class YAMLUtils {
      * @param debug whether to print the resulting map for debugging
      * @return a map of key-double pairs from the specified section, or an empty map if the section is missing
      */
+    @Deprecated
     public static Map<String, Double> getDoubleMap(@NotNull YamlDocument yaml, String route, boolean debug) {
         Map<String, Double> map = new HashMap<>();
 
@@ -178,6 +184,7 @@ public class YAMLUtils {
      * @param debug if true, prints the resulting map using {@link ConsoleUtils#debugMap(Map)}
      * @return a map of keys to boolean values from the specified YAML section, or an empty map if not found
      */
+    @Deprecated
     public static Map<String, Boolean> getBooleanMap(@NotNull YamlDocument yaml, String route, boolean debug) {
         Map<String, Boolean> map = new HashMap<>();
 
@@ -213,6 +220,7 @@ public class YAMLUtils {
      * @param debug whether to print the resulting map for debugging
      * @return a map of integer-string pairs from the specified section, or an empty map if the section is missing
      */
+    @Deprecated
     public static Map<Integer, String> getStringMap(@NotNull YamlDocument yaml, String route, boolean debug) {
         Map<Integer, String> map = new HashMap<>();
 
@@ -251,7 +259,10 @@ public class YAMLUtils {
      * @param dirPath the relative subdirectory to search within the plugin's data folder
      * @return a map of filename to loaded {@link YamlDocument}, or an empty map if no valid files are found
      */
-    public static Map<String, YamlDocument> getFiles(@NotNull Plugin plugin, @NotNull String dirPath) {
+    public static Map<String, YamlDocument> getFiles(@NotNull Plugin plugin,
+                                                     @NotNull String dirPath,
+                                                     Set<String> filesToIgnore,
+                                                     boolean includeFileFormat) {
         Map<String, YamlDocument> documents = new HashMap<>();
 
         File directory = new File(plugin.getDataFolder(), dirPath);
@@ -267,9 +278,19 @@ public class YAMLUtils {
         }
 
         for (File file : ymlFiles) {
+            String fileName = file.getName();
+            String baseName = fileName.replaceFirst("(?i)\\.yml$", "");
+            if (!filesToIgnore.isEmpty() && (filesToIgnore.contains(fileName.toLowerCase()) ||
+                    filesToIgnore.contains(baseName.toLowerCase()))) {
+                continue;
+            }
+
             try {
                 YamlDocument yaml = YamlDocument.create(file);
-                documents.put(file.getName(), yaml);
+                String key = includeFileFormat
+                        ? file.getName()
+                        : file.getName().replaceFirst("\\.yml$", "");
+                documents.put(key, yaml);
             } catch (IOException e) {
                 ConsoleUtils.severe("Failed to load YAML file: " + file.getName());
                 e.printStackTrace();
@@ -277,5 +298,94 @@ public class YAMLUtils {
         }
 
         return documents;
+    }
+
+    /**
+     * Loads all {@code .yml} files from a given subdirectory of the plugin's data folder.
+     * <p>
+     * Each file is parsed into a {@link YamlDocument} and stored in a map keyed by filename.
+     * </p>
+     *
+     * @param directory  the directory to search for .yml files
+     * @return a map of filename to loaded {@link YamlDocument}, or an empty map if no valid files are found
+     */
+    public static Map<String, YamlDocument> getFiles(@NotNull File directory, Set<String> filesToIgnore, boolean includeFileFormat) {
+        Map<String, YamlDocument> documents = new HashMap<>();
+        if (!directory.exists() || !directory.isDirectory()) {
+            ConsoleUtils.severe("Directory not found: " + directory.getAbsolutePath());
+            return documents;
+        }
+
+        File[] ymlFiles = directory.listFiles((dir, name) -> name.toLowerCase().endsWith(".yml"));
+        if (ymlFiles == null || ymlFiles.length == 0) {
+            ConsoleUtils.warning("No .yml files found in: " + directory.getAbsolutePath());
+            return documents;
+        }
+
+        for (File file : ymlFiles) {
+            String fileName = file.getName();
+            String baseName = fileName.replaceFirst("(?i)\\.yml$", "");
+            if (!filesToIgnore.isEmpty() && (filesToIgnore.contains(fileName.toLowerCase()) ||
+                    filesToIgnore.contains(baseName.toLowerCase()))) {
+                continue;
+            }
+
+            try {
+                YamlDocument yaml = YamlDocument.create(file);
+                String key = includeFileFormat
+                        ? file.getName()
+                        : file.getName().replaceFirst("\\.yml$", "");
+                documents.put(key, yaml);
+            } catch (IOException e) {
+                ConsoleUtils.severe("Failed to load YAML file: " + file.getName());
+                e.printStackTrace();
+            }
+        }
+
+        return documents;
+    }
+
+    /**
+     * Reads a string value from a YAML file.
+     *
+     * @param fileDir   The directory of where to check the yaml file.
+     * @param yamlName The name of the YAML file (e.g., "config.yml").
+     * @param route    The YAML path/route (e.g., "settings.option").
+     * @return The string value if found, otherwise {@code null}.
+     */
+    @Nullable
+    public static String getString(@NotNull File fileDir, @NotNull String yamlName, @NotNull String route) {
+        File file = new File(fileDir, yamlName);
+        if (!file.exists()) {
+            return null;
+        }
+        try {
+            YamlDocument yaml = YamlDocument.create(file);
+            return yaml.getString(route);
+        } catch (IOException e) {
+            ConsoleUtils.severe("Failed to read YAML file: " + yamlName + " from " + fileDir.getName() + ": " + e);
+            return null;
+        }
+    }
+
+    /**
+     * Loads a YamlDocument if the specified file exists.
+     *
+     * @param directory The folder where the file should be located.
+     * @param fileName  The YAML file name (e.g., "config.yml").
+     * @return YamlDocument if the file exists and loads successfully, otherwise null.
+     */
+    @Nullable
+    public static YamlDocument get(File directory, String fileName) {
+        File yamlFile = new File(directory, fileName);
+        if (!yamlFile.exists()) {
+            return null;
+        }
+        try {
+            return YamlDocument.create(yamlFile);
+        } catch (IOException e) {
+            ConsoleUtils.severe("Yaml file does not exists: " + e);
+            return null;
+        }
     }
 }

@@ -1,11 +1,13 @@
 package asia.virtualmc.vLib.core.items;
 
-import asia.virtualmc.vLib.utilities.items.ItemStackUtils;
+import asia.virtualmc.vLib.services.bukkit.ComponentService;
 import asia.virtualmc.vLib.utilities.items.MaterialUtils;
 import asia.virtualmc.vLib.utilities.java.ArrayUtils;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
+import asia.virtualmc.vLib.utilities.text.StringUtils;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -50,19 +52,42 @@ public class ItemCoreUtils {
             return new CustomItem(name, material, modelData, lore);
         } catch (Exception e) {
             ConsoleUtils.severe("Unable to retrieve CustomItem from section=" + section.getRoute() + ": " + e);
-            return new CustomItem("", Material.PAPER, 1, new ArrayList<>());
+            return new CustomItem("", Material.PAPER, 0, new ArrayList<>());
         }
     }
 
+    public static ItemStack getDataComponent(@NotNull Section section, @NotNull ItemStack item, String itemKey) {
+        ComponentService.DataComponent dataComponent = ComponentService.get(item);
+        Section componentSection = section.getSection("data-component");
+        if (componentSection == null) {
+            ConsoleUtils.severe("Unable to retrieve data-component section from " + section);
+            return item;
+        }
+
+        String itemModel = componentSection.getString("item-model");
+        if (itemModel.contains("{item_key}")) {
+            itemModel = StringUtils.replace(itemModel, "{item_key}", itemKey);
+        }
+
+        return dataComponent.setItemModel(itemModel)
+                .setUnbreakable(componentSection.getBoolean("unbreakable"))
+                .setMaxStackSize(componentSection.getInt("max-stack-size"))
+                .setTooltipStyle(componentSection.getString("tooltip-style"))
+                .setGlint(componentSection.getBoolean("enchant-glint"))
+                .setEnchantable(componentSection.getInt("enchantable"))
+                .addItemFlags(componentSection.getStringList("item-flags"))
+                .build();
+    }
+
     /**
-     * Reads integer key/value pairs under "item-data.integer".
+     * Reads integer key/value pairs under "pdc-data.integer".
      *
      * @param section the base section
      * @return map of keys to integers; empty if none
      */
     public static Map<String, Integer> getInt(Section section) {
         Map<String, Integer> data = new HashMap<>();
-        Section itemData = section.getSection("item-data.integer");
+        Section itemData = section.getSection("pdc-data.integer");
         if (itemData != null) {
             Set<String> keys = itemData.getRoutesAsStrings(false);
             for (String key : keys) {
@@ -75,14 +100,14 @@ public class ItemCoreUtils {
     }
 
     /**
-     * Reads double key/value pairs under "item-data.double".
+     * Reads double key/value pairs under "pdc-data.double".
      *
      * @param section the base section
      * @return map of keys to doubles; empty if none
      */
     public static Map<String, Double> getDouble(Section section) {
         Map<String, Double> data = new HashMap<>();
-        Section itemData = section.getSection("item-data.double");
+        Section itemData = section.getSection("pdc-data.double");
         if (itemData != null) {
             Set<String> keys = itemData.getRoutesAsStrings(false);
             for (String key : keys) {
@@ -95,14 +120,14 @@ public class ItemCoreUtils {
     }
 
     /**
-     * Reads string key/value pairs under "item-data.string".
+     * Reads string key/value pairs under "pdc-data.string".
      *
      * @param section the base section
      * @return map of keys to strings; empty if none
      */
     public static Map<String, String> getString(Section section) {
         Map<String, String> data = new HashMap<>();
-        Section itemData = section.getSection("item-data.string");
+        Section itemData = section.getSection("pdc-data.string");
         if (itemData != null) {
             Set<String> keys = itemData.getRoutesAsStrings(false);
             for (String key : keys) {
@@ -115,14 +140,14 @@ public class ItemCoreUtils {
     }
 
     /**
-     * Reads int-array entries under "item-data.array" (values as strings) and converts via ArrayUtils.toIntArray.
+     * Reads int-array entries under "pdc-data.array" (values as strings) and converts via ArrayUtils.toIntArray.
      *
      * @param section the base section
      * @return map of keys to int[]; empty if none
      */
     public static Map<String, int[]> getIntArray(Section section) {
         Map<String, int[]> data = new HashMap<>();
-        Section itemData = section.getSection("item-data.array");
+        Section itemData = section.getSection("pdc-data.array");
         if (itemData != null) {
             Set<String> keys = itemData.getRoutesAsStrings(false);
             for (String key : keys) {

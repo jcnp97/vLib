@@ -46,4 +46,51 @@ public class SplitUtils {
         return string.split(Pattern.quote(symbol), -1);
     }
 
+    /**
+     * Splits the given string by a symbol and removes the part at the specified index.
+     * <p>
+     * Rules for index adjustment:
+     * <ul>
+     *   <li>{@code -1} → removes the last element.</li>
+     *   <li>{@code <= -2} → removes the first element.</li>
+     *   <li>{@code >= parts.length} → removes the last element.</li>
+     * </ul>
+     * If the string or symbol is null/empty, or if there are no parts, the original string is returned.
+     *
+     * @param string the input string to be split
+     * @param symbol the delimiter symbol used for splitting
+     * @param index the position of the part to remove, with rules for special values
+     * @return the string with the specified part removed, or the original string if invalid
+     */
+    public static String splitAndRemove(String string, String symbol, int index) {
+        if (string == null || string.isEmpty() || symbol == null || symbol.isEmpty()) {
+            return string;
+        }
+
+        String[] parts = string.split(symbol);
+
+        if (parts.length == 0) {
+            return string;
+        }
+
+        if (index == -1) {
+            index = parts.length - 1;
+        } else if (index <= -2) {
+            index = 0; // remove first
+        } else if (index >= parts.length) {
+            index = parts.length - 1;
+        }
+
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < parts.length; i++) {
+            if (i != index) {
+                if (!result.isEmpty()) {
+                    result.append(symbol);
+                }
+                result.append(parts[i]);
+            }
+        }
+
+        return result.toString();
+    }
 }

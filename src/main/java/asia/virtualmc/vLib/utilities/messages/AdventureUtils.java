@@ -22,6 +22,8 @@ public class AdventureUtils {
      * @return A Component representing the formatted message.
      */
     public static Component toComponent(String string) {
+        if (string == null) return toComponent("");
+
         Component component;
         if (string.contains("&")) {
             component = legacyAmpersand.deserialize(string);
@@ -43,7 +45,6 @@ public class AdventureUtils {
      */
     public static List<Component> toComponent(List<String> strings) {
         List<Component> components = new ArrayList<>();
-
         for (String string : strings) {
             components.add(toComponent(string));
         }
@@ -52,15 +53,31 @@ public class AdventureUtils {
     }
 
     /**
-     * Converts a {@link net.kyori.adventure.text.Component} to a plain text {@link String}.
-     * <p>
-     * If the component is {@code null}, an empty string {@code ""} is returned.
+     * Converts a {@link Component} into its MiniMessage string representation.
      *
      * @param component the component to convert
-     * @return the plain text representation of the component, or an empty string if null
+     * @return the serialized string representation of the component
      */
     public static String toString(Component component) {
         if (component == null) return "";
-        return LegacyComponentSerializer.legacySection().serialize(component);
+        return miniMessage.serialize(component);
+    }
+
+    /**
+     * Converts a list of {@link Component} objects into a list of their
+     * MiniMessage string representations.
+     *
+     * @param components the list of components to convert
+     * @return a list of serialized string representations of the components
+     */
+    public static List<String> toString(List<Component> components) {
+        if (components == null) return new ArrayList<>();
+
+        List<String> strings = new ArrayList<>();
+        for (Component component : components) {
+            strings.add(toString(component));
+        }
+
+        return strings;
     }
 }

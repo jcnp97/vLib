@@ -1,7 +1,6 @@
 package asia.virtualmc.vLib.utilities.items;
 
 import asia.virtualmc.vLib.utilities.messages.AdventureUtils;
-import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -36,7 +35,7 @@ public class ItemStackUtils {
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.displayName(AdventureUtils.toComponent(displayName));
-            meta.setCustomModelData(modelData);
+            if (modelData > 0) meta.setCustomModelData(modelData);
             if (lore != null) meta.lore(AdventureUtils.toComponent(lore));
 
             item.setItemMeta(meta);
