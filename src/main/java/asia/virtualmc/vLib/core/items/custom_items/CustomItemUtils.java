@@ -1,6 +1,7 @@
 package asia.virtualmc.vLib.core.items.custom_items;
 
 import asia.virtualmc.vLib.core.items.ItemCoreUtils;
+import asia.virtualmc.vLib.integration.more_pdc.MorePDCUtils;
 import asia.virtualmc.vLib.services.file.YamlFileService;
 import asia.virtualmc.vLib.utilities.items.EnchantUtils;
 import asia.virtualmc.vLib.utilities.items.ItemStackUtils;
@@ -40,9 +41,10 @@ public class CustomItemUtils {
             ItemCoreUtils.CustomItem customItem = ItemCoreUtils.get(keySection);
             Map<String, Integer> intMap = ItemCoreUtils.getInt(keySection);
             Map<String, Double> doubleMap = ItemCoreUtils.getDouble(keySection);
-            Map<String, int[]> intArrayMap = ItemCoreUtils.getIntArray(keySection);
+            //Map<String, int[]> intArrayMap = ItemCoreUtils.getIntArray(keySection);
             Map<String, Integer> enchants = ItemCoreUtils.getEnchants(keySection);
             Map<String, String> stringMap = ItemCoreUtils.getString(keySection);
+            Map<String, Set<String>> stringSet = ItemCoreUtils.getSetString(keySection);
 
             // modify lore
             customItem.lore = ItemCoreUtils.modifyLore(customItem.lore, doubleMap, intMap);
@@ -53,14 +55,19 @@ public class CustomItemUtils {
             ItemMeta meta = item.getItemMeta();
             if (meta != null) {
                 // Apply PDC data
-                PDCUtils.addString(meta, itemID, key.toLowerCase());
-                PDCUtils.addIntMap(plugin, meta, intMap);
-                PDCUtils.addDoubleMap(plugin, meta, doubleMap);
-                PDCUtils.addIntArrayMap(plugin, meta, intArrayMap);
-                PDCUtils.addStringMap(plugin, meta, stringMap);
+                try {
+                    PDCUtils.addString(meta, itemID, key.toLowerCase());
+                    PDCUtils.addIntMap(plugin, meta, intMap);
+                    PDCUtils.addDoubleMap(plugin, meta, doubleMap);
+                    //PDCUtils.addIntArrayMap(plugin, meta, intArrayMap);
+                    PDCUtils.addStringMap(plugin, meta, stringMap);
+                    MorePDCUtils.addStringSet(plugin, meta, stringSet);
 
-                // Apply Enchantments
-                EnchantUtils.add(meta, enchants);
+                    // Apply Enchantments
+                    EnchantUtils.add(meta, enchants);
+                } catch (Exception e) {
+                    ConsoleUtils.severe(prefix, "An error occurred when trying to add PDC data to " + item.displayName());
+                }
             }
 
             // Apply ItemMeta

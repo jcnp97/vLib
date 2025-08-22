@@ -1,4 +1,4 @@
-package asia.virtualmc.vLib.core.skills.data.player_data;
+package asia.virtualmc.vLib.core.skills.data.skills_data;
 
 import asia.virtualmc.vLib.utilities.enums.EnumsLib;
 import org.bukkit.entity.Player;

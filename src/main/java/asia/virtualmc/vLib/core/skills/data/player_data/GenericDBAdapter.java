@@ -1,4 +1,4 @@
-package asia.virtualmc.vLib.core.skills.data.collection_log;
+package asia.virtualmc.vLib.core.skills.data.player_data;
 
 import asia.virtualmc.vLib.storage.mysql.misc.StringKeyDatabase;
 import org.bukkit.plugin.Plugin;
@@ -7,26 +7,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
-public class CollectionDBAdapter implements CollectionLogDatabase {
-    private static final String tableName = "collectionLog";
-
+public class GenericDBAdapter implements GenericDatabase {
     private final Plugin plugin;
     private final List<String> keys;
+    private final String tableName;
 
-    public CollectionDBAdapter(Plugin plugin,
-                               CollectionLog collectionLog) {
+    public GenericDBAdapter(Plugin plugin, DataSchema schema) {
         this.plugin = plugin;
-        this.keys = List.copyOf(collectionLog.keys());
+        this.keys = List.copyOf(schema.keys());
+        this.tableName = schema.tableName();
         StringKeyDatabase.createTable(plugin, tableName);
     }
 
     @Override
     public Map<String, Integer> load(UUID uuid) throws Exception {
-        ConcurrentHashMap<String, Integer> map =
-                StringKeyDatabase.loadPlayerData(plugin, tableName, uuid, keys);
-
+        var map = StringKeyDatabase.loadPlayerData(plugin, tableName, uuid, keys);
         Map<String, Integer> result = new HashMap<>();
         for (String k : keys) result.put(k, map.getOrDefault(k, 0));
         return result;
@@ -42,3 +38,4 @@ public class CollectionDBAdapter implements CollectionLogDatabase {
         StringKeyDatabase.saveAllData(plugin, tableName, snapshot);
     }
 }
+

@@ -1,12 +1,13 @@
 package asia.virtualmc.vLib.integration.more_pdc;
 
-import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import com.jeff_media.morepersistentdatatypes.DataType;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -15,52 +16,152 @@ import java.util.Set;
 public class MorePDCUtils {
 
     /**
-     * Retrieves an integer value from a stored PDC map using the given key and map key.
+     * Adds a set of strings to the PersistentDataContainer of the given ItemMeta.
      *
-     * @param item    the {@link ItemStack} to read from
-     * @param key     the {@link NamespacedKey} for the PDC entry
-     * @param mapKey  the string key inside the stored map
-     * @return the integer value if found, otherwise 0
+     * @param meta ItemMeta to apply the data to.
+     * @param key  NamespacedKey used to store the data.
+     * @param set  Set of strings to store.
      */
-    public static int getInt(ItemStack item, NamespacedKey key, String mapKey) {
-        if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) return 0;
-        PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
-
-        Map<String, Integer> data = pdc.get(key, DataType.asMap(DataType.STRING, DataType.INTEGER));
-        if (data != null && !data.isEmpty()) {
-            return data.getOrDefault(mapKey, 0);
+    public static void addStringSet(@NotNull ItemMeta meta, NamespacedKey key, Set<String> set) {
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        if (set == null || set.isEmpty()) {
+            return;
         }
 
-        return 0;
+        pdc.remove(key);
+        pdc.set(key, DataType.asSet(DataType.STRING), set);
     }
 
     /**
-     * Retrieves a double value from a stored PDC map using the given key and map key.
+     * Adds multiple string sets to the PersistentDataContainer of the given ItemMeta,
+     * using the provided map where keys are converted into NamespacedKeys.
      *
-     * @param item    the {@link ItemStack} to read from
-     * @param key     the {@link NamespacedKey} for the PDC entry
-     * @param mapKey  the string key inside the stored map
-     * @return the double value if found, otherwise 0.0
+     * @param plugin Plugin instance used for creating NamespacedKeys.
+     * @param meta   ItemMeta to apply the data to.
+     * @param map    Map of string keys and corresponding sets of strings to store.
      */
-    public static double getDouble(ItemStack item, NamespacedKey key, String mapKey) {
-        if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) return 0.0;
-        PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
-
-        Map<String, Double> data = pdc.get(key, DataType.asMap(DataType.STRING, DataType.DOUBLE));
-        if (data != null && !data.isEmpty()) {
-            return data.getOrDefault(mapKey, 0.0);
+    public static void addStringSet(@NotNull Plugin plugin, @NotNull ItemMeta meta, Map<String, Set<String>> map) {
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        if (map == null || map.isEmpty()) {
+            return;
         }
 
-        return 0.0;
+        for (Map.Entry<String, Set<String>> entry : map.entrySet()) {
+            NamespacedKey key = new NamespacedKey(plugin, entry.getKey());
+            pdc.remove(key);
+            pdc.set(key, DataType.asSet(DataType.STRING), entry.getValue());
+        }
     }
 
     /**
-     * Retrieves a string value from a stored PDC map using the given key and map key.
+     * Adds a map of string-to-string pairs to the PersistentDataContainer.
      *
-     * @param item    the {@link ItemStack} to read from
-     * @param key     the {@link NamespacedKey} for the PDC entry
-     * @param mapKey  the string key inside the stored map
-     * @return the string value if found, otherwise an empty string
+     * @param meta ItemMeta to apply the data to.
+     * @param key  NamespacedKey used to store the map.
+     * @param map  Map of string key-value pairs to store.
+     */
+    public static void addStringMap(@NotNull ItemMeta meta, NamespacedKey key, Map<String, String> map) {
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        if (map == null || map.isEmpty()) {
+            return;
+        }
+
+        pdc.remove(key);
+        pdc.set(key, DataType.asMap(DataType.STRING, DataType.STRING), map);
+    }
+
+    /**
+     * Adds a map of string-to-integer pairs to the PersistentDataContainer.
+     *
+     * @param meta ItemMeta to apply the data to.
+     * @param key  NamespacedKey used to store the map.
+     * @param map  Map of string keys with integer values to store.
+     */
+    public static void addStringIntMap(@NotNull ItemMeta meta, NamespacedKey key, Map<String, Integer> map) {
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        if (map == null || map.isEmpty()) {
+            return;
+        }
+
+        pdc.remove(key);
+        pdc.set(key, DataType.asMap(DataType.STRING, DataType.INTEGER), map);
+    }
+
+    /**
+     * Adds a map of string-to-double pairs to the PersistentDataContainer.
+     *
+     * @param meta ItemMeta to apply the data to.
+     * @param key  NamespacedKey used to store the map.
+     * @param map  Map of string keys with double values to store.
+     */
+    public static void addStringDoubleMap(@NotNull ItemMeta meta, NamespacedKey key, Map<String, Double> map) {
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        if (map == null || map.isEmpty()) {
+            return;
+        }
+
+        pdc.remove(key);
+        pdc.set(key, DataType.asMap(DataType.STRING, DataType.DOUBLE), map);
+    }
+
+    /**
+     * Adds a map of integer-to-integer pairs to the PersistentDataContainer.
+     *
+     * @param meta ItemMeta to apply the data to.
+     * @param key  NamespacedKey used to store the map.
+     * @param map  Map of integer keys with integer values to store.
+     */
+    public static void addIntMap(@NotNull ItemMeta meta, NamespacedKey key, Map<Integer, Integer> map) {
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        if (map == null || map.isEmpty()) {
+            return;
+        }
+
+        pdc.remove(key);
+        pdc.set(key, DataType.asMap(DataType.INTEGER, DataType.INTEGER), map);
+    }
+
+    /**
+     * Adds a map of integer-to-string pairs to the PersistentDataContainer.
+     *
+     * @param meta ItemMeta to apply the data to.
+     * @param key  NamespacedKey used to store the map.
+     * @param map  Map of integer keys with string values to store.
+     */
+    public static void addIntStringMap(@NotNull ItemMeta meta, NamespacedKey key, Map<Integer, String> map) {
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        if (map == null || map.isEmpty()) {
+            return;
+        }
+
+        pdc.remove(key);
+        pdc.set(key, DataType.asMap(DataType.INTEGER, DataType.STRING), map);
+    }
+
+    /**
+     * Adds a map of integer-to-double pairs to the PersistentDataContainer.
+     *
+     * @param meta ItemMeta to apply the data to.
+     * @param key  NamespacedKey used to store the map.
+     * @param map  Map of integer keys with double values to store.
+     */
+    public static void addIntDoubleMap(@NotNull ItemMeta meta, NamespacedKey key, Map<Integer, Double> map) {
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        if (map == null || map.isEmpty()) {
+            return;
+        }
+
+        pdc.remove(key);
+        pdc.set(key, DataType.asMap(DataType.INTEGER, DataType.DOUBLE), map);
+    }
+
+    /**
+     * Retrieves a string value from a stored string-to-string map in the PersistentDataContainer.
+     *
+     * @param item   ItemStack to check for data.
+     * @param key    NamespacedKey used to retrieve the map.
+     * @param mapKey Key inside the stored map to get the value for.
+     * @return The string value, or an empty string if not found.
      */
     public static String getString(ItemStack item, NamespacedKey key, String mapKey) {
         if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) return "";
@@ -75,12 +176,71 @@ public class MorePDCUtils {
     }
 
     /**
-     * Retrieves a {@link Set} of strings stored in the item's PersistentDataContainer
-     * under the specified key.
+     * Retrieves an integer value from a stored string-to-integer map in the PersistentDataContainer.
      *
-     * @param item the item stack to read from
-     * @param key  the namespaced key of the stored data
-     * @return the set of strings found, or an empty set if none exist
+     * @param item   ItemStack to check for data.
+     * @param key    NamespacedKey used to retrieve the map.
+     * @param mapKey Key inside the stored map to get the value for.
+     * @return The integer value, or 0 if not found.
+     */
+    public static int getInt(ItemStack item, NamespacedKey key, String mapKey) {
+        if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) return 0;
+        PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
+
+        Map<String, Integer> data = pdc.get(key, DataType.asMap(DataType.STRING, DataType.INTEGER));
+        if (data != null && !data.isEmpty()) {
+            return data.getOrDefault(mapKey, 0);
+        }
+
+        return 0;
+    }
+
+    /**
+     * Retrieves a double value from a stored string-to-double map in the PersistentDataContainer.
+     *
+     * @param item   ItemStack to check for data.
+     * @param key    NamespacedKey used to retrieve the map.
+     * @param mapKey Key inside the stored map to get the value for.
+     * @return The double value, or 0.0 if not found.
+     */
+    public static double getDouble(ItemStack item, NamespacedKey key, String mapKey) {
+        if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) return 0;
+        PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
+
+        Map<String, Double> data = pdc.get(key, DataType.asMap(DataType.STRING, DataType.DOUBLE));
+        if (data != null && !data.isEmpty()) {
+            return data.getOrDefault(mapKey, 0.0);
+        }
+
+        return 0;
+    }
+
+    /**
+     * Checks if a given string exists in a stored string set in the PersistentDataContainer.
+     *
+     * @param item   ItemStack to check for data.
+     * @param key    NamespacedKey used to retrieve the set.
+     * @param setKey String value to check existence of.
+     * @return True if the string exists in the set, false otherwise.
+     */
+    public static boolean hasStringFromSet(ItemStack item, NamespacedKey key, String setKey) {
+        if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) return false;
+        PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
+
+        Set<String> data = pdc.get(key, DataType.asSet(DataType.STRING));
+        if (data != null && !data.isEmpty()) {
+            return data.contains(setKey);
+        }
+
+        return false;
+    }
+
+    /**
+     * Retrieves a set of strings stored in the PersistentDataContainer of the given ItemStack.
+     *
+     * @param item ItemStack to check for stored data.
+     * @param key  NamespacedKey used to retrieve the set.
+     * @return The stored set of strings, or an empty set if none exists or the item is invalid.
      */
     public static Set<String> getStringSet(ItemStack item, NamespacedKey key) {
         if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) return new HashSet<>();
@@ -92,176 +252,5 @@ public class MorePDCUtils {
         }
 
         return new HashSet<>();
-    }
-
-    /**
-     * Stores a map of string keys and integer values into an item's PDC.
-     *
-     * @param key  the {@link NamespacedKey} for the PDC entry
-     * @param meta the {@link ItemMeta} to store the map in
-     * @param map  the map of string keys and integer values to store
-     */
-    public static void addIntMap(ItemMeta meta, NamespacedKey key, Map<String, Integer> map) {
-        if (meta == null) {
-            ConsoleUtils.severe("Unable to add PDC data on " + meta.getDisplayName() + " because meta is NULL.");
-            return;
-        }
-
-        PersistentDataContainer pdc = meta.getPersistentDataContainer();
-        pdc.set(key, DataType.asMap(DataType.STRING, DataType.INTEGER), map);
-    }
-
-    /**
-     * Stores a map of string keys and double values into an item's PDC.
-     *
-     * @param key  the {@link NamespacedKey} for the PDC entry
-     * @param meta the {@link ItemMeta} to store the map in
-     * @param map  the map of string keys and double values to store
-     */
-    public static void addDoubleMap(ItemMeta meta, NamespacedKey key, Map<String, Double> map) {
-        if (meta == null) {
-            ConsoleUtils.severe("Unable to add PDC data on " + meta.getDisplayName() + " because meta is NULL.");
-            return;
-        }
-
-        PersistentDataContainer pdc = meta.getPersistentDataContainer();
-        pdc.set(key, DataType.asMap(DataType.STRING, DataType.DOUBLE), map);
-    }
-
-    /**
-     * Stores a map of string keys and string values into an item's PDC.
-     *
-     * @param key  the {@link NamespacedKey} for the PDC entry
-     * @param meta the {@link ItemMeta} to store the map in
-     * @param map  the map of string keys and string values to store
-     */
-    public static void addStringMap(ItemMeta meta, NamespacedKey key, Map<String, String> map) {
-        if (meta == null) {
-            ConsoleUtils.severe("Unable to add PDC data on " + meta.getDisplayName() + " because meta is NULL.");
-            return;
-        }
-
-        PersistentDataContainer pdc = meta.getPersistentDataContainer();
-        pdc.set(key, DataType.asMap(DataType.STRING, DataType.STRING), map);
-    }
-
-    /**
-     * Overwrites the {@link Set} of strings in the item's PersistentDataContainer under the specified key.
-     * If {@code set} is null or empty, the key is removed.
-     *
-     * @param key  the namespaced key to store the data under
-     * @param meta the item meta to modify (must not be {@code null})
-     * @param set  the set of strings to store
-     */
-    public static void addStringSet(ItemMeta meta, NamespacedKey key, Set<String> set) {
-        if (meta == null) {
-            ConsoleUtils.severe("Unable to add PDC data because ItemMeta is null.");
-            return;
-        }
-
-        PersistentDataContainer pdc = meta.getPersistentDataContainer();
-        pdc.remove(key);
-        if (set == null || set.isEmpty()) {
-            return;
-        }
-
-        pdc.set(key, DataType.asSet(DataType.STRING), set);
-    }
-
-    /**
-     * Adds a string value to a {@link Set} stored in an item's PersistentDataContainer (PDC).
-     * Creates a new set if one does not exist for the given key.
-     *
-     * @param meta  the {@link ItemMeta} containing the PDC
-     * @param key   the {@link NamespacedKey} for the PDC entry
-     * @param value the string value to add to the set
-     */
-    public static boolean addStringToSet(ItemMeta meta, NamespacedKey key, String value) {
-        if (meta == null) return false;
-        PersistentDataContainer pdc = meta.getPersistentDataContainer();
-        Set<String> set = pdc.get(key, DataType.asSet(DataType.STRING));
-
-        if (set == null) set = new HashSet<>();
-        try {
-            set.add(value);
-            pdc.set(key, DataType.asSet(DataType.STRING), set);
-            return true;
-        } catch (Exception e) {
-            ConsoleUtils.severe("Unable to add a string value into PDC map of " + meta.getDisplayName() + ": " + e.getMessage());
-        }
-        return false;
-    }
-
-    /**
-     * Adds or updates a key-value pair in a {@link Map} stored in an item's PersistentDataContainer (PDC).
-     * Creates a new map if one does not exist for the given key.
-     *
-     * @param meta   the {@link ItemMeta} containing the PDC
-     * @param key    the {@link NamespacedKey} for the PDC entry
-     * @param mapKey the key inside the stored map
-     * @param value  the value to associate with the map key
-     */
-    public static boolean addStringToMap(ItemMeta meta, NamespacedKey key, String mapKey, String value) {
-        if (meta == null) return false;
-        PersistentDataContainer pdc = meta.getPersistentDataContainer();
-        Map<String, String> map = pdc.get(key, DataType.asMap(DataType.STRING, DataType.STRING));
-
-        if (map == null) map = new java.util.HashMap<>();
-        try {
-            map.put(mapKey, value);
-            pdc.set(key, DataType.asMap(DataType.STRING, DataType.STRING), map);
-            return true;
-        } catch (Exception e) {
-            ConsoleUtils.severe("Unable to add a string value into PDC map of " + meta.getDisplayName() + ": " + e.getMessage());
-        }
-        return false;
-    }
-
-    /**
-     * Removes a string value from a {@link Set} stored in an item's PersistentDataContainer (PDC).
-     *
-     * @param meta  the {@link ItemMeta} containing the PDC
-     * @param key   the {@link NamespacedKey} for the PDC entry
-     * @param value the string value to remove from the set
-     * @return true if the value was successfully removed, false otherwise
-     */
-    public static boolean removeStringFromSet(ItemMeta meta, NamespacedKey key, String value) {
-        if (meta == null) return false;
-        PersistentDataContainer pdc = meta.getPersistentDataContainer();
-        Set<String> set = pdc.get(key, DataType.asSet(DataType.STRING));
-
-        if (set == null || !set.contains(value)) return false;
-        try {
-            set.remove(value);
-            pdc.set(key, DataType.asSet(DataType.STRING), set);
-            return true;
-        } catch (Exception e) {
-            ConsoleUtils.severe("Unable to remove a string value from PDC set of " + meta.getDisplayName() + ": " + e.getMessage());
-        }
-        return false;
-    }
-
-    /**
-     * Removes an entry from a {@link Map} stored in an item's PersistentDataContainer (PDC) by its key.
-     *
-     * @param meta   the {@link ItemMeta} containing the PDC
-     * @param key    the {@link NamespacedKey} for the PDC entry
-     * @param mapKey the key inside the stored map to remove
-     * @return true if the key-value pair was successfully removed, false otherwise
-     */
-    public static boolean removeStringFromMap(ItemMeta meta, NamespacedKey key, String mapKey) {
-        if (meta == null) return false;
-        PersistentDataContainer pdc = meta.getPersistentDataContainer();
-        Map<String, String> map = pdc.get(key, DataType.asMap(DataType.STRING, DataType.STRING));
-
-        if (map == null || !map.containsKey(mapKey)) return false;
-        try {
-            map.remove(mapKey);
-            pdc.set(key, DataType.asMap(DataType.STRING, DataType.STRING), map);
-            return true;
-        } catch (Exception e) {
-            ConsoleUtils.severe("Unable to remove a key-value from PDC map of " + meta.getDisplayName() + ": " + e.getMessage());
-        }
-        return false;
     }
 }

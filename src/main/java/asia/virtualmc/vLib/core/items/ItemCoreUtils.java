@@ -1,6 +1,8 @@
 package asia.virtualmc.vLib.core.items;
 
 import asia.virtualmc.vLib.services.bukkit.ComponentService;
+import asia.virtualmc.vLib.utilities.digit.IntegerUtils;
+import asia.virtualmc.vLib.utilities.digit.StringDigitUtils;
 import asia.virtualmc.vLib.utilities.items.MaterialUtils;
 import asia.virtualmc.vLib.utilities.java.ArrayUtils;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
@@ -139,6 +141,22 @@ public class ItemCoreUtils {
         return data;
     }
 
+    public static Map<String, Set<String>> getSetString(Section section) {
+        Map<String, Set<String>> data = new HashMap<>();
+        Section itemData = section.getSection("pdc-data.set");
+        if (itemData != null) {
+            Set<String> keys = itemData.getRoutesAsStrings(false);
+            for (String key : keys) {
+                List<String> value = itemData.getStringList(key);
+                if (value != null && !value.isEmpty()) {
+                    data.put(key, new HashSet<>(value));
+                }
+            }
+        }
+
+        return data;
+    }
+
     /**
      * Reads int-array entries under "pdc-data.array" (values as strings) and converts via ArrayUtils.toIntArray.
      *
@@ -195,11 +213,11 @@ public class ItemCoreUtils {
             String processedLine = line;
 
             for (Map.Entry<String, Integer> entry : intMap.entrySet()) {
-                processedLine = processedLine.replace("{" + entry.getKey() + "}", String.valueOf(entry.getValue()));
+                processedLine = processedLine.replace("{" + entry.getKey() + "}", StringDigitUtils.formatInteger(entry.getValue()));
             }
 
             for (Map.Entry<String, Double> entry : doubleMap.entrySet()) {
-                processedLine = processedLine.replace("{" + entry.getKey() + "}", String.valueOf(entry.getValue()));
+                processedLine = processedLine.replace("{" + entry.getKey() + "}", StringDigitUtils.formatDouble(entry.getValue(), true));
             }
 
             newLore.add(processedLine);

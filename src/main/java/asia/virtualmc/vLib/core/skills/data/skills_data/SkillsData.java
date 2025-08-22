@@ -1,4 +1,4 @@
-package asia.virtualmc.vLib.core.skills.data.player_data;
+package asia.virtualmc.vLib.core.skills.data.skills_data;
 
 import asia.virtualmc.vLib.core.player_data.InnateTraitUtils;
 import asia.virtualmc.vLib.core.skills.utilities.SkillsDataUtils;
@@ -407,7 +407,6 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
         cache.put(id, s);
 
         if (levelUp) {
-            // Still reuse your UX helper, just pass the injected display name
             SkillsUtils.levelup(player, skillDisplayName, prev, s.level, s.traitPoints);
         }
     }

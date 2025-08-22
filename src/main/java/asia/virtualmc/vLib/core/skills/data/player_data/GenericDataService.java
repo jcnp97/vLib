@@ -1,4 +1,4 @@
-package asia.virtualmc.vLib.core.skills.data.statistics;
+package asia.virtualmc.vLib.core.skills.data.player_data;
 
 import asia.virtualmc.vLib.utilities.paper.AsyncUtils;
 import org.bukkit.plugin.Plugin;
@@ -9,16 +9,16 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class StatisticsData implements StatisticsReader, StatisticsWriter {
+public class GenericDataService implements DataReader, DataWriter {
     private final Plugin plugin;
-    private final StatisticsDatabase database;
-    private final Statistics statistics;
+    private final GenericDatabase database;
+    private final DataSchema schema;
     private final ConcurrentHashMap<UUID, ConcurrentHashMap<String, Integer>> cache = new ConcurrentHashMap<>();
 
-    public StatisticsData(Plugin plugin, StatisticsDatabase database, Statistics statistics) {
+    public GenericDataService(Plugin plugin, GenericDatabase database, DataSchema schema) {
         this.plugin = plugin;
         this.database = database;
-        this.statistics = statistics;
+        this.schema = schema;
     }
 
     @Override
@@ -55,10 +55,10 @@ public class StatisticsData implements StatisticsReader, StatisticsWriter {
     }
 
     @Override
-    public int get(UUID uuid, String statName) {
-        if (!statistics.contains(statName)) return 0;
+    public int get(UUID uuid, String key) {
+        if (!schema.contains(key)) return 0;
         Map<String, Integer> m = cache.get(uuid);
-        return (m == null) ? 0 : m.getOrDefault(statName, 0);
+        return (m == null) ? 0 : m.getOrDefault(key, 0);
     }
 
     @Override
@@ -68,33 +68,33 @@ public class StatisticsData implements StatisticsReader, StatisticsWriter {
     }
 
     @Override
-    public void add(UUID uuid, String statName, int amount) {
-        if (!statistics.contains(statName)) return;
+    public void add(UUID uuid, String key, int amount) {
+        if (!schema.contains(key)) return;
         Map<String, Integer> m = cache.get(uuid);
         if (m == null) return;
-        m.merge(statName, amount, Integer::sum);
+        m.merge(key, amount, Integer::sum);
         AsyncUtils.runAsync(plugin, () -> {
             save(uuid);
         });
     }
 
     @Override
-    public void subtract(UUID uuid, String statName, int amount) {
-        add(uuid, statName, -amount);
+    public void subtract(UUID uuid, String key, int amount) {
+        add(uuid, key, -amount);
     }
 
     @Override
-    public void increment(UUID uuid, String statName) { add(uuid, statName, 1); }
+    public void increment(UUID uuid, String key) { add(uuid, key, 1); }
 
     @Override
-    public void decrement(UUID uuid, String statName) { add(uuid, statName, -1); }
+    public void decrement(UUID uuid, String key) { add(uuid, key, -1); }
 
     @Override
-    public void set(UUID uuid, String statName, int amount) {
-        if (!statistics.contains(statName)) return;
+    public void set(UUID uuid, String key, int amount) {
+        if (!schema.contains(key)) return;
         Map<String, Integer> m = cache.get(uuid);
         if (m == null) return;
-        m.put(statName, amount);
+        m.put(key, amount);
         AsyncUtils.runAsync(plugin, () -> {
             save(uuid);
         });
