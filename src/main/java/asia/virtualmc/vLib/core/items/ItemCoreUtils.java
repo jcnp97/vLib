@@ -1,7 +1,7 @@
 package asia.virtualmc.vLib.core.items;
 
 import asia.virtualmc.vLib.services.bukkit.ComponentService;
-import asia.virtualmc.vLib.utilities.digit.IntegerUtils;
+import asia.virtualmc.vLib.utilities.digit.DecimalUtils;
 import asia.virtualmc.vLib.utilities.digit.StringDigitUtils;
 import asia.virtualmc.vLib.utilities.items.MaterialUtils;
 import asia.virtualmc.vLib.utilities.java.ArrayUtils;
@@ -9,7 +9,9 @@ import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import asia.virtualmc.vLib.utilities.text.StringUtils;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -58,7 +60,7 @@ public class ItemCoreUtils {
         }
     }
 
-    public static ItemStack getDataComponent(@NotNull Section section, @NotNull ItemStack item, String itemKey) {
+    public static ItemStack getDataComponent(@NotNull Plugin plugin, @NotNull Section section, @NotNull ItemStack item, String itemKey) {
         ComponentService.DataComponent dataComponent = ComponentService.get(item);
         Section componentSection = section.getSection("data-component");
         if (componentSection == null) {
@@ -71,6 +73,16 @@ public class ItemCoreUtils {
             itemModel = StringUtils.replace(itemModel, "{item_key}", itemKey);
         }
 
+        // Use Cooldown
+        String cooldown = componentSection.getString("cooldown");
+        float seconds = 0;
+        NamespacedKey key = null;
+        if (cooldown != null) {
+            String[] parts = cooldown.split(":");
+            key = new NamespacedKey(plugin, parts[0]);
+            seconds = DecimalUtils.toFloat(parts[1]);
+        }
+
         return dataComponent.setItemModel(itemModel)
                 .setUnbreakable(componentSection.getBoolean("unbreakable"))
                 .setMaxStackSize(componentSection.getInt("max-stack-size"))
@@ -78,6 +90,7 @@ public class ItemCoreUtils {
                 .setGlint(componentSection.getBoolean("enchant-glint"))
                 .setEnchantable(componentSection.getInt("enchantable"))
                 .addItemFlags(componentSection.getStringList("item-flags"))
+                .useCooldown(key, seconds)
                 .build();
     }
 
@@ -114,6 +127,26 @@ public class ItemCoreUtils {
             Set<String> keys = itemData.getRoutesAsStrings(false);
             for (String key : keys) {
                 double value = itemData.getDouble(key);
+                data.put(key, value);
+            }
+        }
+
+        return data;
+    }
+
+    /**
+     * Reads long key/value pairs under "pdc-data.long".
+     *
+     * @param section the base section
+     * @return map of keys to long; empty if none
+     */
+    public static Map<String, Long> getLong(Section section) {
+        Map<String, Long> data = new HashMap<>();
+        Section itemData = section.getSection("pdc-data.long");
+        if (itemData != null) {
+            Set<String> keys = itemData.getRoutesAsStrings(false);
+            for (String key : keys) {
+                long value = itemData.getLong(key);
                 data.put(key, value);
             }
         }

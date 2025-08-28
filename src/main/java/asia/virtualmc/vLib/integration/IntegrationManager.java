@@ -3,7 +3,8 @@ package asia.virtualmc.vLib.integration;
 import asia.virtualmc.vLib.Main;
 import asia.virtualmc.vLib.Registry;
 import asia.virtualmc.vLib.integration.better_model.BMCommands;
-import asia.virtualmc.vLib.integration.hologram_lib.HologramUtils;
+import asia.virtualmc.vLib.integration.hologram_lib.HologramLibUtils;
+import asia.virtualmc.vLib.integration.hologram_lib.PlayerHologramUtils;
 import asia.virtualmc.vLib.integration.realistic_seasons.RealisticSeasonsUtils;
 import asia.virtualmc.vLib.integration.skinsrestorer.SkinsRestorerUtils;
 import asia.virtualmc.vLib.integration.ultimate_advancement.UAdvancementUtils;
@@ -50,11 +51,12 @@ public class IntegrationManager {
 
         if (Boolean.TRUE.equals(modules.get("hologram_lib"))) {
             HologramLib.onLoad(Main.getInstance());
-            HologramUtils.load();
+            HologramLibUtils.load();
+            PlayerHologramUtils.load();
         }
     }
 
     public void disable() {
-        HologramUtils.clearAll();
+        HologramLibUtils.clearAll();
     }
 }

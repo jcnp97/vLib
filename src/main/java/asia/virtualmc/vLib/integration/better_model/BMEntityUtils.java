@@ -3,12 +3,13 @@ package asia.virtualmc.vLib.integration.better_model;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import kr.toxicity.model.api.BetterModel;
 import kr.toxicity.model.api.data.renderer.ModelRenderer;
-import kr.toxicity.model.api.tracker.EntityTracker;
-import kr.toxicity.model.api.tracker.EntityTrackerRegistry;
+import kr.toxicity.model.api.tracker.*;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.util.Transformation;
 
 import java.util.Optional;
 
@@ -36,15 +37,18 @@ public class BMEntityUtils {
             e.setGravity(false);
         });
 
-        Optional<ModelRenderer> rendererOpt = BetterModel.model(modelName);
-        if (rendererOpt.isEmpty()) {
+        EntityTracker tracker = BetterModel.model(modelName)
+                .map(r -> r.getOrCreate(entity))
+                .orElse(null);
+
+        if (tracker == null) {
             entity.remove();
             ConsoleUtils.severe("Unable to render model on " + entity + " because modelName is invalid!");
             return null;
         }
 
-        ModelRenderer renderer = rendererOpt.get();
-        renderer.getOrCreate(entity);
+        //tracker.asTrackerData().scaler().multiply(scale);
+        //tracker.forceUpdate(true);
         return entity;
     }
 

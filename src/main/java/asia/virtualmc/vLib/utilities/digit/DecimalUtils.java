@@ -6,6 +6,37 @@ import java.math.RoundingMode;
 public class DecimalUtils {
 
     /**
+     * Rounds the given double value to two decimal places and returns it
+     * in a simplified form (removing unnecessary trailing zeros).
+     * <p>Examples:</p>
+     * <ul>
+     *     <li>2.8173819 → 2.82</li>
+     *     <li>2.00 → 2</li>
+     *     <li>1.90 → 1.9</li>
+     * </ul>
+     *
+     * @param value the original double value
+     * @return the rounded and simplified double value
+     */
+    public static double format(double value) {
+        BigDecimal bd = BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP);
+        return bd.stripTrailingZeros().doubleValue();
+    }
+
+    /**
+     * Formats a double value to the specified number of decimal places.
+     * Uses {@link RoundingMode#HALF_UP} for rounding and strips trailing zeros.
+     *
+     * @param value    the double value to format
+     * @param decimals the number of decimal places to keep
+     * @return the formatted double with trailing zeros removed
+     */
+    public static double format(double value, int decimals) {
+        BigDecimal bd = BigDecimal.valueOf(value).setScale(decimals, RoundingMode.HALF_UP);
+        return bd.stripTrailingZeros().doubleValue();
+    }
+
+    /**
      * Returns the value rounded to the specified number of decimal places.
      *
      * @param value The original double value to round.
@@ -49,5 +80,22 @@ public class DecimalUtils {
      */
     public static BigDecimal toBigDecimal(double value) {
         return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Attempts to parse a String into a float.
+     *
+     * @param input the string to parse
+     * @return the parsed float, or null if invalid
+     */
+    public static Float toFloat(String input) {
+        if (input == null) {
+            return null;
+        }
+        try {
+            return Float.parseFloat(input.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }

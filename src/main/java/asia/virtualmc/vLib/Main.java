@@ -33,10 +33,8 @@ public final class Main extends JavaPlugin {
     public static Main getInstance() {
         return plugin;
     }
+    public Registry getRegistry() { return registry; }
 
     public static String getPluginName() { return plugin.getName(); }
-
-    public static String getPrefix() {
-        return prefix;
-    }
+    public static String getPrefix() { return prefix; }
 }

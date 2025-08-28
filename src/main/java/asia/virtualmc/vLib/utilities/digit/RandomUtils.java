@@ -85,7 +85,40 @@ public class RandomUtils {
             return null;
         }
 
+        if (list.size() == 1) {
+            return list.getFirst();
+        }
+
         int index = ThreadLocalRandom.current().nextInt(list.size());
         return list.get(index);
+    }
+
+    /**
+     * Selects an index based on weighted random distribution.
+     * <p>
+     * Each element in the {@code weights} array represents the relative chance of selection.
+     * The higher the weight, the more likely that index will be chosen.
+     * </p>
+     *
+     * @param weights an array of non-negative weight values
+     * @return the selected index (1-based) corresponding to the chosen weight,
+     *         or {@code 0} if total weight is less than or equal to zero
+     * @throws IllegalStateException if no index can be selected (should not normally occur)
+     */
+    public static int getWeight(double[] weights) {
+        double totalWeight = MathUtils.sum(weights);
+        if (totalWeight <= 0) return 0;
+
+        double rand = RandomUtils.getDouble() * totalWeight;
+        double cumulativeWeight = 0;
+
+        for (int i = 0; i < weights.length; i++) {
+            cumulativeWeight += weights[i];
+            if (rand < cumulativeWeight) {
+                return i + 1;
+            }
+        }
+
+        throw new IllegalStateException("Unexpected state in RandomUtils.getWeight()");
     }
 }

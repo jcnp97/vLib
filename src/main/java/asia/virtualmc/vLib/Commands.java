@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CommandManager {
+public class Commands {
 
-    public CommandManager() {
+    public Commands() {
         enable();
     }
 
@@ -22,7 +22,8 @@ public class CommandManager {
 
         if (Boolean.TRUE.equals(modules.get("better_model")) && BMCommands.isEnabled()) {
             command.withSubcommand(BMCommands.changeModel())
-                    .withSubcommand(BMCommands.spawnModel());
+                    .withSubcommand(BMCommands.spawnModel())
+                    .withSubcommand(BMCommands.playAnimation());
 
             enabledCommands.add("BetterModel");
         }

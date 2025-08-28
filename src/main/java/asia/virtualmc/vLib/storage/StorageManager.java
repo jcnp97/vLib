@@ -17,7 +17,6 @@ public class StorageManager {
         this.mySQLConnection = new MySQLConnection();
         this.sqLiteConnection = new SQLiteConnection();
         this.playerIDData = new PlayerIDData();
-
         enable();
     }
 
@@ -38,7 +37,7 @@ public class StorageManager {
     }
 
     public void task() {
-        sqLiteConnection.closeAll();
+        sqLiteConnection.checkpointAll();
     }
 
     public void disable() {

@@ -1,14 +1,26 @@
 package asia.virtualmc.vLib.core.utilities;
 
 import asia.virtualmc.vLib.Main;
+import asia.virtualmc.vLib.core.guis.GUIItemUtils;
+import asia.virtualmc.vLib.services.bukkit.ComponentService;
+import asia.virtualmc.vLib.services.file.YamlFileService;
 import asia.virtualmc.vLib.utilities.annotations.Internal;
+import asia.virtualmc.vLib.utilities.digit.DecimalUtils;
 import asia.virtualmc.vLib.utilities.digit.IntegerUtils;
+import asia.virtualmc.vLib.utilities.digit.StringDigitUtils;
 import asia.virtualmc.vLib.utilities.files.YAMLUtils;
+import asia.virtualmc.vLib.utilities.items.ItemStackUtils;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
+import com.github.stefvanschie.inventoryframework.gui.GuiItem;
+import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
+import org.jfree.util.StringUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,12 +43,7 @@ public class ProgressBarUtils {
     public static void load() {
         unicodes.clear();
 
-        YamlDocument yaml = YAMLUtils.getYaml(Main.getInstance(), "messages.yml");
-        if (yaml == null) {
-            ConsoleUtils.severe("Unable to read messages.yml. Skipping progress bar creation..");
-            return;
-        }
-
+        YamlFileService.YamlFile yaml = YamlFileService.get(Main.getInstance(), "messages.yml");
         Section section = yaml.getSection("progress-bar");
         if (section == null) {
             ConsoleUtils.severe("Unable to read progress-bar section. Skipping progress bar creation..");
@@ -79,12 +86,12 @@ public class ProgressBarUtils {
         if (unicodes.isEmpty()) return "DISABLED";
         if (maxValue <= 0) {
             ConsoleUtils.severe("Invalid maxValue for ProgressBarUtils#get: " + maxValue);
-            return unicodes.get(0);
+            return unicodes.get(0) + getPercentage(0, 0);
         }
 
         int maxIndex = unicodes.size() - 1;
-        if (value <= 0) return unicodes.get(0);
-        if (value >= maxValue) return unicodes.get(maxIndex);
+        if (value <= 0) return unicodes.get(0) + getPercentage(0, 0);
+        if (value >= maxValue) return unicodes.get(maxIndex) + getPercentage(maxIndex, 1);
 
         double percentage = value / maxValue;
         int index = (int) Math.ceil(percentage * maxIndex);
@@ -92,6 +99,35 @@ public class ProgressBarUtils {
         if (index < 0) index = 0;
         if (index > maxIndex) index = maxIndex;
 
-        return unicodes.getOrDefault(index, unicodes.get(0));
+        return unicodes.getOrDefault(index, unicodes.get(0)) + getPercentage(index, percentage);
+    }
+
+    private static String getPercentage(int index, double percentage) {
+        String color = "<gray>";
+        if (index >= 0 && index < 4) {
+            color = "<#f70500>";
+        } else if (index >= 4 && index < 7) {
+            color = "<#f7a000>";
+        } else if (index >= 7 && index < 10) {
+            color = "<#f7f200>";
+        } else if (index >= 10) {
+            color = "<#00f200>";
+        }
+
+        return " <gray>(" + color + DecimalUtils.format(percentage * 100) + "%<gray>)";
+    }
+
+    public static StaticPane getAsItem(StaticPane pane, double progress, int count, int posX, int posY, String displayName, String itemModel, List<String> lore) {
+        ComponentService.DataComponent data = ComponentService.get(Material.PAPER);
+
+        int[] additions = GUIItemUtils.getBarItem(progress, count);
+        for (int x = 0; x < count; x++) {
+            ItemStack item = data.setDisplayName(displayName).setLore(lore).setItemModel(itemModel + "_" + additions[x]).build();
+            GuiItem guiItem = new GuiItem(item.clone());
+            pane.addItem(guiItem, posX, posY);
+            posX++;
+        }
+
+        return pane;
     }
 }

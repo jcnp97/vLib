@@ -1,6 +1,7 @@
 package asia.virtualmc.vLib.utilities.files;
 
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
@@ -122,4 +123,37 @@ public class FileUtils {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Creates a new file inside the plugin's data folder using the given relative file path.
+     * <p>
+     * If necessary, this method will also create any missing parent directories.
+     * For example, calling this method with {@code plugin, "cache/test.sql"} will
+     * create a {@code test.sql} file inside {@code /plugins/YourPlugin/cache/}.
+     * </p>
+     *
+     * @param plugin   the plugin instance, used to resolve the data folder
+     * @param filePath the relative path of the file to create inside the plugin's data folder
+     * @return the created {@link File} instance, or {@code null} if the file could not be created
+     */
+    public static File create(Plugin plugin, String filePath) {
+        File file = new File(plugin.getDataFolder(), filePath);
+        try {
+            if (!file.getParentFile().exists()) {
+                file.getParentFile().mkdirs();
+            }
+
+            if (!file.exists() && !file.createNewFile()) {
+                ConsoleUtils.severe("Failed to create file: " + file.getAbsolutePath());
+                return null;
+            }
+
+            return file;
+        } catch (IOException e) {
+            ConsoleUtils.severe("Error creating file: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 }

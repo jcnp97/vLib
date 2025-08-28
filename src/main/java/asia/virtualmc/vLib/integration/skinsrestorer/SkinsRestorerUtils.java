@@ -17,6 +17,7 @@ import org.bukkit.plugin.Plugin;
 import java.io.*;
 import java.net.URL;
 import java.util.Optional;
+import java.util.UUID;
 
 public class SkinsRestorerUtils {
     private static SkinsRestorer skinsRestorer;
@@ -40,6 +41,18 @@ public class SkinsRestorerUtils {
         ConsoleUtils.info("Successfully hooked into: SkinsRestorer");
     }
 
+    public static Optional<MojangSkinDataResult> getSkin(UUID uuid) throws DataRequestException {
+        return skinsRestorer.getSkinStorage().getPlayerSkin(String.valueOf(uuid), false);
+    }
+
+    public static Optional<SkinProperty> getSkinProperty(UUID uuid) {
+        return skinsRestorer.getPlayerStorage().getSkinOfPlayer(uuid);
+    }
+
+    public static Optional<SkinProperty> getSkinProperty(UUID uuid, String name) throws DataRequestException {
+        return skinsRestorer.getPlayerStorage().getSkinForPlayer(uuid, name);
+    }
+
     /**
      * Downloads the current Minecraft skin of the specified player using SkinsRestorer API
      * and saves it as a PNG file in the provided output directory.
@@ -50,7 +63,7 @@ public class SkinsRestorerUtils {
      * @param player    the player whose skin will be downloaded
      * @param outputDir the directory where the skin file will be saved
      */
-    public static void getSkin(Player player, File outputDir) {
+    public static void getSkinTexture(Player player, File outputDir) {
         if (skinsRestorer == null) {
             ConsoleUtils.severe("Trying to use skinsrestorer module but it is disabled!");
             return;

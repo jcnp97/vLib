@@ -9,7 +9,6 @@ import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.item.type.ItemType;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerHeldItemChange;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetSlot;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import org.bukkit.Bukkit;
@@ -20,13 +19,43 @@ import org.jetbrains.annotations.NotNull;
 public class PacketEventsUtils {
 
     /**
-     * Creates an {@link ItemStack} with the specified {@link ItemType} and custom model data.
+     * Converts a Bukkit ItemStack to a PacketEvents ItemStack.
      *
-     * @param itemType  The item type to use for the ItemStack.
-     * @param modelData The custom model data to apply.
-     * @return A new ItemStack with the given item type and model data.
+     * @param item the Bukkit ItemStack
+     * @return the PacketEvents ItemStack
      */
-    public static ItemStack getItemStack(ItemType itemType, int modelData) {
+    public static ItemStack getItemStack(@NotNull org.bukkit.inventory.ItemStack item) {
+        return SpigotConversionUtil.fromBukkitItemStack(item);
+    }
+
+    /**
+     * Creates a PacketEvents ItemStack with a given material and item model (namespace:key).
+     *
+     * @param material  the Bukkit Material
+     * @param itemModel the string representation of the item model (namespace:key)
+     * @return the PacketEvents ItemStack, or null if the material type is not valid
+     */
+    public static ItemStack getItemStack(@NotNull Material material, @NotNull String itemModel) {
+        ItemType itemType = ItemTypes.getByName(material.name().toLowerCase());
+        if (itemType == null) return null;
+
+        return ItemStack.builder()
+                .type(itemType)
+                .component(ComponentTypes.ITEM_MODEL, new ItemModel(new ResourceLocation(itemModel)))
+                .build();
+    }
+
+    /**
+     * Creates a PacketEvents ItemStack with a given material and custom model data.
+     *
+     * @param material   the Bukkit Material
+     * @param modelData  the custom model data value
+     * @return the PacketEvents ItemStack, or null if the material type is not valid
+     */
+    public static ItemStack getItemStack(@NotNull Material material, int modelData) {
+        ItemType itemType = ItemTypes.getByName(material.name().toLowerCase());
+        if (itemType == null) return null;
+
         return ItemStack.builder()
                 .type(itemType)
                 .component(ComponentTypes.CUSTOM_MODEL_DATA_LISTS, new ItemCustomModelData(modelData))
@@ -34,29 +63,15 @@ public class PacketEventsUtils {
     }
 
     /**
-     * Creates an {@link ItemStack} from a {@link Material} with the specified custom model data.
-     * The material name is converted to lowercase to match the {@link ItemType} registry.
+     * Temporarily shows a custom item model animation in the player's main hand.
+     * The item will appear as the specified model for the given number of ticks
+     * before reverting back to the original item.
      *
-     * @param material  The Bukkit material to use.
-     * @param modelData The custom model data to apply.
-     * @return A new ItemStack with the resolved item type and model data.
+     * @param player    the player to show the animation to
+     * @param namespace the namespace of the model (e.g., "minecraft", "plugin")
+     * @param key       the key of the model
+     * @param ticks     how long (in ticks) the animation should last before reverting
      */
-    public static ItemStack getItemStack(Material material, int modelData) {
-        ItemType itemType = ItemTypes.getByName(material.name().toLowerCase());
-        if (itemType == null) {
-            return null;
-        }
-
-        return ItemStack.builder()
-                .type(itemType)
-                .component(ComponentTypes.CUSTOM_MODEL_DATA_LISTS, new ItemCustomModelData(modelData))
-                .build();
-    }
-
-    public static ItemStack getItemStack(@NotNull org.bukkit.inventory.ItemStack item) {
-        return SpigotConversionUtil.fromBukkitItemStack(item);
-    }
-
     public static void showAnimation(@NotNull Player player, String namespace, String key, int ticks) {
         org.bukkit.inventory.ItemStack mainHand = player.getInventory().getItemInMainHand();
         ItemStack protocolItem = getItemStack(mainHand);

@@ -46,7 +46,7 @@ public class MathUtils {
      */
     public static double percent(double currentValue, double maxValue) {
         if (maxValue <= 0.0) return 0.0;
-        double result = (currentValue / maxValue) * 100.0;
+        double result = DecimalUtils.format((currentValue / maxValue) * 100.0);
         return Math.min(100.0, Math.max(0.0, result));
     }
 

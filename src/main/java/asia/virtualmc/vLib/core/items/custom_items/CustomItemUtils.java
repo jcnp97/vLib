@@ -27,7 +27,6 @@ public class CustomItemUtils {
         NamespacedKey itemID = new NamespacedKey(plugin, "id");
         YamlFileService.YamlFile file = YamlFileService.get(plugin, fileName);
 
-
         Section section = file.getSection("items");
         if (section == null) {
             ConsoleUtils.severe(prefix, "No `items` section found from " + file.getYaml().getName());
@@ -44,6 +43,7 @@ public class CustomItemUtils {
             //Map<String, int[]> intArrayMap = ItemCoreUtils.getIntArray(keySection);
             Map<String, Integer> enchants = ItemCoreUtils.getEnchants(keySection);
             Map<String, String> stringMap = ItemCoreUtils.getString(keySection);
+            Map<String, Long> longMap = ItemCoreUtils.getLong(keySection);
             Map<String, Set<String>> stringSet = ItemCoreUtils.getSetString(keySection);
 
             // modify lore
@@ -59,7 +59,7 @@ public class CustomItemUtils {
                     PDCUtils.addString(meta, itemID, key.toLowerCase());
                     PDCUtils.addIntMap(plugin, meta, intMap);
                     PDCUtils.addDoubleMap(plugin, meta, doubleMap);
-                    //PDCUtils.addIntArrayMap(plugin, meta, intArrayMap);
+                    PDCUtils.addLongMap(plugin, meta, longMap);
                     PDCUtils.addStringMap(plugin, meta, stringMap);
                     MorePDCUtils.addStringSet(plugin, meta, stringSet);
 
@@ -74,7 +74,7 @@ public class CustomItemUtils {
             item.setItemMeta(meta);
 
             // Check for Data Components and Apply
-            item = ItemCoreUtils.getDataComponent(keySection, item, key);
+            item = ItemCoreUtils.getDataComponent(plugin, keySection, item, key);
 
             cache.put(key.toLowerCase(), item.clone());
         }

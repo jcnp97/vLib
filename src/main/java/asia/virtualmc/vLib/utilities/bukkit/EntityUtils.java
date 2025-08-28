@@ -87,7 +87,18 @@ public class EntityUtils {
      * @param uuid the UUID of the entity to retrieve
      * @return the {@link Entity} with the given UUID, or {@code null} if not found or unloaded
      */
-    public static Entity getEntity(@NotNull UUID uuid) {
+    public static Entity getEntity(UUID uuid) {
+        if (uuid == null) return null;
         return Bukkit.getEntity(uuid);
+    }
+
+    public static String serialize(Entity entity) {
+        if (entity == null) return null;
+        return entity.getUniqueId().toString();
+    }
+
+    public static Entity deserialize(String entityId) {
+        if (entityId == null) return null;
+        return getEntity(UUID.fromString(entityId));
     }
 }

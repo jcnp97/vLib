@@ -66,6 +66,21 @@ public class PDCUtils {
     }
 
     /**
+     * Retrieves a stored long value from the {@link PersistentDataContainer} of the given {@link ItemStack}.
+     * <p>
+     * If the item is air or has no item meta, this method will return {@code 0}.
+     *
+     * @param item the {@link ItemStack} to read the data from (must not be null)
+     * @param key  the {@link NamespacedKey} used to access the stored value
+     * @return the stored long value, or {@code 0} if not present
+     */
+    public static long getLong(@NotNull ItemStack item, NamespacedKey key) {
+        if (item.getType() == Material.AIR || !item.hasItemMeta()) return 0;
+        PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
+        return pdc.getOrDefault(key, PersistentDataType.LONG, (long) 0);
+    }
+
+    /**
      * Retrieves a string value from the item's PDC using the specified key.
      * Returns an empty string if the value is not found or invalid.
      *
@@ -161,6 +176,27 @@ public class PDCUtils {
         for (Map.Entry<String, Double> entry : map.entrySet()) {
             NamespacedKey key = new NamespacedKey(plugin, entry.getKey());
             pdc.set(key, PersistentDataType.DOUBLE, entry.getValue());
+        }
+    }
+
+    /**
+     * Stores a map of {@link String} keys and {@link Long} values into the {@link PersistentDataContainer}
+     * of the given {@link ItemMeta}.
+     * <p>
+     * Each map entry is converted into a {@link NamespacedKey} using the provided plugin as the namespace.
+     * If the map is empty, this method does nothing.
+     *
+     * @param plugin the plugin instance used to create {@link NamespacedKey}s (must not be null)
+     * @param meta   the {@link ItemMeta} where data will be stored (must not be null)
+     * @param map    a map of string keys and long values to store
+     */
+    public static void addLongMap(@NotNull Plugin plugin, @NotNull ItemMeta meta, Map<String, Long> map) {
+        if (map.isEmpty()) return;
+
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        for (Map.Entry<String, Long> entry : map.entrySet()) {
+            NamespacedKey key = new NamespacedKey(plugin, entry.getKey());
+            pdc.set(key, PersistentDataType.LONG, entry.getValue());
         }
     }
 

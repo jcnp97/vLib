@@ -1,12 +1,14 @@
 package asia.virtualmc.vLib.services.bukkit;
 
 import asia.virtualmc.vLib.utilities.messages.AdventureUtils;
+import io.papermc.paper.datacomponent.item.UseCooldown;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.components.UseCooldownComponent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -174,6 +176,16 @@ public class ComponentService {
             for (String flag : flags) {
                 meta.addItemFlags(ItemFlag.valueOf(flag));
             }
+
+            return this;
+        }
+
+        public DataComponent useCooldown(NamespacedKey key, float seconds) {
+            if (key == null || seconds == 0) return this;
+            UseCooldownComponent cooldown = meta.getUseCooldown();
+            cooldown.setCooldownGroup(key);
+            cooldown.setCooldownSeconds(seconds);
+            meta.setUseCooldown(cooldown);
 
             return this;
         }

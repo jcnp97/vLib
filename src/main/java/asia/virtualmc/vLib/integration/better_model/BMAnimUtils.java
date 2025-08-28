@@ -1,6 +1,8 @@
 package asia.virtualmc.vLib.integration.better_model;
 
+import kr.toxicity.model.api.BetterModel;
 import kr.toxicity.model.api.animation.AnimationModifier;
+import kr.toxicity.model.api.data.blueprint.BlueprintAnimation;
 import kr.toxicity.model.api.tracker.EntityTracker;
 import kr.toxicity.model.api.tracker.EntityTrackerRegistry;
 import org.bukkit.entity.Entity;
@@ -73,5 +75,12 @@ public class BMAnimUtils {
         }
 
         return false;
+    }
+
+    public static float getModelAnimLength(String model, String animation) {
+        return BetterModel.model(model)
+                .flatMap(r -> r.animation(animation))
+                .map(BlueprintAnimation::length)
+                .orElse(0f);
     }
 }

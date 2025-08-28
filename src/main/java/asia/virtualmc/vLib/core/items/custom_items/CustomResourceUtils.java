@@ -105,7 +105,7 @@ public class CustomResourceUtils {
                 item.setItemMeta(meta);
 
                 // Check for Data Components and Apply
-                item = ItemCoreUtils.getDataComponent(keySection, item, key);
+                item = ItemCoreUtils.getDataComponent(plugin, keySection, item, key);
 
                 cache.put(key.toLowerCase() + "_" + rarityId, item.clone());
             }

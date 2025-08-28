@@ -81,6 +81,32 @@ public class BMCommands {
                 });
     }
 
+    public static CommandAPICommand playAnimation() {
+        return new CommandAPICommand("play_anim")
+                .withPermission("vlib.admin")
+                .withArguments(new StringArgument("animation_name"))
+                .executes((sender, args) -> {
+                    if (sender instanceof Player player) {
+                        String animName = (String) args.get("animation_name");
+
+                        Entity target = EntityUtils.getNearest(player, 3, EntityType.ITEM_DISPLAY);
+                        if (target == null) {
+                            MessageUtils.sendMessage(player, "No valid entity nearby found.", EnumsLib.MessageType.RED);
+                            return;
+                        }
+
+                        boolean success = BMAnimUtils.playOnce(target, animName);
+                        if (!success) {
+                            MessageUtils.sendMessage(player, "Failed to play animation because Animation '" + animName + "' does not exist.", EnumsLib.MessageType.RED);
+                        } else {
+                            MessageUtils.sendMessage(player, "Played animation: " + animName, EnumsLib.MessageType.GREEN);
+                        }
+                    } else {
+                        sender.sendMessage("This command can only be used by players.");
+                    }
+                });
+    }
+
     public static boolean isEnabled() {
         return enabled;
     }

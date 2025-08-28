@@ -118,20 +118,25 @@ public class InstantUtils {
     }
 
     /**
-     * Returns the epoch‐second equivalent, or null if the Instant is null.
+     * Serializes an {@link Instant} into a storable long value (epoch seconds).
+     * If the Instant is null, returns 0.
+     *
+     * @param instant the Instant to serialize, may be null
+     * @return epoch seconds as a long, or 0 if instant is null
      */
-    public static Long serialize(Instant time) {
-        return (time == null) ? null : time.getEpochSecond();
+    public static long serialize(Instant instant) {
+        return (instant == null) ? 0L : instant.getEpochSecond();
     }
 
     /**
-     * Returns the Instant equivalent, or null if the Long value is null.
+     * Deserializes a stored epoch seconds value into an {@link Instant}.
+     * If the value is 0, returns null.
+     *
+     * @param epochSeconds the epoch seconds to deserialize
+     * @return the corresponding Instant, or null if epochSeconds is 0
      */
-    public static Instant deserialize(Long time) {
-        if (time == null) {
-            return null;
-        }
-        return Instant.ofEpochSecond(time);
+    public static Instant deserialize(long epochSeconds) {
+        return (epochSeconds == 0L) ? null : Instant.ofEpochSecond(epochSeconds);
     }
 
     /**

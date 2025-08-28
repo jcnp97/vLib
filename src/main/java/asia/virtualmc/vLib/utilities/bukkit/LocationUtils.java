@@ -1,6 +1,7 @@
 package asia.virtualmc.vLib.utilities.bukkit;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 
