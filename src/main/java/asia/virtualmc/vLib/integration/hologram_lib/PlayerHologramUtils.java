@@ -62,9 +62,8 @@ public class PlayerHologramUtils {
         removeHolograms(uuid);
         locationCache.put(uuid, location.clone());
 
-        Location holoLocation = location.clone().add(0.5, 1.5, 0.5);
-        hologramManager.spawn(textHologram, holoLocation);
-        hologramManager.spawn(itemHologram, holoLocation.add(0, 0.2, 0));
+        hologramManager.spawn(textHologram, location);
+        hologramManager.spawn(itemHologram, location.clone().add(0, 0.2, 0));
         hologramCache.put(uuid, new ArrayList<>(Arrays.asList(itemHologram, textHologram)));
     }
 
@@ -95,6 +94,30 @@ public class PlayerHologramUtils {
             hologramCache.computeIfAbsent(uuid, k -> new ArrayList<>()).add(textHologram);
             height += 0.2;
         }
+    }
+
+    public static void register(Player player, String text,
+                                float x, float y, float z, Location location) {
+        UUID uuid = player.getUniqueId();
+        Location lastLocation = locationCache.get(uuid);
+        if (lastLocation != null && lastLocation.equals(location)) {
+            return;
+        }
+
+        // Remove old holograms if it exists first
+        removeHolograms(uuid);
+        locationCache.put(uuid, location.clone());
+
+        String hologramID = UlidCreator.getUlid().toString().toLowerCase();
+        TextHologram textHologram = new TextHologram(hologramID)
+                .setMiniMessageText(text)
+                .setAlignment(TextDisplay.TextAlignment.CENTER)
+                .addViewer(player)
+                .setScale(x, y, z)
+                .setBillboard(Display.Billboard.VERTICAL);
+
+        hologramManager.spawn(textHologram, location);
+        hologramCache.computeIfAbsent(uuid, k -> new ArrayList<>()).add(textHologram);
     }
 
     public static void removeHolograms(UUID uuid) {
