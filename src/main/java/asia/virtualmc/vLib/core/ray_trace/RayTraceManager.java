@@ -63,13 +63,17 @@ public class RayTraceManager {
 
             Player player = Bukkit.getPlayer(uuid);
             if (player == null || !player.isOnline()) {
-                handler.cleanup(player); // cleanup stale player data
+                handler.cleanup(player);
                 it.remove();
                 continue;
             }
 
+            if (!rayTraceCache.containsKey(uuid)) {
+                continue;
+            }
+
             if (!handler.isActive(player)) {
-                handler.cleanup(player); // cleanup if handler no longer applies
+                handler.cleanup(player);
                 it.remove();
                 continue;
             }

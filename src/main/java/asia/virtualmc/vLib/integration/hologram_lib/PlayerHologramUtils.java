@@ -21,8 +21,8 @@ import java.util.List;
 
 public class PlayerHologramUtils {
     private static HologramManager hologramManager;
-    private static final Map<UUID, List<Hologram<?>>> hologramCache = new HashMap<>();
-    private static final Map<UUID, Location> locationCache = new HashMap<>();
+    private static final Map<UUID, ActiveHologram> hologramCache = new HashMap<>();
+    private record ActiveHologram(Location location, List<Hologram<?>> holograms) {}
 
     @Internal
     public static void load() {
@@ -32,10 +32,15 @@ public class PlayerHologramUtils {
     public static void register(Player player, String text, Material material,
                                 String itemModel, float x, float y, float z, Location location) {
         UUID uuid = player.getUniqueId();
-        Location lastLocation = locationCache.get(uuid);
-        if (lastLocation != null && lastLocation.equals(location)) {
+        ActiveHologram current = hologramCache.get(uuid);
+        if (current != null && current.location.equals(location)) {
             return;
         }
+
+        // Remove old holograms if it exists first
+        removeHolograms(uuid);
+
+        List<Hologram<?>> parts = new ArrayList<>();
 
         String hologramID = UlidCreator.getUlid().toString().toLowerCase();
         String hologramItem = hologramID + "_item";
@@ -58,26 +63,27 @@ public class PlayerHologramUtils {
                 .setScale(x, y, z)
                 .setBillboard(Display.Billboard.VERTICAL);
 
-        // Remove old holograms if it exists first
-        removeHolograms(uuid);
-        locationCache.put(uuid, location.clone());
-
         hologramManager.spawn(textHologram, location);
         hologramManager.spawn(itemHologram, location.clone().add(0, 0.2, 0));
-        hologramCache.put(uuid, new ArrayList<>(Arrays.asList(itemHologram, textHologram)));
+
+        parts.add(itemHologram);
+        parts.add(textHologram);
+
+        hologramCache.put(uuid, new ActiveHologram(location, parts));
     }
 
     public static void register(Player player, List<String> texts,
                                 float x, float y, float z, Location location) {
         UUID uuid = player.getUniqueId();
-        Location lastLocation = locationCache.get(uuid);
-        if (lastLocation != null && lastLocation.equals(location)) {
+        ActiveHologram current = hologramCache.get(uuid);
+        if (current != null && current.location.equals(location)) {
             return;
         }
 
         // Remove old holograms if it exists first
         removeHolograms(uuid);
-        locationCache.put(uuid, location.clone());
+
+        List<Hologram<?>> parts = new ArrayList<>();
 
         double height = 0;
         Location holoLocation = location.clone().add(0.5, 1.5, 0.5);
@@ -91,22 +97,25 @@ public class PlayerHologramUtils {
                     .setBillboard(Display.Billboard.VERTICAL);
 
             hologramManager.spawn(textHologram, holoLocation.clone().add(0, height, 0));
-            hologramCache.computeIfAbsent(uuid, k -> new ArrayList<>()).add(textHologram);
+            parts.add(textHologram);
             height += 0.2;
         }
+
+        hologramCache.put(uuid, new ActiveHologram(location, parts));
     }
 
     public static void register(Player player, String text,
                                 float x, float y, float z, Location location) {
         UUID uuid = player.getUniqueId();
-        Location lastLocation = locationCache.get(uuid);
-        if (lastLocation != null && lastLocation.equals(location)) {
+        ActiveHologram current = hologramCache.get(uuid);
+        if (current != null && current.location.equals(location)) {
             return;
         }
 
         // Remove old holograms if it exists first
         removeHolograms(uuid);
-        locationCache.put(uuid, location.clone());
+
+        List<Hologram<?>> parts = new ArrayList<>();
 
         String hologramID = UlidCreator.getUlid().toString().toLowerCase();
         TextHologram textHologram = new TextHologram(hologramID)
@@ -117,18 +126,20 @@ public class PlayerHologramUtils {
                 .setBillboard(Display.Billboard.VERTICAL);
 
         hologramManager.spawn(textHologram, location);
-        hologramCache.computeIfAbsent(uuid, k -> new ArrayList<>()).add(textHologram);
+        parts.add(textHologram);
+
+        hologramCache.put(uuid, new ActiveHologram(location, parts));
     }
 
     public static void removeHolograms(UUID uuid) {
-        List<Hologram<?>> holograms = hologramCache.get(uuid);
-        if (holograms != null && !holograms.isEmpty()) {
-            for (Hologram<?> hologram : holograms) {
-                hologramManager.remove(hologram);
-            }
-            hologramCache.remove(uuid);
-        }
 
-        locationCache.remove(uuid);
+
+
+        ActiveHologram active = hologramCache.remove(uuid);
+        if (active != null && !active.holograms.isEmpty()) {
+            for (Hologram<?> holo : active.holograms) {
+                hologramManager.remove(holo);
+            }
+        }
     }
 }

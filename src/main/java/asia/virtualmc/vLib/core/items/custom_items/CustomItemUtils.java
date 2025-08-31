@@ -80,7 +80,7 @@ public class CustomItemUtils {
         }
 
         // Generate Models
-        generateModels(prefix, file);
+        //generateModels(prefix, file);
 
         return cache;
     }

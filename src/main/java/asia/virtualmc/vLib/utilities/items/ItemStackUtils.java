@@ -4,6 +4,7 @@ import asia.virtualmc.vLib.utilities.messages.AdventureUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -103,15 +104,16 @@ public class ItemStackUtils {
     }
 
     /**
-     * Gives the specified amount of an {@link ItemStack} to a {@link Player}.
-     * If the player's inventory is full, the remaining items will be dropped at the player's location.
+     * Gives an item to a player.
+     * If the player's inventory is full, excess items are dropped at the player's location.
      *
-     * @param player  the player to give the item to
-     * @param item    the item to give
-     * @param amount  the total amount of the item to give
+     * @param player the player to receive the item
+     * @param item the item to give (cannot be null)
+     * @param amount the total number of items to give
+     * @return true if items were processed successfully, false if item is null or amount is invalid
      */
-    public static void give(Player player, ItemStack item, int amount) {
-        if (item == null || amount <= 0) return;
+    public static boolean give(Player player, ItemStack item, int amount) {
+        if (item == null || amount <= 0) return false;
 
         PlayerInventory inventory = player.getInventory();
         Location dropLocation = player.getLocation();
@@ -130,5 +132,34 @@ public class ItemStackUtils {
 
             amount -= stackSize;
         }
+
+        return true;
+    }
+
+    /**
+     * Drops a cloned item at a given location.
+     *
+     * @param item the item to drop (cannot be null)
+     * @param location the location where the item should be dropped
+     * @param amount the amount of the item to drop
+     */
+    public static void drop(ItemStack item, Location location, int amount) {
+        if (item == null || location == null) return;
+
+        World world = location.getWorld();
+        if (world == null) return;
+
+        ItemStack drop = item.clone();
+        drop.setAmount(amount);
+        world.dropItemNaturally(location, drop);
+    }
+
+    public static void drop(ItemStack item, Location location) {
+        if (item == null || location == null) return;
+
+        World world = location.getWorld();
+        if (world == null) return;
+
+        world.dropItemNaturally(location, item.clone());
     }
 }

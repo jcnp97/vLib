@@ -345,6 +345,31 @@ public class YAMLUtils {
         return documents;
     }
 
+    public static List<YamlDocument> getFiles(@NotNull File directory) {
+        List<YamlDocument> documents = new ArrayList<>();
+        if (!directory.exists() || !directory.isDirectory()) {
+            ConsoleUtils.severe("Directory not found: " + directory.getAbsolutePath());
+            return documents;
+        }
+
+        File[] ymlFiles = directory.listFiles((dir, name) -> name.toLowerCase().endsWith(".yml"));
+        if (ymlFiles == null || ymlFiles.length == 0) {
+            ConsoleUtils.warning("No .yml files found in: " + directory.getAbsolutePath());
+            return documents;
+        }
+
+        for (File file : ymlFiles) {
+            try {
+                documents.add(YamlDocument.create(file));
+            } catch (IOException e) {
+                ConsoleUtils.severe("Failed to load YAML file: " + file.getName());
+                e.printStackTrace();
+            }
+        }
+
+        return documents;
+    }
+
     /**
      * Reads a string value from a YAML file.
      *
