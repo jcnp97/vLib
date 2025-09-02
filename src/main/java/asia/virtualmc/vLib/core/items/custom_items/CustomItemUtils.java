@@ -47,7 +47,7 @@ public class CustomItemUtils {
             Map<String, Set<String>> stringSet = ItemCoreUtils.getSetString(keySection);
 
             // modify lore
-            customItem.lore = ItemCoreUtils.modifyLore(customItem.lore, doubleMap, intMap);
+            customItem.lore = ItemCoreUtils.modifyLore(customItem.lore, doubleMap, intMap, longMap);
 
             // item creation
             ItemStack item = ItemStackUtils.create(customItem.material, customItem.name,

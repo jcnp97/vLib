@@ -89,6 +89,7 @@ public class ComponentService {
          * @return this DataComponent for chaining
          */
         public DataComponent setItemModel(String itemModel) {
+            if (itemModel == null || itemModel.isEmpty()) return this;
             NamespacedKey key = NamespacedKey.fromString(itemModel);
             if (key != null) meta.setItemModel(key);
             return this;

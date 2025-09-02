@@ -22,6 +22,6 @@ public class StatisticsConfig {
             return cache;
         }
 
-        return file.stringKeyDoubleMap(section, true);
+        return file.stringKeyDoubleMap(section, false);
     }
 }

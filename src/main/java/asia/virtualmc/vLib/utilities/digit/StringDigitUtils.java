@@ -57,6 +57,9 @@ public class StringDigitUtils {
         return String.format("%,d", value);
     }
 
+    public static String formatLong(long value) {
+        return String.format("%,d", value);
+    }
 
     /**
      * Formats the given double value into shortened units (K, M, B, T) with up to two decimal places.

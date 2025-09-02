@@ -38,7 +38,7 @@ public class TaskManager {
 
         if (Registry.getModule("ray_trace")) {
             taskCache.add(TaskUtils.repeating(plugin,
-                    rayTraceManager::task, 0.25));
+                    rayTraceManager::task, 0.5));
         }
     }
 

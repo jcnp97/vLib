@@ -239,7 +239,10 @@ public class ItemCoreUtils {
      * @param intMap placeholder -> int values
      * @return new lore list with placeholders resolved
      */
-    public static List<String> modifyLore(List<String> lore, Map<String, Double> doubleMap, Map<String, Integer> intMap) {
+    public static List<String> modifyLore(List<String> lore,
+                                          Map<String, Double> doubleMap,
+                                          Map<String, Integer> intMap,
+                                          Map<String, Long> longMap) {
         List<String> newLore = new ArrayList<>();
 
         for (String line : lore) {
@@ -251,6 +254,10 @@ public class ItemCoreUtils {
 
             for (Map.Entry<String, Double> entry : doubleMap.entrySet()) {
                 processedLine = processedLine.replace("{" + entry.getKey() + "}", StringDigitUtils.formatDouble(entry.getValue(), true));
+            }
+
+            for (Map.Entry<String, Long> entry : longMap.entrySet()) {
+                processedLine = processedLine.replace("{" + entry.getKey() + "}", StringDigitUtils.formatLong(entry.getValue()));
             }
 
             newLore.add(processedLine);

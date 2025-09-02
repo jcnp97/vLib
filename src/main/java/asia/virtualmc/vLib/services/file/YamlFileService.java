@@ -66,6 +66,8 @@ public class YamlFileService {
          */
         public Map<String, String> stringKeyStringMap(Section section, boolean debug) {
             Map<String, String> map = new HashMap<>();
+            if (section == null) return map;
+
             Set<String> keys = section.getRoutesAsStrings(false);
             if (!keys.isEmpty()) {
                 for (String key : keys) {
@@ -89,6 +91,8 @@ public class YamlFileService {
          */
         public Map<String, Integer> stringKeyIntMap(Section section, boolean debug) {
             Map<String, Integer> map = new HashMap<>();
+            if (section == null) return map;
+
             Set<String> keys = section.getRoutesAsStrings(false);
             if (!keys.isEmpty()) {
                 for (String key : keys) {
@@ -112,6 +116,8 @@ public class YamlFileService {
          */
         public Map<String, Double> stringKeyDoubleMap(Section section, boolean debug) {
             Map<String, Double> map = new HashMap<>();
+            if (section == null) return map;
+
             Set<String> keys = section.getRoutesAsStrings(false);
             if (!keys.isEmpty()) {
                 for (String key : keys) {
@@ -135,6 +141,8 @@ public class YamlFileService {
          */
         public Map<Integer, String> intKeyStringMap(Section section, boolean debug) {
             Map<Integer, String> map = new HashMap<>();
+            if (section == null) return map;
+
             Set<String> keys = section.getRoutesAsStrings(false);
             if (!keys.isEmpty()) {
                 for (String key : keys) {
@@ -159,6 +167,8 @@ public class YamlFileService {
          */
         public Map<Integer, Integer> intKeyIntMap(Section section, boolean debug) {
             Map<Integer, Integer> map = new HashMap<>();
+            if (section == null) return map;
+
             Set<String> keys = section.getRoutesAsStrings(false);
             if (!keys.isEmpty()) {
                 for (String key : keys) {
@@ -183,6 +193,8 @@ public class YamlFileService {
          */
         public Map<Integer, Double> intKeyDoubleMap(Section section, boolean debug) {
             Map<Integer, Double> map = new HashMap<>();
+            if (section == null) return map;
+
             Set<String> keys = section.getRoutesAsStrings(false);
             if (!keys.isEmpty()) {
                 for (String key : keys) {
@@ -206,7 +218,8 @@ public class YamlFileService {
          * @return a set of strings
          */
         public Set<String> getStringSet(Section section, String route) {
-            return new HashSet<>(section.getStringList(route));
+            List<String> strings = section.getStringList(route);
+            return (strings != null) ? new HashSet<>(strings) : new HashSet<>();
         }
     }
 

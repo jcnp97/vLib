@@ -37,7 +37,7 @@ public class RanksConfig {
                 return null;
             }
 
-            Map<String, Double> bonuses = file.stringKeyDoubleMap(bonusSection, true);
+            Map<String, Double> bonuses = file.stringKeyDoubleMap(bonusSection, false);
             Map<Integer, Rank> ranks = getRanks(prefix, ranksSection);
             return new RankData(bonuses, ranks);
         } catch (Exception e) {
