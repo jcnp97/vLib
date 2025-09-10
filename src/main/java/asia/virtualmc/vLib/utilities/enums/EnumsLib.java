@@ -1,6 +1,10 @@
 package asia.virtualmc.vLib.utilities.enums;
 
 public class EnumsLib {
+    public enum DaylightType {
+        DAY, DUSK, MORNING, NIGHT;
+    }
+
     public enum FramePosition {
         POS1, POS2;
     }

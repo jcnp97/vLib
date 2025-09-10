@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -154,12 +155,12 @@ public class ItemStackUtils {
         world.dropItemNaturally(location, drop);
     }
 
-    public static void drop(ItemStack item, Location location) {
-        if (item == null || location == null) return;
+    public static Item drop(ItemStack item, Location location) {
+        if (item == null || location == null) return null;
 
         World world = location.getWorld();
-        if (world == null) return;
+        if (world == null) return null;
 
-        world.dropItemNaturally(location, item.clone());
+        return world.dropItemNaturally(location, item.clone());
     }
 }

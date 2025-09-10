@@ -30,14 +30,14 @@ public class IFUtils {
         UUID uuid = player.getUniqueId();
         responseCache.remove(uuid);
 
-        ChestGui gui = new ChestGui(3, GUIConfig.get("confirm-gui-title"));
+        ChestGui gui = new ChestGui(3, GUIConfig.get("confirmation_gui"));
         gui.setOnGlobalClick(event -> event.setCancelled(true));
 
         StaticPane pane = new StaticPane(0, 0, 9, 3);
 
         // Confirm buttons
         for (int i = 1; i <= 3; i++) {
-            ItemStack confirmButton = GUIUtils.createButton(GUIConfig.getItem(), "<green>ᴄᴏɴғɪʀᴍ ᴀᴄᴛɪᴏɴ");
+            ItemStack confirmButton = GUIConfig.getItem("<green>ᴄᴏɴғɪʀᴍ ᴀᴄᴛɪᴏɴ");
             GuiItem confirm = new GuiItem(confirmButton, event -> {
                 callback.accept(true);
                 event.getWhoClicked().closeInventory();
@@ -47,7 +47,7 @@ public class IFUtils {
 
         // Cancel buttons
         for (int i = 5; i <= 7; i++) {
-            ItemStack cancelButton = GUIUtils.createButton(GUIConfig.getItem(), "<red>ᴄᴀɴᴄᴇʟ ᴀᴄᴛɪᴏɴ");
+            ItemStack cancelButton = GUIConfig.getItem("<red>ᴄᴀɴᴄᴇʟ ᴀᴄᴛɪᴏɴ");
             GuiItem cancel = new GuiItem(cancelButton, event -> {
                 callback.accept(false);
                 event.getWhoClicked().closeInventory();

@@ -5,16 +5,22 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.component.ComponentTypes;
 import com.github.retrooper.packetevents.protocol.component.builtin.item.ItemCustomModelData;
 import com.github.retrooper.packetevents.protocol.component.builtin.item.ItemModel;
+import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
+import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.item.type.ItemType;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetSlot;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Collections;
 
 public class PacketEventsUtils {
 
@@ -103,5 +109,25 @@ public class PacketEventsUtils {
                 PacketEvents.getAPI().getPlayerManager().sendPacket(player, revert);
             }, ticks);
         }, 3L);
+    }
+
+    /**
+     * Sends a fake item model update for a dropped item entity.
+     * This does NOT modify the real server ItemStack — only client view.
+     *
+     * @param player     the player to show the fake model to
+     * @param itemEntity the dropped item entity
+     * @param itemModel  the fake model to apply (namespace:key)
+     */
+    public static void replaceItemModel(@NotNull Player player, @NotNull Item itemEntity, @NotNull String itemModel) {
+        ItemStack protocolStack = getItemStack(itemEntity.getItemStack());
+        if (protocolStack == null) return;
+
+        protocolStack.setComponent(ComponentTypes.ITEM_MODEL, new ItemModel(new ResourceLocation(itemModel)));
+        EntityData<Item> fakeItemData = new EntityData(8, EntityDataTypes.ITEMSTACK, protocolStack);
+
+        WrapperPlayServerEntityMetadata packet =
+                new WrapperPlayServerEntityMetadata(itemEntity.getEntityId(), Collections.singletonList(fakeItemData));
+        PacketEvents.getAPI().getPlayerManager().sendPacket(player, packet);
     }
 }

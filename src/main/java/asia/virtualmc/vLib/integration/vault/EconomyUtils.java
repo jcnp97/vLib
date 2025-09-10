@@ -55,10 +55,10 @@ public class EconomyUtils {
 
         try {
             UUID uuid = player.getUniqueId();
-            BigDecimal amount = DecimalUtils.toBigDecimal(value);
+            BigDecimal amount = DecimalUtils.doubleToBig(value);
             economy.deposit(Main.getPluginName(), uuid, amount);
 
-            double balance = DecimalUtils.toDouble(economy.balance(Main.getPluginName(), uuid));
+            double balance = DecimalUtils.bigToDouble(economy.balance(Main.getPluginName(), uuid));
             MessageUtils.sendMessage(player, "You have received $" + amount +
                     ". You now have $" + balance + ".", EnumsLib.MessageType.GREEN);
 
@@ -85,14 +85,14 @@ public class EconomyUtils {
         }
 
         UUID uuid = player.getUniqueId();
-        BigDecimal amount = DecimalUtils.toBigDecimal(value);
+        BigDecimal amount = DecimalUtils.doubleToBig(value);
         if (amount.compareTo(economy.balance(Main.getPluginName(), uuid)) < 0) {
             return false;
         }
 
         try {
             economy.withdraw(Main.getPluginName(), uuid, amount);
-            double balance = DecimalUtils.toDouble(economy.balance(Main.getPluginName(), uuid));
+            double balance = DecimalUtils.bigToDouble(economy.balance(Main.getPluginName(), uuid));
 
             MessageUtils.sendMessage(player, "<gold>$" + amount +
                     " <red>was taken from your balance. You now have <green>$" + balance + ".");
@@ -132,12 +132,12 @@ public class EconomyUtils {
         }
 
         UUID uuid = player.getUniqueId();
-        double balance = DecimalUtils.toDouble(economy.balance(Main.getPluginName(), uuid));
+        double balance = DecimalUtils.bigToDouble(economy.balance(Main.getPluginName(), uuid));
         if (toPay > balance) {
             return -1; // Can't pay tax if player doesn't have enough money
         }
 
-        economy.withdraw(Main.getPluginName(), uuid, DecimalUtils.toBigDecimal(toPay));
+        economy.withdraw(Main.getPluginName(), uuid, DecimalUtils.doubleToBig(toPay));
         MessageUtils.sendMessage(player, "<red>You have paid <gold>$" + toPay +
                 " <red>in taxes.");
 
@@ -156,7 +156,7 @@ public class EconomyUtils {
             return 0;
         }
 
-        return DecimalUtils.toDouble(economy.balance(Main.getPluginName(), player.getUniqueId()));
+        return DecimalUtils.bigToDouble(economy.balance(Main.getPluginName(), player.getUniqueId()));
     }
 
     /**

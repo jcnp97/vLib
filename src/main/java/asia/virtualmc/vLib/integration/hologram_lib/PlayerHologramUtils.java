@@ -21,7 +21,8 @@ import java.util.List;
 
 public class PlayerHologramUtils {
     private static HologramManager hologramManager;
-    private static final Map<UUID, ActiveHologram> hologramCache = new HashMap<>();
+    private static final Map<UUID, ActiveHologram> activeHolograms = new HashMap<>();
+    private static final Set<Hologram<?>> holograms = new HashSet<>();
     private record ActiveHologram(Location location, List<Hologram<?>> holograms) {}
 
     @Internal
@@ -32,7 +33,7 @@ public class PlayerHologramUtils {
     public static void register(Player player, String text, Material material,
                                 String itemModel, float x, float y, float z, Location location) {
         UUID uuid = player.getUniqueId();
-        ActiveHologram current = hologramCache.get(uuid);
+        ActiveHologram current = activeHolograms.get(uuid);
         if (current != null && current.location.equals(location)) {
             return;
         }
@@ -69,13 +70,15 @@ public class PlayerHologramUtils {
         parts.add(itemHologram);
         parts.add(textHologram);
 
-        hologramCache.put(uuid, new ActiveHologram(location, parts));
+        activeHolograms.put(uuid, new ActiveHologram(location, parts));
+        holograms.add(itemHologram);
+        holograms.add(textHologram);
     }
 
     public static void register(Player player, List<String> texts,
                                 float x, float y, float z, Location location) {
         UUID uuid = player.getUniqueId();
-        ActiveHologram current = hologramCache.get(uuid);
+        ActiveHologram current = activeHolograms.get(uuid);
         if (current != null && current.location.equals(location)) {
             return;
         }
@@ -99,15 +102,16 @@ public class PlayerHologramUtils {
             hologramManager.spawn(textHologram, holoLocation.clone().add(0, height, 0));
             parts.add(textHologram);
             height += 0.2;
+            holograms.add(textHologram);
         }
 
-        hologramCache.put(uuid, new ActiveHologram(location, parts));
+        activeHolograms.put(uuid, new ActiveHologram(location, parts));
     }
 
     public static void register(Player player, String text,
                                 float x, float y, float z, Location location) {
         UUID uuid = player.getUniqueId();
-        ActiveHologram current = hologramCache.get(uuid);
+        ActiveHologram current = activeHolograms.get(uuid);
         if (current != null && current.location.equals(location)) {
             return;
         }
@@ -128,17 +132,23 @@ public class PlayerHologramUtils {
         hologramManager.spawn(textHologram, location);
         parts.add(textHologram);
 
-        hologramCache.put(uuid, new ActiveHologram(location, parts));
+        activeHolograms.put(uuid, new ActiveHologram(location, parts));
+        holograms.add(textHologram);
     }
 
     public static void removeHolograms(UUID uuid) {
-
-
-
-        ActiveHologram active = hologramCache.remove(uuid);
+        ActiveHologram active = activeHolograms.remove(uuid);
         if (active != null && !active.holograms.isEmpty()) {
             for (Hologram<?> holo : active.holograms) {
                 hologramManager.remove(holo);
+            }
+        }
+    }
+
+    public static void clean() {
+        for (Hologram<?> hologram : holograms) {
+            if (hologram != null) {
+                hologramManager.remove(hologram);
             }
         }
     }

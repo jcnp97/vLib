@@ -13,7 +13,7 @@ import java.util.Set;
 
 public class RanksConfig {
 
-    public record Rank(double points, String rankName) {}
+    public record Rank(double points, String rankName, String rankTag) {}
     public static class RankData {
         public Map<String, Double> bonuses;
         public Map<Integer, Rank> ranks;
@@ -60,12 +60,14 @@ public class RanksConfig {
         for (String key : keys) {
             double points = section.getDouble(key + ".points");
             String rankName = section.getString(key + ".rank_name");
+            String rankTag = section.getString(key + ".rank_tag");
+
             if (prevPoints > points) {
                 ConsoleUtils.severe(prefix, "Invalid configuration! Previous required points of " + rankName + " is higher than the next!");
                 return ranks;
             }
 
-            ranks.put(IntegerUtils.toInt(key), new Rank(points, rankName));
+            ranks.put(IntegerUtils.toInt(key), new Rank(points, rankName, rankTag));
             prevPoints = points;
         }
 

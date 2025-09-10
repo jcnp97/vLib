@@ -67,7 +67,7 @@ public class DecimalUtils {
      * @param value the BigDecimal to convert
      * @return the rounded double value with two decimal precision
      */
-    public static double toDouble(BigDecimal value) {
+    public static double bigToDouble(BigDecimal value) {
         if (value == null) return 0.0;
         return value.setScale(2, RoundingMode.HALF_UP).doubleValue();
     }
@@ -78,7 +78,7 @@ public class DecimalUtils {
      * @param value the double to convert
      * @return the BigDecimal with two decimal places
      */
-    public static BigDecimal toBigDecimal(double value) {
+    public static BigDecimal doubleToBig(double value) {
         return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP);
     }
 
@@ -88,14 +88,36 @@ public class DecimalUtils {
      * @param input the string to parse
      * @return the parsed float, or null if invalid
      */
-    public static Float toFloat(String input) {
+    public static float toFloat(String input) {
         if (input == null) {
-            return null;
+            return 0;
         }
         try {
             return Float.parseFloat(input.trim());
         } catch (NumberFormatException e) {
-            return null;
+            return 0;
         }
     }
+
+    /**
+     * Attempts to parse a String into a double.
+     * <p>
+     * If the input is {@code null}, empty, or not a valid number,
+     * this method will safely return {@code 0.0}.
+     * </p>
+     *
+     * @param input the string to parse
+     * @return the parsed double, or {@code 0.0} if invalid
+     */
+    public static double toDouble(String input) {
+        if (input == null || input.trim().isEmpty()) {
+            return 0.0;
+        }
+        try {
+            return Double.parseDouble(input.trim());
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
+    }
+
 }
