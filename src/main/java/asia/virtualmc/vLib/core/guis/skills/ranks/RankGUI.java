@@ -1,6 +1,5 @@
 package asia.virtualmc.vLib.core.guis.skills.ranks;
 
-import asia.virtualmc.vLib.Main;
 import asia.virtualmc.vLib.core.guis.GUIConfig;
 import asia.virtualmc.vLib.core.utilities.ProgressBarUtils;
 import asia.virtualmc.vLib.integration.inventory_framework.IFUtils;
@@ -21,55 +20,99 @@ import com.github.stefvanschie.inventoryframework.pane.util.Slot;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class RankGUI {
+    private final Plugin plugin;
     private final RankGUIHandler handler;
     private final Cache<UUID, ChestGui> cache = Caffeine.newBuilder()
             .expireAfterWrite(10, TimeUnit.MINUTES)
             .build();
 
-    public RankGUI(RankGUIHandler handler) {
+    public RankGUI(Plugin plugin, RankGUIHandler handler) {
+        this.plugin = plugin;
         this.handler = handler;
+    }
+
+    /**
+     * Immutable data snapshot built async, no Bukkit/IF objects inside.
+     */
+    private record RankSnapshot(
+            UUID uuid,
+            int rankId,
+            String currentRankName,
+            String nextRankName,
+            double currentPts,
+            double nextPts,
+            String nextRankTag,
+            Set<String> statistics,
+            Map<String, Double> bonuses
+    ) {}
+
+    public void open(Player player) {
+        UUID uuid = player.getUniqueId();
+        ChestGui cached = cache.getIfPresent(uuid);
+        if (cached != null) {
+            cached.show(player);
+            return;
+        }
+
+        AsyncUtils.runAsyncThenSync(plugin,
+                () -> buildSnapshot(uuid),
+                (snapshot) -> {
+                    ChestGui gui = buildGui(player, snapshot);
+                    cache.put(uuid, gui);
+                    gui.show(player);
+                }
+        );
+    }
+
+    private RankSnapshot buildSnapshot(UUID uuid) {
+        int rankId = handler.getRankId(uuid);
+        return new RankSnapshot(
+                uuid,
+                rankId,
+                handler.getRankName(rankId),
+                handler.getRankName(rankId + 1),
+                handler.getCurrentPts(uuid),
+                handler.getRankPoints(rankId + 1),
+                handler.getRankTag(rankId + 1),
+                handler.getStatistics(),
+                handler.getBonuses()
+        );
+    }
+
+    private ChestGui buildGui(Player player, RankSnapshot snap) {
+        Rank rank = new Rank(player, snap);
+        return rank.getGui();
     }
 
     public class Rank {
         private final Player player;
-        private final UUID uuid;
-        private final int numericalRank;
-        private final String currentRankName;
-        private final String nextRankName;
-        private final double currentPts;
-        private final double nextPts;
-        private final String nextRankTag;
-
+        private final RankSnapshot snap;
         private final StaticPane pane = new StaticPane(9, 6);
 
-        public Rank(Player player) {
+        public Rank(Player player, RankSnapshot snap) {
             this.player = player;
-            this.uuid = player.getUniqueId();
-            this.numericalRank = handler.getRankId(uuid);
-            this.currentRankName = handler.getRankName(numericalRank);
-            this.nextRankName = handler.getRankName(numericalRank + 1);
-            this.currentPts = handler.getCurrentPts(uuid);
-            this.nextPts = handler.getNextPts(numericalRank + 1);
-            this.nextRankTag = handler.getNextRankTag(numericalRank + 1);
+            this.snap = snap;
         }
 
         public ChestGui getGui() {
             ChestGui gui;
-            if (currentPts >= nextPts) {
+            if (snap.currentPts >= snap.nextPts) {
                 gui = new ChestGui(2, GUIConfig.get("ranks_gui_allow"));
             } else {
                 gui = new ChestGui(2, GUIConfig.get("ranks_gui_deny"));
             }
 
             // Progress Bar
-            String title = "<gray>Rank Points: <green>" + StringDigitUtils.formatDouble(currentPts, false) +
-                    "<gray>/<red>" + StringDigitUtils.formatDouble(nextPts, false);
-            double progress = MathUtils.percent(currentPts, nextPts);
+            String title = "<gray>Rank Points: <green>" +
+                    StringDigitUtils.formatDouble(snap.currentPts, false) +
+                    "<gray>/<red>" + StringDigitUtils.formatDouble(snap.nextPts, false);
+            double progress = MathUtils.percent(snap.currentPts, snap.nextPts);
             ProgressBarUtils.getAsItem(pane, progress, 5,
                     2, 0, title, "cozyvanilla_guiitems:bar_outlined", getBonusesLore());
 
@@ -77,8 +120,8 @@ public class RankGUI {
             pane.addItem(new GuiItem(getRankItem()), Slot.fromIndex(1));
             pane.addItem(new GuiItem(getNextRankItem()), Slot.fromIndex(7));
 
-            // Rank-up
-            if (currentPts >= nextPts) {
+            // Rank-up button
+            if (snap.currentPts >= snap.nextPts) {
                 pane.addItem(new GuiItem(GUIConfig.getItem("<green>Click to Rank-up"), event -> {
                     IFUtils.confirmGui(player, result -> {
                         if (result) {
@@ -110,68 +153,43 @@ public class RankGUI {
             List<String> lore = new ArrayList<>();
             lore.add("");
             lore.add("<gray>Bonuses:");
-            for (Map.Entry<String, Double> entry : handler.getBonuses().entrySet()) {
+            for (Map.Entry<String, Double> entry : snap.bonuses.entrySet()) {
                 lore.add("<gray>• <yellow>" + StringUtils.format(entry.getKey()) + ": <green>" +
-                        StringDigitUtils.formatDouble(entry.getValue() * numericalRank, false) + "%");
+                        StringDigitUtils.formatDouble(entry.getValue() * snap.rankId, false) + "%");
             }
-
             return lore;
         }
 
         private ItemStack getInfo() {
             List<String> lore = new ArrayList<>();
             String title = "<gray>The following statistics affect your rank points: ";
-            Set<String> statistics = handler.getStatistics();
-
-            for (String statistic : statistics) {
+            for (String statistic : snap.statistics) {
                 if (!statistic.equals("rank_id")) {
                     lore.add("<gray>• <yellow>" + StringUtils.format(statistic));
                 }
             }
-
             return ComponentService.get(Material.BOOK, title, lore, "");
         }
 
         private ItemStack getRankItem() {
-            if (numericalRank == 0) return GUIConfig.getItem(currentRankName);
-            String itemModel = "cozyvanilla_guiitems:skill_rank_" + Math.min(numericalRank, 70);
-            return ComponentService.get(Material.PAPER, "<gray>Current Rank: " + currentRankName, new ArrayList<>(), itemModel);
+            if (snap.rankId == 0) return GUIConfig.getItem(snap.currentRankName);
+            String itemModel = "cozyvanilla_guiitems:skill_rank_" + Math.min(snap.rankId, 70);
+            return ComponentService.get(Material.PAPER, "<gray>Current Rank: " + snap.currentRankName, new ArrayList<>(), itemModel);
         }
 
         private ItemStack getNextRankItem() {
-            String itemModel = "cozyvanilla_guiitems:skill_rank_" + Math.min(numericalRank + 1, 70);
-            return ComponentService.get(Material.PAPER, "<gray>Next Rank: " + nextRankName, new ArrayList<>(), itemModel);
+            String itemModel = "cozyvanilla_guiitems:skill_rank_" + Math.min(snap.rankId + 1, 70);
+            return ComponentService.get(Material.PAPER, "<gray>Next Rank: " + snap.nextRankName, new ArrayList<>(), itemModel);
         }
 
         private void process() {
-            SyncUtils.runSync(Main.getInstance(), () -> {
+            SyncUtils.runSync(plugin, () -> {
                 SoundUtils.play(player, "cozyvanilla:misc_levelup");
-                TitleUtils.send(player, "<white><!shadow>" + nextRankTag, "<gray>New Rank: " + nextRankName);
+                TitleUtils.send(player, "<white><!shadow>" + snap.nextRankTag, "<gray>New Rank: " + snap.nextRankName);
             });
-            handler.incrementRankId(uuid);
+
+            handler.incrementRankId(snap.uuid);
+            cache.invalidate(snap.uuid);
         }
-    }
-
-    private ChestGui getGui(Player player) {
-        return new Rank(player).getGui();
-    }
-
-    private void get(Player player) {
-        AsyncUtils.runAsyncThenSync(Main.getInstance(),
-                () -> getGui(player), (result) -> {
-                    cache.put(player.getUniqueId(), result);
-                    result.show(player);
-                });
-    }
-
-    public void open(Player player) {
-        UUID uuid = player.getUniqueId();
-        ChestGui gui = cache.getIfPresent(uuid);
-        if (gui == null) {
-            get(player);
-            return;
-        }
-
-        gui.show(player);
     }
 }
