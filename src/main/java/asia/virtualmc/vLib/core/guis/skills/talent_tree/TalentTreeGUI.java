@@ -3,10 +3,17 @@ package asia.virtualmc.vLib.core.guis.skills.talent_tree;
 import asia.virtualmc.vLib.core.configs.TalentTreeConfig;
 import asia.virtualmc.vLib.integration.inventory_framework.IFUtils;
 import asia.virtualmc.vLib.services.bukkit.ComponentService;
+import asia.virtualmc.vLib.utilities.bukkit.SoundUtils;
 import asia.virtualmc.vLib.utilities.digit.IntegerUtils;
 import asia.virtualmc.vLib.utilities.digit.StringDigitUtils;
+import asia.virtualmc.vLib.utilities.enums.EnumsLib;
+import asia.virtualmc.vLib.utilities.messages.MessageUtils;
+import asia.virtualmc.vLib.utilities.paper.AsyncUtils;
+import asia.virtualmc.vLib.utilities.paper.SyncUtils;
 import asia.virtualmc.vLib.utilities.text.StringListUtils;
 import asia.virtualmc.vLib.utilities.text.StringUtils;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
@@ -14,72 +21,115 @@ import com.github.stefvanschie.inventoryframework.pane.util.Slot;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class TalentTreeGUI {
+    private final Plugin plugin;
     private final TalentGUIHandler handler;
+    private final Cache<UUID, ChestGui> cache = Caffeine.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .build();
 
-    public TalentTreeGUI(TalentGUIHandler handler) {
+    public TalentTreeGUI(Plugin plugin, TalentGUIHandler handler) {
+        this.plugin = plugin;
         this.handler = handler;
     }
 
+    /**
+     * Immutable snapshot of data — safe to build async.
+     */
+    private record TalentSnapshot(
+            UUID uuid,
+            Map<String, Integer> talentData,
+            Map<String, TalentTreeConfig.Talent> talents,
+            int skillLevel,
+            int talentPoints,
+            String masterTalent
+    ) {}
+
+    public void open(Player player) {
+        UUID uuid = player.getUniqueId();
+        ChestGui cached = cache.getIfPresent(uuid);
+        if (cached != null) {
+            cached.show(player);
+            return;
+        }
+
+        // Step 1: Gather data async
+        AsyncUtils.runAsyncThenSync(plugin,
+                () -> buildSnapshot(uuid),
+                (snapshot) -> {
+                    // Step 2: Build GUI sync
+                    ChestGui gui = buildGui(player, snapshot);
+                    cache.put(uuid, gui);
+                    gui.show(player);
+                });
+    }
+
+    private TalentSnapshot buildSnapshot(UUID uuid) {
+        return new TalentSnapshot(
+                uuid,
+                handler.getTalentData(uuid),
+                handler.getTalents(),
+                handler.getSkillLevel(uuid),
+                handler.getTalentPoints(uuid),
+                handler.getSpecialTalentKey()
+        );
+    }
+
+    private ChestGui buildGui(Player player, TalentSnapshot snap) {
+        return new TalentTree(player, snap).getGui();
+    }
+
+    /**
+     * Inner sync-only class. Consumes snapshot to build IF GUI.
+     */
     public class TalentTree {
         private final Player player;
-        private final UUID uuid;
-        private final Map<String, Integer> talentData;
-        private final Map<String, TalentTreeConfig.Talent> talents;
-        private final int skillLevel;
-        private final int talentPoints;
-        private final String masterTalent;
+        private final TalentSnapshot snap;
         private final boolean hasTalent19;
-
         private final ChestGui gui = new ChestGui(6, "§f<shift:-48>\uE0E8");
         private final StaticPane pane = new StaticPane(9, 6);
 
-        TalentTree(Player player) {
+        TalentTree(Player player, TalentSnapshot snap) {
             this.player = player;
-            this.uuid = player.getUniqueId();
-            this.talentData = handler.getTalentData(uuid);
-            this.talents = handler.getTalents();
-            this.skillLevel = handler.getSkillLevel(uuid);
-            this.talentPoints = handler.getTalentPoints(uuid);
-            this.masterTalent = handler.getSpecialTalentKey();
-
-            this.hasTalent19 = masterTalent != null
-                    && talentData.getOrDefault(masterTalent, 0) >= 1;
+            this.snap = snap;
+            this.hasTalent19 = snap.masterTalent != null
+                    && snap.talentData.getOrDefault(snap.masterTalent, 0) >= 1;
         }
 
         public ChestGui getGui() {
-            for (Map.Entry<String, TalentTreeConfig.Talent> entry : talents.entrySet()) {
+            for (Map.Entry<String, TalentTreeConfig.Talent> entry : snap.talents.entrySet()) {
                 String talentName = entry.getKey();
                 TalentTreeConfig.Talent talent = entry.getValue();
 
-                int talentLevel = talentData.getOrDefault(talentName, 0);
+                int talentLevel = snap.talentData.getOrDefault(talentName, 0);
                 boolean isUnlocked = hasRequiredTalents(talent) &&
                         hasRequiredSkillLevel(talent.reqLevel());
                 boolean isMaxLevel = isMaxLevel(talentLevel, talent);
-                boolean hasEnoughPoints = talentPoints >= talent.cost();
+                boolean hasEnoughPoints = snap.talentPoints >= talent.cost();
 
                 List<String> lore = getLore(talent.lore(), isMaxLevel, isUnlocked,
                         talentLevel, hasEnoughPoints, talent);
-                // modify lore
                 lore = replaceValues(talentLevel, lore, talent);
 
                 String itemModel = getItemModel(talent.itemModel(), isUnlocked, isMaxLevel, talentLevel, talent.maxLevel());
-                ItemStack item = ComponentService.get(talent.material(), talent.displayName(),
-                        lore, itemModel);
+                ItemStack item = ComponentService.get(talent.material(), talent.displayName(), lore, itemModel);
 
-                // modify quantity
-                if (talentLevel > 0 && talentLevel < 64) item.setAmount(talentLevel);
+                if (talentLevel > 0 && talentLevel < 64) {
+                    item.setAmount(talentLevel);
+                }
 
                 if (isUnlocked && hasEnoughPoints && !isMaxLevel) {
                     pane.addItem(new GuiItem(item.clone(), event -> {
                         IFUtils.confirmGui(player, result -> {
                             if (result) {
                                 handler.subtractTalentPoints(player, talent.cost());
-                                handler.incrementTalent(uuid, talentName);
-                                handler.upgradeEffects(player, talent.displayName(), talentLevel + 1);
+                                handler.incrementTalent(snap.uuid, talentName);
+                                process(talent.displayName(), talentLevel + 1);
                                 event.getWhoClicked().closeInventory();
                             } else {
                                 event.getWhoClicked().closeInventory();
@@ -93,7 +143,7 @@ public class TalentTreeGUI {
                 addPaths(isUnlocked, talent);
             }
 
-            // add book
+            // Book
             pane.addItem(getBook(), Slot.fromIndex(53));
 
             gui.addPane(pane);
@@ -102,11 +152,9 @@ public class TalentTreeGUI {
         }
 
         private GuiItem getBook() {
-            String title = "<gray>Talent Points: <green>" + talentPoints;
-            List<String> lore = new ArrayList<>(Arrays.asList("", "<gray>You can obtain Talent Points by doing",
-                    "deliveries."));
-
-            return new GuiItem(ComponentService.get(Material.BOOK, title, lore, null));
+            String title = "<gray>Talent Points: <green>" + snap.talentPoints;
+            List<String> lore = List.of("", "<gray>You can obtain Talent Points by doing", "deliveries.");
+            return new GuiItem(ComponentService.get(Material.BOOK, title, new ArrayList<>(lore), null));
         }
 
         private List<String> getLore(List<String> lore, boolean isMaxLevel, boolean isUnlocked,
@@ -117,7 +165,7 @@ public class TalentTreeGUI {
 
             if (!isUnlocked) {
                 newLore.add("<gray>Requires:");
-                if (skillLevel < talent.reqLevel()) {
+                if (snap.skillLevel < talent.reqLevel()) {
                     newLore.add("<red>• Farming Level " + talent.reqLevel());
                 } else {
                     newLore.add("<green>• <st>Farming Level " + talent.reqLevel() + "</st>");
@@ -181,8 +229,16 @@ public class TalentTreeGUI {
             }
         }
 
-        private boolean isBasicTalent(TalentTreeConfig.Talent talent) {
-            return talent.maxLevel() != 1;
+        private void process(String talentName, int newLevel) {
+            SyncUtils.runSync(plugin, () -> {
+                SoundUtils.play(player, "cozyvanilla:misc_levelup");
+                MessageUtils.sendMessage(player,
+                        "Your " + handler.getSkillName() + "'s " + talentName +
+                                " <#8BFFA9> is now Level " + newLevel + ".", EnumsLib.MessageType.GREEN);
+            });
+
+            cache.invalidate(snap.uuid);
+            open(player);
         }
 
         private boolean hasRequiredTalents(TalentTreeConfig.Talent talent) {
@@ -191,25 +247,27 @@ public class TalentTreeGUI {
 
             if (talent.required() == null) return false;
             for (Map.Entry<String, Integer> entry : talent.required().entrySet()) {
-                int level = talentData.get(entry.getKey());
+                int level = snap.talentData.get(entry.getKey());
                 if (level < entry.getValue()) return false;
             }
-
             return true;
         }
 
         private boolean hasRequiredSkillLevel(int requiredLevel) {
-            return skillLevel >= requiredLevel;
+            return snap.skillLevel >= requiredLevel;
         }
 
         private boolean isMaxLevel(int talentLevel, TalentTreeConfig.Talent talent) {
             if (isBasicTalent(talent) && hasTalent19 && talent.maxLevel() != 0) {
-                return talentLevel >= talent.maxLevel() + talents.get(masterTalent).value();
+                return talentLevel >= talent.maxLevel() + snap.talents.get(snap.masterTalent).value();
             } else if (talent.maxLevel() == 0) {
                 return false;
             }
-
             return talentLevel >= talent.maxLevel();
+        }
+
+        private boolean isBasicTalent(TalentTreeConfig.Talent talent) {
+            return talent.maxLevel() != 1;
         }
 
         private List<String> replaceValues(int talentLevel, List<String> lore, TalentTreeConfig.Talent talent) {
@@ -217,14 +275,8 @@ public class TalentTreeGUI {
             if (talentLevel == 0) {
                 return StringListUtils.replace(lore, effect, StringDigitUtils.formatDouble(talent.value(), false));
             }
-
             String value = StringDigitUtils.formatDouble(talent.value() * talentLevel, false);
-            return  StringListUtils.replace(lore, effect, value);
+            return StringListUtils.replace(lore, effect, value);
         }
     }
-
-    public ChestGui getGui(Player player) {
-        return new TalentTree(player).getGui();
-    }
 }
-

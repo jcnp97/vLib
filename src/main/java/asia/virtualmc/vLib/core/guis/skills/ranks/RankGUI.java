@@ -37,9 +37,6 @@ public class RankGUI {
         this.handler = handler;
     }
 
-    /**
-     * Immutable data snapshot built async, no Bukkit/IF objects inside.
-     */
     private record RankSnapshot(
             UUID uuid,
             int rankId,

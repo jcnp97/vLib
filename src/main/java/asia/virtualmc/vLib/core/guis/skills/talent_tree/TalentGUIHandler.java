@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public interface TalentGUIHandler {
+    String getSkillName();
     String getSpecialTalentKey();
     int getSkillLevel(UUID uuid);
     int getTalentPoints(UUID uuid);
@@ -15,5 +16,4 @@ public interface TalentGUIHandler {
 
     void incrementTalent(UUID uuid, String talentName);
     void subtractTalentPoints(Player player, int amount);
-    void upgradeEffects(Player player, String displayName, int newLevel);
 }
