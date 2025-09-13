@@ -187,6 +187,11 @@ public class RankGUI {
 
             handler.incrementRankId(snap.uuid);
             cache.invalidate(snap.uuid);
+
+            // Re-open GUI after 2.5s
+            plugin.getServer().getGlobalRegionScheduler().runDelayed(plugin, task -> {
+                open(player);
+            }, 50L);
         }
     }
 }

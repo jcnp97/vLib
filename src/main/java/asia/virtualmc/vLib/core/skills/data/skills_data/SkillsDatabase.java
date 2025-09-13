@@ -27,7 +27,7 @@ public interface SkillsDatabase {
      * @param uuid   player uuid
      * @return loaded stats (never null; implementor should return sane defaults)
      */
-    SkillsSnapshot load(Plugin plugin, String table, UUID uuid);
+    PlayerDataDB load(Plugin plugin, String table, UUID uuid);
 
     /**
      * Persist a single player's stats.
@@ -37,7 +37,7 @@ public interface SkillsDatabase {
      * @param uuid   player uuid
      * @param data   snapshot to persist
      */
-    void save(Plugin plugin, String table, UUID uuid, SkillsSnapshot data);
+    void save(Plugin plugin, String table, UUID uuid, PlayerDataDB data);
 
     /**
      * Batch persist. Implementations may upsert in bulk for efficiency.
@@ -46,12 +46,12 @@ public interface SkillsDatabase {
      * @param table  table name
      * @param all    map of uuid -> snapshot
      */
-    void saveAll(Plugin plugin, String table, Map<UUID, SkillsSnapshot> all);
+    void saveAll(Plugin plugin, String table, Map<UUID, PlayerDataDB> all);
 
     /**
      * Immutable data carrier for stats to keep vLib decoupled from DB model types.
      */
-    record SkillsSnapshot(
+    record PlayerDataDB(
             String name,
             double exp,
             double bxp,

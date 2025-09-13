@@ -17,5 +17,4 @@ public interface SkillsReader {
     int getKarma(UUID uuid);
     int getDexterity(UUID uuid);
     int getNextEXP(int level);
-    double getTraitEffect(String traitName, String effectName);
 }

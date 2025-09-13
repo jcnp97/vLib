@@ -27,6 +27,16 @@ public class TalentTreeConfig {
         Map<String, Talent> talentTrees = new HashMap<>();
         YamlFileService.YamlFile file = YamlFileService.get(plugin, filePath);
 
+        // Information Section
+        Section infoSec = file.getSection("information");
+        Material infoMaterial = MaterialUtils.getMaterial(infoSec.getString("material"));
+        String infoName = infoSec.getString("name");
+        List<String> infoLore = infoSec.getStringList("lore");
+
+        // Add information
+        talentTrees.put("information", new Talent(infoMaterial, infoName, infoLore, "", 53, 0,
+                null, null, 0, null, 0, 0));
+
         // Talent Section
         Section talentSec = file.getSection("talentList");
         Set<String> keys = talentSec.getRoutesAsStrings(false);

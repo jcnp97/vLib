@@ -1,6 +1,6 @@
 package asia.virtualmc.vLib.core.skills.data.skills_data;
 
-import asia.virtualmc.vLib.core.player_data.InnateTraitUtils;
+import asia.virtualmc.vLib.core.configs.InnateTraitConfig;
 import asia.virtualmc.vLib.core.skills.utilities.SkillsDataUtils;
 import asia.virtualmc.vLib.core.skills.utilities.SkillsUtils;
 import asia.virtualmc.vLib.utilities.enums.EnumsLib;
@@ -15,21 +15,20 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class SkillsData implements SkillsWriter, SkillsReader {
-
     private static final int MIN_LEVEL = 1;
     private static final int MAX_LEVEL = 120;
-    private static final int MAX_TRAIT_LEVEL = 50;
 
     private final Plugin plugin;
     private final SkillsDatabase database;
     private final String skillDisplayName;
 
     private final Map<Integer, Integer> expTable;
-    private final Map<String, InnateTraitUtils.InnateTrait> traitInfo;
+    private final Map<String, InnateTraitConfig.InnateTrait> traits;
+    private final Map<Integer, Integer> traitPoints;
 
     // Runtime cache
-    private final ConcurrentHashMap<UUID, Snapshot> cache = new ConcurrentHashMap<>();
-    private record Snapshot(
+    private final ConcurrentHashMap<UUID, PlayerData> cache = new ConcurrentHashMap<>();
+    private record PlayerData(
             String name,
             double exp,
             double bxp,
@@ -43,38 +42,40 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
             int karmaTrait,
             int dexterityTrait
     ) {
-        Snapshot withExp(double v) { return new Snapshot(name, v, bxp, xpm, level, luck, traitPoints, talentPoints, wisdomTrait, charismaTrait, karmaTrait, dexterityTrait); }
-        Snapshot withBxp(double v) { return new Snapshot(name, exp, v, xpm, level, luck, traitPoints, talentPoints, wisdomTrait, charismaTrait, karmaTrait, dexterityTrait); }
-        Snapshot withXpm(double v) { return new Snapshot(name, exp, bxp, v, level, luck, traitPoints, talentPoints, wisdomTrait, charismaTrait, karmaTrait, dexterityTrait); }
-        Snapshot withLevel(int v) { return new Snapshot(name, exp, bxp, xpm, v, luck, traitPoints, talentPoints, wisdomTrait, charismaTrait, karmaTrait, dexterityTrait); }
-        Snapshot withLuck(int v) { return new Snapshot(name, exp, bxp, xpm, level, v, traitPoints, talentPoints, wisdomTrait, charismaTrait, karmaTrait, dexterityTrait); }
-        Snapshot withTraitPoints(int v) { return new Snapshot(name, exp, bxp, xpm, level, luck, v, talentPoints, wisdomTrait, charismaTrait, karmaTrait, dexterityTrait); }
-        Snapshot withTalentPoints(int v) { return new Snapshot(name, exp, bxp, xpm, level, luck, traitPoints, v, wisdomTrait, charismaTrait, karmaTrait, dexterityTrait); }
-        Snapshot withWisdom(int v) { return new Snapshot(name, exp, bxp, xpm, level, luck, traitPoints, talentPoints, v, charismaTrait, karmaTrait, dexterityTrait); }
-        Snapshot withCharisma(int v) { return new Snapshot(name, exp, bxp, xpm, level, luck, traitPoints, talentPoints, wisdomTrait, v, karmaTrait, dexterityTrait); }
-        Snapshot withKarma(int v) { return new Snapshot(name, exp, bxp, xpm, level, luck, traitPoints, talentPoints, wisdomTrait, charismaTrait, v, dexterityTrait); }
-        Snapshot withDexterity(int v) { return new Snapshot(name, exp, bxp, xpm, level, luck, traitPoints, talentPoints, wisdomTrait, charismaTrait, karmaTrait, v); }
-        Snapshot withName(String v) { return new Snapshot(v, exp, bxp, xpm, level, luck, traitPoints, talentPoints, wisdomTrait, charismaTrait, karmaTrait, dexterityTrait); }
+        PlayerData withExp(double v) { return new PlayerData(name, v, bxp, xpm, level, luck, traitPoints, talentPoints, wisdomTrait, charismaTrait, karmaTrait, dexterityTrait); }
+        PlayerData withBxp(double v) { return new PlayerData(name, exp, v, xpm, level, luck, traitPoints, talentPoints, wisdomTrait, charismaTrait, karmaTrait, dexterityTrait); }
+        PlayerData withXpm(double v) { return new PlayerData(name, exp, bxp, v, level, luck, traitPoints, talentPoints, wisdomTrait, charismaTrait, karmaTrait, dexterityTrait); }
+        PlayerData withLevel(int v) { return new PlayerData(name, exp, bxp, xpm, v, luck, traitPoints, talentPoints, wisdomTrait, charismaTrait, karmaTrait, dexterityTrait); }
+        PlayerData withLuck(int v) { return new PlayerData(name, exp, bxp, xpm, level, v, traitPoints, talentPoints, wisdomTrait, charismaTrait, karmaTrait, dexterityTrait); }
+        PlayerData withTraitPoints(int v) { return new PlayerData(name, exp, bxp, xpm, level, luck, v, talentPoints, wisdomTrait, charismaTrait, karmaTrait, dexterityTrait); }
+        PlayerData withTalentPoints(int v) { return new PlayerData(name, exp, bxp, xpm, level, luck, traitPoints, v, wisdomTrait, charismaTrait, karmaTrait, dexterityTrait); }
+        PlayerData withWisdom(int v) { return new PlayerData(name, exp, bxp, xpm, level, luck, traitPoints, talentPoints, v, charismaTrait, karmaTrait, dexterityTrait); }
+        PlayerData withCharisma(int v) { return new PlayerData(name, exp, bxp, xpm, level, luck, traitPoints, talentPoints, wisdomTrait, v, karmaTrait, dexterityTrait); }
+        PlayerData withKarma(int v) { return new PlayerData(name, exp, bxp, xpm, level, luck, traitPoints, talentPoints, wisdomTrait, charismaTrait, v, dexterityTrait); }
+        PlayerData withDexterity(int v) { return new PlayerData(name, exp, bxp, xpm, level, luck, traitPoints, talentPoints, wisdomTrait, charismaTrait, karmaTrait, v); }
+        PlayerData withName(String v) { return new PlayerData(v, exp, bxp, xpm, level, luck, traitPoints, talentPoints, wisdomTrait, charismaTrait, karmaTrait, dexterityTrait); }
     }
 
     /**
-     * Construct a reusable PlayerData service for one "skill".
+     * Construct a reusable PlayerData dataervice for one "skill".
      *
      * @param plugin          owning plugin
      * @param database      persistence adapter
      * @param expTable        level -> next exp requirement map
-     * @param traitInfo       traitName -> trait definition map
+     * @param traits       traitName -> trait definition map
      */
     public SkillsData(
             @NotNull Plugin plugin,
             @NotNull SkillsDatabase database,
             @NotNull Map<Integer, Integer> expTable,
-            @NotNull Map<String, InnateTraitUtils.InnateTrait> traitInfo
+            @NotNull Map<String, InnateTraitConfig.InnateTrait> traits,
+            @NotNull Map<Integer, Integer> traitPoints
     ) {
         this.plugin = plugin;
         this.database = database;
         this.expTable = expTable;
-        this.traitInfo = traitInfo;
+        this.traits = traits;
+        this.traitPoints = traitPoints;
         this.database.createTable(plugin, plugin.getName().toLowerCase() + "_playerData");
         this.skillDisplayName = StringUtils.deleteCharAt(plugin.getName(), 0);
     }
@@ -88,8 +89,8 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
      */
     public void load(@NotNull UUID uuid) {
         try {
-            SkillsDatabase.SkillsSnapshot d = database.load(plugin, plugin.getName().toLowerCase() + "_playerData", uuid);
-            cache.put(uuid, toSnap(d));
+            SkillsDatabase.PlayerDataDB data = database.load(plugin, plugin.getName().toLowerCase() + "_playerData", uuid);
+            cache.put(uuid, toMemoryData(data));
         } catch (Exception e) {
             ConsoleUtils.severe(prefix(), "Failed to load player data for " + uuid + " : " + e.getMessage());
         }
@@ -101,12 +102,12 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
      * @param uuid player UUID
      */
     public void save(@NotNull UUID uuid) {
-        Snapshot s = cache.get(uuid);
-        if (s == null) return;
+        PlayerData data = cache.get(uuid);
+        if (data == null) return;
         try {
-            database.save(plugin, plugin.getName().toLowerCase() + "_playerData", uuid, toRepo(s));
+            database.save(plugin, plugin.getName().toLowerCase() + "_playerData", uuid, toRepo(data));
         } catch (Exception e) {
-            ConsoleUtils.severe(prefix(), "Failed to store player data for " + s.name + ": " + e.getMessage());
+            ConsoleUtils.severe(prefix(), "Failed to store player data for " + data.name + ": " + e.getMessage());
         }
     }
 
@@ -115,8 +116,8 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
      */
     public void saveAll() {
         try {
-            Map<UUID, SkillsDatabase.SkillsSnapshot> out = new java.util.HashMap<>();
-            for (Map.Entry<UUID, Snapshot> e : cache.entrySet()) {
+            Map<UUID, SkillsDatabase.PlayerDataDB> out = new java.util.HashMap<>();
+            for (Map.Entry<UUID, PlayerData> e : cache.entrySet()) {
                 out.put(e.getKey(), toRepo(e.getValue()));
             }
             database.saveAll(plugin, plugin.getName().toLowerCase() + "_playerData", out);
@@ -154,17 +155,17 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
      */
     public void updateEXP(@NotNull Player player, @NotNull EnumsLib.UpdateType type, double value) {
         UUID id = player.getUniqueId();
-        Snapshot s = ensureLoaded(id);
-        if (s == null) return;
+        PlayerData data = ensureLoaded(id);
+        if (data == null) return;
 
         if (type == EnumsLib.UpdateType.ADD) {
             double bonus = consumeBonusXp(id, value);
-            double newExp = SkillsDataUtils.getEXP(type, s.exp, value + bonus);
-            cache.put(id, s.withExp(newExp));
+            double newExp = SkillsDataUtils.getEXP(type, data.exp, value + bonus);
+            cache.put(id, data.withExp(newExp));
             SkillsUtils.buildEXPActionBar(player, skillDisplayName, value, bonus);
             checkAndApplyLevelUp(player);
         } else {
-            cache.put(id, s.withExp(SkillsDataUtils.getEXP(type, s.exp, value)));
+            cache.put(id, data.withExp(SkillsDataUtils.getEXP(type, data.exp, value)));
         }
     }
 
@@ -173,9 +174,9 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
      */
     public void updateLevel(@NotNull Player player, @NotNull EnumsLib.UpdateType type, int value) {
         UUID id = player.getUniqueId();
-        Snapshot s = ensureLoaded(id);
-        if (s == null) return;
-        cache.put(id, s.withLevel(SkillsDataUtils.getLevel(type, s.level, value)));
+        PlayerData data = ensureLoaded(id);
+        if (data == null) return;
+        cache.put(id, data.withLevel(SkillsDataUtils.getLevel(type, data.level, value)));
     }
 
     /**
@@ -183,9 +184,9 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
      */
     public void updateName(@NotNull Player player, String name) {
         UUID id = player.getUniqueId();
-        Snapshot s = ensureLoaded(id);
-        if (s == null) return;
-        cache.put(id, s.withName(name));
+        PlayerData data = ensureLoaded(id);
+        if (data == null) return;
+        cache.put(id, data.withName(name));
     }
 
     /**
@@ -193,9 +194,9 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
      */
     public void updateXPM(@NotNull Player player, @NotNull EnumsLib.UpdateType type, double value) {
         UUID id = player.getUniqueId();
-        Snapshot s = ensureLoaded(id);
-        if (s == null) return;
-        cache.put(id, s.withXpm(SkillsDataUtils.getXPM(type, s.xpm, value)));
+        PlayerData data = ensureLoaded(id);
+        if (data == null) return;
+        cache.put(id, data.withXpm(SkillsDataUtils.getXPM(type, data.xpm, value)));
     }
 
     /**
@@ -203,58 +204,58 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
      */
     public void updateBXP(@NotNull Player player, @NotNull EnumsLib.UpdateType type, double value) {
         UUID id = player.getUniqueId();
-        Snapshot s = ensureLoaded(id);
-        if (s == null) return;
-        cache.put(id, s.withBxp(SkillsDataUtils.getBXP(type, s.bxp, value)));
+        PlayerData data = ensureLoaded(id);
+        if (data == null) return;
+        cache.put(id, data.withBxp(SkillsDataUtils.getBXP(type, data.bxp, value)));
     }
 
     public void updateTraitPoints(@NotNull Player player, @NotNull EnumsLib.UpdateType type, int value) {
         UUID id = player.getUniqueId();
-        Snapshot s = ensureLoaded(id);
-        if (s == null) return;
-        cache.put(id, s.withTraitPoints(SkillsDataUtils.getTraitPoints(type, s.traitPoints, value)));
+        PlayerData data = ensureLoaded(id);
+        if (data == null) return;
+        cache.put(id, data.withTraitPoints(SkillsDataUtils.getTraitPoints(type, data.traitPoints, value)));
     }
 
     public void updateTalentPoints(@NotNull Player player, @NotNull EnumsLib.UpdateType type, int value) {
         UUID id = player.getUniqueId();
-        Snapshot s = ensureLoaded(id);
-        if (s == null) return;
-        cache.put(id, s.withTalentPoints(SkillsDataUtils.getTalentPoints(type, s.talentPoints, value)));
+        PlayerData data = ensureLoaded(id);
+        if (data == null) return;
+        cache.put(id, data.withTalentPoints(SkillsDataUtils.getTalentPoints(type, data.talentPoints, value)));
     }
 
     public void updateLuck(@NotNull Player player, @NotNull EnumsLib.UpdateType type, int value) {
         UUID id = player.getUniqueId();
-        Snapshot s = ensureLoaded(id);
-        if (s == null) return;
-        cache.put(id, s.withLuck(SkillsDataUtils.getLuck(type, s.luck, value)));
+        PlayerData data = ensureLoaded(id);
+        if (data == null) return;
+        cache.put(id, data.withLuck(SkillsDataUtils.getLuck(type, data.luck, value)));
     }
 
     public void updateWisdom(@NotNull Player player, @NotNull EnumsLib.UpdateType type, int value) {
         UUID id = player.getUniqueId();
-        Snapshot s = ensureLoaded(id);
-        if (s == null) return;
-        cache.put(id, s.withWisdom(SkillsDataUtils.getTraitLevel(type, s.wisdomTrait, value)));
+        PlayerData data = ensureLoaded(id);
+        if (data == null) return;
+        cache.put(id, data.withWisdom(SkillsDataUtils.getTraitLevel(type, data.wisdomTrait, value)));
     }
 
     public void updateKarma(@NotNull Player player, @NotNull EnumsLib.UpdateType type, int value) {
         UUID id = player.getUniqueId();
-        Snapshot s = ensureLoaded(id);
-        if (s == null) return;
-        cache.put(id, s.withKarma(SkillsDataUtils.getTraitLevel(type, s.karmaTrait, value)));
+        PlayerData data = ensureLoaded(id);
+        if (data == null) return;
+        cache.put(id, data.withKarma(SkillsDataUtils.getTraitLevel(type, data.karmaTrait, value)));
     }
 
     public void updateDexterity(@NotNull Player player, @NotNull EnumsLib.UpdateType type, int value) {
         UUID id = player.getUniqueId();
-        Snapshot s = ensureLoaded(id);
-        if (s == null) return;
-        cache.put(id, s.withDexterity(SkillsDataUtils.getTraitLevel(type, s.dexterityTrait, value)));
+        PlayerData data = ensureLoaded(id);
+        if (data == null) return;
+        cache.put(id, data.withDexterity(SkillsDataUtils.getTraitLevel(type, data.dexterityTrait, value)));
     }
 
     public void updateCharisma(@NotNull Player player, @NotNull EnumsLib.UpdateType type, int value) {
         UUID id = player.getUniqueId();
-        Snapshot s = ensureLoaded(id);
-        if (s == null) return;
-        cache.put(id, s.withCharisma(SkillsDataUtils.getTraitLevel(type, s.charismaTrait, value)));
+        PlayerData data = ensureLoaded(id);
+        if (data == null) return;
+        cache.put(id, data.withCharisma(SkillsDataUtils.getTraitLevel(type, data.charismaTrait, value)));
     }
 
     /**
@@ -265,15 +266,15 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
      */
     public void addAllTraits(@NotNull Player player, int[] value) {
         UUID id = player.getUniqueId();
-        Snapshot s = ensureLoaded(id);
-        if (s == null || value.length < 4) return;
+        PlayerData data = ensureLoaded(id);
+        if (data == null || value.length < 4) return;
 
-        int w = Math.min(s.wisdomTrait + value[0], MAX_TRAIT_LEVEL);
-        int c = Math.min(s.charismaTrait + value[1], MAX_TRAIT_LEVEL);
-        int k = Math.min(s.karmaTrait + value[2], MAX_TRAIT_LEVEL);
-        int d = Math.min(s.dexterityTrait + value[3], MAX_TRAIT_LEVEL);
+        int w = Math.min(data.wisdomTrait + value[0], traits.get("wisdom_trait").maxLevel());
+        int c = Math.min(data.charismaTrait + value[1], traits.get("charisma_trait").maxLevel());
+        int k = Math.min(data.karmaTrait + value[2], traits.get("karma_trait").maxLevel());
+        int d = Math.min(data.dexterityTrait + value[3], traits.get("dexterity_trait").maxLevel());
 
-        cache.put(id, new Snapshot(s.name, s.exp, s.bxp, s.xpm, s.level, s.luck, s.traitPoints, s.talentPoints, w, c, k, d));
+        cache.put(id, new PlayerData(data.name, data.exp, data.bxp, data.xpm, data.level, data.luck, data.traitPoints, data.talentPoints, w, c, k, d));
     }
 
     // ---------- Getters ----------
@@ -281,61 +282,61 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
     /**
      * Returns a live snapshot from cache; auto-loads on first access.
      */
-    public SkillsDatabase.SkillsSnapshot getPlayerData(@NotNull UUID uuid) {
-        Snapshot s = ensureLoaded(uuid);
-        return s == null ? null : toRepo(s);
+    public SkillsDatabase.PlayerDataDB getPlayerData(@NotNull UUID uuid) {
+        PlayerData data = ensureLoaded(uuid);
+        return data == null ? null : toRepo(data);
     }
 
     public String getPlayerName(@NotNull UUID uuid) {
-        Snapshot s = cache.get(uuid);
-        return s != null ? s.name : null;
+        PlayerData data = cache.get(uuid);
+        return data != null ? data.name : null;
     }
 
     public double getEXP(@NotNull UUID uuid) {
-        Snapshot s = cache.get(uuid);
-        return s != null ? s.exp : 0.0;
+        PlayerData data = cache.get(uuid);
+        return data != null ? data.exp : 0.0;
     }
 
     public int getLevel(@NotNull UUID uuid) {
-        Snapshot s = cache.get(uuid);
-        return s != null ? s.level : MIN_LEVEL;
+        PlayerData data = cache.get(uuid);
+        return data != null ? data.level : MIN_LEVEL;
     }
 
     public double getBXP(@NotNull UUID uuid) {
-        Snapshot s = cache.get(uuid);
-        return s != null ? s.bxp : 0.0;
+        PlayerData data = cache.get(uuid);
+        return data != null ? data.bxp : 0.0;
     }
 
     public int getLuck(@NotNull UUID uuid) {
-        Snapshot s = cache.get(uuid);
-        return s != null ? s.luck : 0;
+        PlayerData data = cache.get(uuid);
+        return data != null ? data.luck : 0;
     }
 
     public double getXPM(@NotNull UUID uuid) {
-        Snapshot s = cache.get(uuid);
-        return s != null ? s.xpm : 1.0;
+        PlayerData data = cache.get(uuid);
+        return data != null ? data.xpm : 1.0;
     }
 
     public int getTraitPoints(@NotNull UUID uuid) {
-        Snapshot s = cache.get(uuid);
-        return s != null ? s.traitPoints : 1;
+        PlayerData data = cache.get(uuid);
+        return data != null ? data.traitPoints : 1;
     }
 
     public int getTalentPoints(@NotNull UUID uuid) {
-        Snapshot s = cache.get(uuid);
-        return s != null ? s.talentPoints : 0;
+        PlayerData data = cache.get(uuid);
+        return data != null ? data.talentPoints : 0;
     }
 
     public int[] getAllTraits(@NotNull UUID uuid) {
-        Snapshot s = cache.get(uuid);
-        if (s == null) return new int[] {0,0,0,0};
-        return new int[] { s.wisdomTrait, s.charismaTrait, s.karmaTrait, s.dexterityTrait };
+        PlayerData data = cache.get(uuid);
+        if (data == null) return new int[] {0,0,0,0};
+        return new int[] { data.wisdomTrait, data.charismaTrait, data.karmaTrait, data.dexterityTrait };
     }
 
-    public int getWisdom(@NotNull UUID uuid)     { Snapshot s = cache.get(uuid); return s != null ? s.wisdomTrait : 0; }
-    public int getKarma(@NotNull UUID uuid)      { Snapshot s = cache.get(uuid); return s != null ? s.karmaTrait : 0; }
-    public int getCharisma(@NotNull UUID uuid)   { Snapshot s = cache.get(uuid); return s != null ? s.charismaTrait : 0; }
-    public int getDexterity(@NotNull UUID uuid)  { Snapshot s = cache.get(uuid); return s != null ? s.dexterityTrait : 0; }
+    public int getWisdom(@NotNull UUID uuid)     { PlayerData data = cache.get(uuid); return data != null ? data.wisdomTrait : 0; }
+    public int getKarma(@NotNull UUID uuid)      { PlayerData data = cache.get(uuid); return data != null ? data.karmaTrait : 0; }
+    public int getCharisma(@NotNull UUID uuid)   { PlayerData data = cache.get(uuid); return data != null ? data.charismaTrait : 0; }
+    public int getDexterity(@NotNull UUID uuid)  { PlayerData data = cache.get(uuid); return data != null ? data.dexterityTrait : 0; }
 
     // ---------- Misc (EXP & Traits) ----------
 
@@ -353,75 +354,62 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
         return 1_000_000_000;
     }
 
-    public InnateTraitUtils.InnateTrait getTrait(String traitName) {
-        return traitInfo.get(traitName);
-    }
-
-    public double getTraitEffect(String traitName, String effectName) {
-        InnateTraitUtils.InnateTrait t = traitInfo.get(traitName);
-        if (t == null) {
-            ConsoleUtils.severe(prefix(), "Trait not found: " + traitName);
-            return 0.0;
-        }
-        Double v = t.effects.get(effectName);
-        if (v == null) {
-            ConsoleUtils.severe(prefix(), "Effect not found: " + effectName);
-            return 0.0;
-        }
-        return v;
+    public Map<String, InnateTraitConfig.InnateTrait> getTraits() {
+        return traits;
     }
 
     // ---------- Internals ----------
 
-    private Snapshot ensureLoaded(UUID uuid) {
-        Snapshot s = cache.get(uuid);
-        if (s != null) return s;
+    private PlayerData ensureLoaded(UUID uuid) {
+        PlayerData data = cache.get(uuid);
+        if (data != null) return data;
         load(uuid);
         return cache.get(uuid);
     }
 
     private double consumeBonusXp(UUID uuid, double value) {
-        Snapshot s = cache.get(uuid);
-        if (s == null || s.bxp <= 0.0) return 0.0;
+        PlayerData data = cache.get(uuid);
+        if (data == null || data.bxp <= 0.0) return 0.0;
 
-        double bonus = Math.min(s.bxp, value);
-        double newBxp = (bonus >= value) ? (s.bxp - value) : 0.0;
-        cache.put(uuid, s.withBxp(newBxp));
+        double bonus = Math.min(data.bxp, value);
+        double newBxp = (bonus >= value) ? (data.bxp - value) : 0.0;
+        cache.put(uuid, data.withBxp(newBxp));
         return bonus;
     }
 
     private void checkAndApplyLevelUp(@NotNull Player player) {
         UUID id = player.getUniqueId();
-        Snapshot s = cache.get(id);
-        if (s == null || s.level >= MAX_LEVEL) return;
+        PlayerData data = cache.get(id);
+        if (data == null || data.level >= MAX_LEVEL) return;
 
         boolean levelUp = false;
-        int prev = s.level;
+        int prev = data.level;
 
-        while (s.exp >= getNextEXP(s.level) && s.level < MAX_LEVEL) {
-            int nextLevel = s.level + 1;
-            int nextTrait = s.traitPoints + 1 + (nextLevel > 100 ? 2 : 0);
-            s = s.withLevel(nextLevel).withTraitPoints(nextTrait);
+        while (data.exp >= getNextEXP(data.level) && data.level < MAX_LEVEL) {
+            int nextLevel = data.level + 1;
+            int nextTrait = data.traitPoints + traitPoints.get(nextLevel);
+            data = data.withLevel(nextLevel).withTraitPoints(nextTrait);
             levelUp = true;
         }
-        cache.put(id, s);
+        cache.put(id, data);
 
         if (levelUp) {
-            SkillsUtils.levelup(player, skillDisplayName, prev, s.level, s.traitPoints);
+            SkillsUtils.levelup(player, skillDisplayName, prev, data.level, data.traitPoints);
         }
     }
 
-    private SkillsDatabase.SkillsSnapshot toRepo(Snapshot s) {
-        return new SkillsDatabase.SkillsSnapshot(
-                s.name, s.exp, s.bxp, s.xpm, s.level, s.luck,
-                s.traitPoints, s.talentPoints, s.wisdomTrait, s.charismaTrait, s.karmaTrait, s.dexterityTrait
+    private SkillsDatabase.PlayerDataDB toRepo(PlayerData data) {
+        return new SkillsDatabase.PlayerDataDB(
+                data.name, data.exp, data.bxp, data.xpm, data.level, data.luck,
+                data.traitPoints, data.talentPoints, data.wisdomTrait, data.charismaTrait, data.karmaTrait, data.dexterityTrait
         );
     }
 
-    private Snapshot toSnap(SkillsDatabase.SkillsSnapshot s) {
-        return new Snapshot(
-                s.name(), s.exp(), s.bxp(), s.xpm(), s.level(), s.luck(),
-                s.traitPoints(), s.talentPoints(), s.wisdomTrait(), s.charismaTrait(), s.karmaTrait(), s.dexterityTrait()
+    private PlayerData toMemoryData(SkillsDatabase.PlayerDataDB data) {
+        return new PlayerData(
+                data.name(), data.exp(), data.bxp(), data.xpm(), data.level(), data.luck(),
+                data.traitPoints(), data.talentPoints(), data.wisdomTrait(), data.charismaTrait(),
+                data.karmaTrait(), data.dexterityTrait()
         );
     }
 

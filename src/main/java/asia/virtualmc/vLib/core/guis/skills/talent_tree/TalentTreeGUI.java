@@ -38,9 +38,6 @@ public class TalentTreeGUI {
         this.handler = handler;
     }
 
-    /**
-     * Immutable snapshot of data — safe to build async.
-     */
     private record TalentSnapshot(
             UUID uuid,
             Map<String, Integer> talentData,
@@ -106,6 +103,12 @@ public class TalentTreeGUI {
                 String talentName = entry.getKey();
                 TalentTreeConfig.Talent talent = entry.getValue();
 
+                if (talentName.equals("information")) {
+                    pane.addItem(getInformation(talent), Slot.fromIndex(53));
+                    continue;
+                }
+
+
                 int talentLevel = snap.talentData.getOrDefault(talentName, 0);
                 boolean isUnlocked = hasRequiredTalents(talent) &&
                         hasRequiredSkillLevel(talent.reqLevel());
@@ -143,18 +146,16 @@ public class TalentTreeGUI {
                 addPaths(isUnlocked, talent);
             }
 
-            // Book
-            pane.addItem(getBook(), Slot.fromIndex(53));
-
             gui.addPane(pane);
             gui.setOnGlobalClick(event -> event.setCancelled(true));
             return gui;
         }
 
-        private GuiItem getBook() {
-            String title = "<gray>Talent Points: <green>" + snap.talentPoints;
-            List<String> lore = List.of("", "<gray>You can obtain Talent Points by doing", "deliveries.");
-            return new GuiItem(ComponentService.get(Material.BOOK, title, new ArrayList<>(lore), null));
+        private GuiItem getInformation(TalentTreeConfig.Talent talent) {
+            String title = talent.displayName();
+            title = StringUtils.replace(title, "{talent_points}", String.valueOf(snap.talentPoints));
+            List<String> lore = talent.lore();
+            return new GuiItem(ComponentService.get(talent.material(), title, new ArrayList<>(lore), talent.itemModel()));
         }
 
         private List<String> getLore(List<String> lore, boolean isMaxLevel, boolean isUnlocked,
@@ -238,7 +239,11 @@ public class TalentTreeGUI {
             });
 
             cache.invalidate(snap.uuid);
-            open(player);
+
+            // Re-open GUI after 1.5s
+            plugin.getServer().getGlobalRegionScheduler().runDelayed(plugin, task -> {
+                open(player);
+            }, 30L);
         }
 
         private boolean hasRequiredTalents(TalentTreeConfig.Talent talent) {

@@ -1,5 +1,7 @@
 package asia.virtualmc.vLib.utilities.digit;
 
+import java.util.Set;
+
 public class IntegerUtils {
 
     /**

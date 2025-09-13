@@ -76,4 +76,41 @@ public class HashSetUtils {
 
         return result;
     }
+
+    /**
+     * Parses a string in the format "start-end" and returns a Set<Integer>
+     * containing all integers from start to end (inclusive).
+     * If the input is invalid, an empty set is returned.
+     *
+     * @param value the string range (e.g. "1-100")
+     * @return a set of integers representing the range
+     */
+    public static Set<Integer> getRange(String value) {
+        Set<Integer> result = new HashSet<>();
+        if (value == null || !value.contains("-")) {
+            return result;
+        }
+
+        String[] parts = value.split("-");
+        if (parts.length != 2) {
+            return result;
+        }
+
+        try {
+            int start = Integer.parseInt(parts[0].trim());
+            int end = Integer.parseInt(parts[1].trim());
+
+            if (start > end) {
+                return result;
+            }
+
+            for (int i = start; i <= end; i++) {
+                result.add(i);
+            }
+        } catch (NumberFormatException ignored) {
+
+        }
+
+        return result;
+    }
 }
