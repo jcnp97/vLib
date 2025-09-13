@@ -172,101 +172,83 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
     /**
      * Adjusts level directly (no level-up loop or rewards).
      */
-    public void updateLevel(@NotNull Player player, @NotNull EnumsLib.UpdateType type, int value) {
-        UUID id = player.getUniqueId();
-        PlayerData data = ensureLoaded(id);
+    public void updateLevel(@NotNull UUID uuid, @NotNull EnumsLib.UpdateType type, int value) {
+        PlayerData data = ensureLoaded(uuid);
         if (data == null) return;
-        cache.put(id, data.withLevel(SkillsDataUtils.getLevel(type, data.level, value)));
+        cache.put(uuid, data.withLevel(SkillsDataUtils.getLevel(type, data.level, value)));
     }
 
     /**
      * Updates stored player name (used for DB & logs).
      */
-    public void updateName(@NotNull Player player, String name) {
-        UUID id = player.getUniqueId();
-        PlayerData data = ensureLoaded(id);
+    public void updateName(@NotNull UUID uuid, String name) {
+        PlayerData data = ensureLoaded(uuid);
         if (data == null) return;
-        cache.put(id, data.withName(name));
+        cache.put(uuid, data.withName(name));
     }
 
     /**
      * Updates XPM (exp multiplier).
      */
-    public void updateXPM(@NotNull Player player, @NotNull EnumsLib.UpdateType type, double value) {
-        UUID id = player.getUniqueId();
-        PlayerData data = ensureLoaded(id);
+    public void updateXPM(@NotNull UUID uuid, @NotNull EnumsLib.UpdateType type, double value) {
+        PlayerData data = ensureLoaded(uuid);
         if (data == null) return;
-        cache.put(id, data.withXpm(SkillsDataUtils.getXPM(type, data.xpm, value)));
+        cache.put(uuid, data.withXpm(SkillsDataUtils.getXPM(type, data.xpm, value)));
     }
 
     /**
      * Updates bonus exp (BXP).
      */
-    public void updateBXP(@NotNull Player player, @NotNull EnumsLib.UpdateType type, double value) {
-        UUID id = player.getUniqueId();
-        PlayerData data = ensureLoaded(id);
+    public void updateBXP(@NotNull UUID uuid, @NotNull EnumsLib.UpdateType type, double value) {
+        PlayerData data = ensureLoaded(uuid);
         if (data == null) return;
-        cache.put(id, data.withBxp(SkillsDataUtils.getBXP(type, data.bxp, value)));
+        cache.put(uuid, data.withBxp(SkillsDataUtils.getBXP(type, data.bxp, value)));
     }
 
-    public void updateTraitPoints(@NotNull Player player, @NotNull EnumsLib.UpdateType type, int value) {
-        UUID id = player.getUniqueId();
-        PlayerData data = ensureLoaded(id);
+    public void updateTraitPoints(@NotNull UUID uuid, @NotNull EnumsLib.UpdateType type, int value) {
+        PlayerData data = ensureLoaded(uuid);
         if (data == null) return;
-        cache.put(id, data.withTraitPoints(SkillsDataUtils.getTraitPoints(type, data.traitPoints, value)));
+        cache.put(uuid, data.withTraitPoints(SkillsDataUtils.getTraitPoints(type, data.traitPoints, value)));
     }
 
-    public void updateTalentPoints(@NotNull Player player, @NotNull EnumsLib.UpdateType type, int value) {
-        UUID id = player.getUniqueId();
-        PlayerData data = ensureLoaded(id);
+    public void updateTalentPoints(@NotNull UUID uuid, @NotNull EnumsLib.UpdateType type, int value) {
+        PlayerData data = ensureLoaded(uuid);
         if (data == null) return;
-        cache.put(id, data.withTalentPoints(SkillsDataUtils.getTalentPoints(type, data.talentPoints, value)));
+        cache.put(uuid, data.withTalentPoints(SkillsDataUtils.getTalentPoints(type, data.talentPoints, value)));
     }
 
-    public void updateLuck(@NotNull Player player, @NotNull EnumsLib.UpdateType type, int value) {
-        UUID id = player.getUniqueId();
-        PlayerData data = ensureLoaded(id);
+    public void updateLuck(@NotNull UUID uuid, @NotNull EnumsLib.UpdateType type, int value) {
+        PlayerData data = ensureLoaded(uuid);
         if (data == null) return;
-        cache.put(id, data.withLuck(SkillsDataUtils.getLuck(type, data.luck, value)));
+        cache.put(uuid, data.withLuck(SkillsDataUtils.getLuck(type, data.luck, value)));
     }
 
-    public void updateWisdom(@NotNull Player player, @NotNull EnumsLib.UpdateType type, int value) {
-        UUID id = player.getUniqueId();
-        PlayerData data = ensureLoaded(id);
+    public void updateWisdom(@NotNull UUID uuid, @NotNull EnumsLib.UpdateType type, int value) {
+        PlayerData data = ensureLoaded(uuid);
         if (data == null) return;
-        cache.put(id, data.withWisdom(SkillsDataUtils.getTraitLevel(type, data.wisdomTrait, value)));
+        cache.put(uuid, data.withWisdom(SkillsDataUtils.getTraitLevel(type, data.wisdomTrait, value)));
     }
 
-    public void updateKarma(@NotNull Player player, @NotNull EnumsLib.UpdateType type, int value) {
-        UUID id = player.getUniqueId();
-        PlayerData data = ensureLoaded(id);
+    public void updateKarma(@NotNull UUID uuid, @NotNull EnumsLib.UpdateType type, int value) {
+        PlayerData data = ensureLoaded(uuid);
         if (data == null) return;
-        cache.put(id, data.withKarma(SkillsDataUtils.getTraitLevel(type, data.karmaTrait, value)));
+        cache.put(uuid, data.withKarma(SkillsDataUtils.getTraitLevel(type, data.karmaTrait, value)));
     }
 
-    public void updateDexterity(@NotNull Player player, @NotNull EnumsLib.UpdateType type, int value) {
-        UUID id = player.getUniqueId();
-        PlayerData data = ensureLoaded(id);
+    public void updateDexterity(@NotNull UUID uuid, @NotNull EnumsLib.UpdateType type, int value) {
+        PlayerData data = ensureLoaded(uuid);
         if (data == null) return;
-        cache.put(id, data.withDexterity(SkillsDataUtils.getTraitLevel(type, data.dexterityTrait, value)));
+        cache.put(uuid, data.withDexterity(SkillsDataUtils.getTraitLevel(type, data.dexterityTrait, value)));
     }
 
-    public void updateCharisma(@NotNull Player player, @NotNull EnumsLib.UpdateType type, int value) {
-        UUID id = player.getUniqueId();
-        PlayerData data = ensureLoaded(id);
+    public void updateCharisma(@NotNull UUID uuid, @NotNull EnumsLib.UpdateType type, int value) {
+        PlayerData data = ensureLoaded(uuid);
         if (data == null) return;
-        cache.put(id, data.withCharisma(SkillsDataUtils.getTraitLevel(type, data.charismaTrait, value)));
+        cache.put(uuid, data.withCharisma(SkillsDataUtils.getTraitLevel(type, data.charismaTrait, value)));
     }
 
-    /**
-     * Adds to all trait levels with clamping.
-     *
-     * @param player player
-     * @param value  int[4] -> {wisdom, charisma, karma, dexterity}
-     */
-    public void addAllTraits(@NotNull Player player, int[] value) {
-        UUID id = player.getUniqueId();
-        PlayerData data = ensureLoaded(id);
+    public void addAllTraits(@NotNull UUID uuid, int[] value) {
+        PlayerData data = ensureLoaded(uuid);
         if (data == null || value.length < 4) return;
 
         int w = Math.min(data.wisdomTrait + value[0], traits.get("wisdom_trait").maxLevel());
@@ -274,7 +256,7 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
         int k = Math.min(data.karmaTrait + value[2], traits.get("karma_trait").maxLevel());
         int d = Math.min(data.dexterityTrait + value[3], traits.get("dexterity_trait").maxLevel());
 
-        cache.put(id, new PlayerData(data.name, data.exp, data.bxp, data.xpm, data.level, data.luck, data.traitPoints, data.talentPoints, w, c, k, d));
+        cache.put(uuid, new PlayerData(data.name, data.exp, data.bxp, data.xpm, data.level, data.luck, data.traitPoints, data.talentPoints, w, c, k, d));
     }
 
     // ---------- Getters ----------

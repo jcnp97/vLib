@@ -16,5 +16,6 @@ public interface RankGUIHandler {
     Set<String> getStatistics();
     Map<String, Double> getBonuses();
 
+    // Processing Methods
     void incrementRankId(UUID uuid);
 }

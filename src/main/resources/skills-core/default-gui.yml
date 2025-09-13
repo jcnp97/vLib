@@ -17,8 +17,8 @@ settings:
     salvage_gui: ""
     sell_gui: ""
     talent_gui: ""
-    traits_gui: ""
-    traits_gui_upgrade: ""
+    traits_gui: "§f<shift:-48>"
+    traits_gui_upgrade: "§f<shift:-48>"
     # Farming
     farmland_status: "§f<shift:-48>"
     # Others

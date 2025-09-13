@@ -14,6 +14,7 @@ public interface TalentGUIHandler {
     Map<String, Integer> getTalentData(UUID uuid);
     Map<String, TalentTreeConfig.Talent> getTalents();
 
+    // Processing Methods
     void incrementTalent(UUID uuid, String talentName);
     void subtractTalentPoints(Player player, int amount);
 }
