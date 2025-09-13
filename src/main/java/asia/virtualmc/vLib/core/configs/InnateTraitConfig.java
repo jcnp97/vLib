@@ -76,7 +76,6 @@ public class InnateTraitConfig {
             }
         }
 
-        ConsoleUtils.debugMap(points);
         return points;
     }
 }

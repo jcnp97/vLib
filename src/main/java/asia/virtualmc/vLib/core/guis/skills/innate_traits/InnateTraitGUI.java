@@ -7,6 +7,8 @@ import asia.virtualmc.vLib.integration.inventory_framework.IFUtils;
 import asia.virtualmc.vLib.services.bukkit.ComponentService;
 import asia.virtualmc.vLib.utilities.bukkit.SoundUtils;
 import asia.virtualmc.vLib.utilities.digit.MathUtils;
+import asia.virtualmc.vLib.utilities.enums.EnumsLib;
+import asia.virtualmc.vLib.utilities.messages.MessageUtils;
 import asia.virtualmc.vLib.utilities.paper.AsyncUtils;
 import asia.virtualmc.vLib.utilities.paper.SyncUtils;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -76,7 +78,7 @@ public class InnateTraitGUI {
     public class Rank {
         private final Player player;
         private final PlayerData data;
-        private final StaticPane pane = new StaticPane(9, 6);
+        private final StaticPane pane = new StaticPane(9, 5);
         private final ChestGui gui = new ChestGui(5, "");
 
         // Trait Values (On Upgrade Mode)
@@ -190,32 +192,45 @@ public class InnateTraitGUI {
 
             // Remove existing item first
             pane.removeItem(1, id - 1);
-            List<String> lore = new ArrayList<>(Arrays.asList("<white>\uE0AE to add", "<white>\uE0C4 to remove"));
 
-            ItemStack item = ComponentService.get(Material.PAPER, trait.name(), lore, trait.itemModel());
-            if (remainingPoints > 0) {
-                pane.addItem(new GuiItem(item, event -> {
-                    int traitValue = traitValues[id - 1];
-                    if (event.isLeftClick()) {
-                        traitValues[id - 1] = traitValue + 1;
-                        remainingPoints--;
-                        gui.update();
-                    } else if (event.isRightClick() && traitValue > 0) {
-                        traitValues[id - 1] = traitValue - 1;
-                        remainingPoints++;
-                        gui.update();
-                    }
-                }), 1, (id - 1));
-            } else {
-                pane.addItem(new GuiItem(item, event -> {
-                    int traitValue = traitValues[id - 1];
-                    if (event.isRightClick() && traitValue > 0) {
-                        traitValues[id - 1] = traitValue - 1;
-                        remainingPoints++;
-                        gui.update();
-                    }
-                }), 1, (id - 1));
-            }
+            int allocated = traitValues[id - 1];
+            int maxAllocation = trait.maxLevel() - data.currentTraits[id - 1];
+
+            // Amount reflects allocated points (min 1 so item shows up)
+            int amount = allocated > 0 ? allocated : 1;
+
+            // Updated lore
+            List<String> lore = new ArrayList<>();
+            lore.add("<gray>Allocated: <green>" + allocated + "<gray>/<red>" + maxAllocation);
+            lore.add("<gray>Remaining Points: <yellow>" + remainingPoints);
+            lore.add("");
+            lore.add("<white>\uE0AE Left click to add");
+            lore.add("<white>\uE0C4 Right click to remove");
+
+            ItemStack item = ComponentService.get(Material.PAPER,
+                    "<aqua>" + trait.name(),
+                    lore,
+                    trait.itemModel());
+
+            item.setAmount(Math.min(amount, 64));
+            GuiItem guiItem = new GuiItem(item, event -> {
+                boolean processed = false;
+                if (event.isLeftClick() && remainingPoints > 0 && allocated < maxAllocation) {
+                    traitValues[id - 1]++;
+                    remainingPoints--;
+                    processed = true;
+                } else if (event.isRightClick() && allocated > 0) {
+                    traitValues[id - 1]--;
+                    remainingPoints++;
+                    processed = true;
+                }
+
+                if (!processed) SoundUtils.play(player, "minecraft:entity.villager.no");
+                applyUpgradeToTraitItem(traitName);
+                gui.update();
+            });
+
+            pane.addItem(guiItem, 1, id - 1);
         }
 
         private void confirmButton() {
@@ -224,13 +239,18 @@ public class InnateTraitGUI {
                 pane.removeItem(i, 4);
                 pane.addItem(new GuiItem(GUIConfig.getItem(
                         "<green>Confirm"), event -> {
+                    if (remainingPoints == data.traitPoints) {
+                        SoundUtils.play(player, "minecraft:entity.villager.no");
+                        MessageUtils.sendMessage(player, "You didn't allocate any trait points!", EnumsLib.MessageType.RED);
+                        return;
+                    }
+
                     IFUtils.confirmGui(player, result -> {
                         if (result) {
                             process();
-                            event.getWhoClicked().closeInventory();
-                        } else {
-                            event.getWhoClicked().closeInventory();
                         }
+
+                        event.getWhoClicked().closeInventory();
                     });
                 }), i, 4);
             }
@@ -238,6 +258,7 @@ public class InnateTraitGUI {
 
         private void upgradeMode() {
             gui.setTitle(GUIConfig.get("traits_gui_upgrade"));
+            confirmButton();
             for (String traitName : data.traits.keySet()) {
                 applyUpgradeToTraitItem(traitName);
             }

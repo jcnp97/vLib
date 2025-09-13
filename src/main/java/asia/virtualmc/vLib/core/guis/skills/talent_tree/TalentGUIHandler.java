@@ -16,5 +16,5 @@ public interface TalentGUIHandler {
 
     // Processing Methods
     void incrementTalent(UUID uuid, String talentName);
-    void subtractTalentPoints(Player player, int amount);
+    void subtractTalentPoints(UUID uuid, int amount);
 }

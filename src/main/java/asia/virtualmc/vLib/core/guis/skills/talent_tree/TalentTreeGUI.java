@@ -130,7 +130,7 @@ public class TalentTreeGUI {
                     pane.addItem(new GuiItem(item.clone(), event -> {
                         IFUtils.confirmGui(player, result -> {
                             if (result) {
-                                handler.subtractTalentPoints(player, talent.cost());
+                                handler.subtractTalentPoints(snap.uuid, talent.cost());
                                 handler.incrementTalent(snap.uuid, talentName);
                                 process(talent.displayName(), talentLevel + 1);
                                 event.getWhoClicked().closeInventory();
