@@ -2,8 +2,8 @@ package asia.virtualmc.vLib.core.configs;
 
 import asia.virtualmc.vLib.Main;
 import asia.virtualmc.vLib.services.file.YamlFileService;
+import asia.virtualmc.vLib.utilities.digit.DecimalUtils;
 import asia.virtualmc.vLib.utilities.digit.IntegerUtils;
-import asia.virtualmc.vLib.utilities.java.HashSetUtils;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import org.bukkit.plugin.Plugin;
@@ -23,9 +23,9 @@ public class SkillsEXPConfig {
      * @param plugin the plugin whose data folder contains the configuration file (must not be null)
      * @return a map where the key is the level and the value is the required experience for that level
      */
-    public static Map<Integer, Integer> get(@NotNull Plugin plugin, String fileName) {
+    public static Map<Integer, Double> get(@NotNull Plugin plugin, String fileName) {
         String prefix = "[" + plugin.getName() + "]";
-        Map<Integer, Integer> expTable = new HashMap<>();
+        Map<Integer, Double> expTable = new HashMap<>();
 
         YamlFileService.YamlFile file = YamlFileService.get(plugin, fileName);
         Section levelSection = file.getSection("levels");
@@ -35,11 +35,14 @@ public class SkillsEXPConfig {
             levelSection = file.getSection("levels");
         }
 
+        double lastExp = 0;
         Set<String> keys = levelSection.getRoutesAsStrings(false);
         for (String key : keys) {
             int level = IntegerUtils.toInt(key);
-            int experience = IntegerUtils.toInt(levelSection.getString(key));
+            double experience = DecimalUtils.stringToDouble(levelSection.getString(key));
+
             expTable.put(level, experience);
+            lastExp = experience;
         }
 
         // Virtual Levels
@@ -47,16 +50,16 @@ public class SkillsEXPConfig {
         if (levels != null && !levels.isEmpty()) {
             for (String level : levels) {
                 String[] parts = level.split(";");
-                Set<Integer> virtualLevels = HashSetUtils.getRange(parts[0]);
+                String[] range = parts[0].split("-");
                 int experience = IntegerUtils.toInt(parts[1]);
 
-                for (int virtualLevel : virtualLevels) {
-                    expTable.put(virtualLevel, experience);
+                for (int i = IntegerUtils.toInt(range[0]); i <= IntegerUtils.toInt(range[1]); i++) {
+                    lastExp += experience;
+                    expTable.put(i, lastExp);
                 }
             }
         }
 
-        ConsoleUtils.debugMap(expTable);
         return expTable;
     }
 }

@@ -128,6 +128,8 @@ levels:
 
 # Virtual levels are essentially cosmetic and have no impact on progression.
 # You can add level ranges followed by the experience on each level.
-# On default values, from 121 to 300, players will need at least 25M exp for each level.
+#
+# To explain the default values, from level 121 to level 250, the experience needed on each level is 25M.
+# At level 250, the experience needed is almost 3.2B (level 121 to 250, 25M each) + 312M (level 1 to 120).
 virtual-levels:
   - "121-250;25,000,000"
