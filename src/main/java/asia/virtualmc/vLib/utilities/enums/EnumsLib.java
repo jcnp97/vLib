@@ -47,4 +47,13 @@ public class EnumsLib {
         WINTER,
         DISABLED
     }
+
+    public enum Skills {
+        FARMING,
+        FISHING,
+        MINING,
+        ARCHAEOLOGY,
+        COOKING,
+        INVENTION
+    }
 }

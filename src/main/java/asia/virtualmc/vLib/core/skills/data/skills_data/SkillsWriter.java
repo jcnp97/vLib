@@ -1,12 +1,11 @@
 package asia.virtualmc.vLib.core.skills.data.skills_data;
 
 import asia.virtualmc.vLib.utilities.enums.EnumsLib;
-import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
 public interface SkillsWriter {
-    void updateEXP(Player player, EnumsLib.UpdateType type, double value);
+    void updateEXP(UUID uuid, EnumsLib.UpdateType type, double value);
     void updateLevel(UUID uuid, EnumsLib.UpdateType type, int value);
     void updateName(UUID uuid, String value);
     void updateXPM(UUID uuid, EnumsLib.UpdateType type, double value);

@@ -1,8 +1,5 @@
 package asia.virtualmc.vLib.utilities.text;
 
-import asia.virtualmc.vLib.utilities.digit.DecimalUtils;
-import asia.virtualmc.vLib.utilities.digit.IntegerUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 

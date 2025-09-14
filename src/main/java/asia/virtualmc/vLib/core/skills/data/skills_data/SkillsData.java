@@ -2,11 +2,10 @@ package asia.virtualmc.vLib.core.skills.data.skills_data;
 
 import asia.virtualmc.vLib.core.configs.InnateTraitConfig;
 import asia.virtualmc.vLib.core.skills.utilities.SkillsDataUtils;
-import asia.virtualmc.vLib.core.skills.utilities.SkillsUtils;
+import asia.virtualmc.vLib.events.skills.SkillLevelUpEvent;
 import asia.virtualmc.vLib.utilities.enums.EnumsLib;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
-import asia.virtualmc.vLib.utilities.text.StringUtils;
-import org.bukkit.entity.Player;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,11 +15,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class SkillsData implements SkillsWriter, SkillsReader {
     private static final int MIN_LEVEL = 1;
-    private static final int MAX_LEVEL = 120;
 
     private final Plugin plugin;
     private final SkillsDatabase database;
-    private final String skillDisplayName;
+    private final EnumsLib.Skills skill;
+    private final int MAX_LEVEL;
 
     private final Map<Integer, Integer> expTable;
     private final Map<String, InnateTraitConfig.InnateTrait> traits;
@@ -69,7 +68,9 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
             @NotNull SkillsDatabase database,
             @NotNull Map<Integer, Integer> expTable,
             @NotNull Map<String, InnateTraitConfig.InnateTrait> traits,
-            @NotNull Map<Integer, Integer> traitPoints
+            @NotNull Map<Integer, Integer> traitPoints,
+            @NotNull EnumsLib.Skills skill,
+            int maxLevel
     ) {
         this.plugin = plugin;
         this.database = database;
@@ -77,7 +78,8 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
         this.traits = traits;
         this.traitPoints = traitPoints;
         this.database.createTable(plugin, plugin.getName().toLowerCase() + "_playerData");
-        this.skillDisplayName = StringUtils.deleteCharAt(plugin.getName(), 0);
+        this.skill = skill;
+        this.MAX_LEVEL = maxLevel;
     }
 
     // ---------- Lifecycle ----------
@@ -146,59 +148,38 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
 
     // ---------- Update methods ----------
 
-    /**
-     * Updates a player's EXP and handles level-up + action bar UX.
-     *
-     * @param player player
-     * @param type   operation type (ADD, SUBTRACT, SET)
-     * @param value  amount
-     */
-    public void updateEXP(@NotNull Player player, @NotNull EnumsLib.UpdateType type, double value) {
-        UUID id = player.getUniqueId();
-        PlayerData data = ensureLoaded(id);
+    public void updateEXP(@NotNull UUID uuid, @NotNull EnumsLib.UpdateType type, double value) {
+        PlayerData data = ensureLoaded(uuid);
         if (data == null) return;
 
         if (type == EnumsLib.UpdateType.ADD) {
-            double bonus = consumeBonusXp(id, value);
+            double bonus = consumeBonusXp(uuid, value);
             double newExp = SkillsDataUtils.getEXP(type, data.exp, value + bonus);
-            cache.put(id, data.withExp(newExp));
-            SkillsUtils.buildEXPActionBar(player, skillDisplayName, value, bonus);
-            checkAndApplyLevelUp(player);
+            cache.put(uuid, data.withExp(newExp));
+            checkLevelUp(uuid);
         } else {
-            cache.put(id, data.withExp(SkillsDataUtils.getEXP(type, data.exp, value)));
+            cache.put(uuid, data.withExp(SkillsDataUtils.getEXP(type, data.exp, value)));
         }
     }
 
-    /**
-     * Adjusts level directly (no level-up loop or rewards).
-     */
     public void updateLevel(@NotNull UUID uuid, @NotNull EnumsLib.UpdateType type, int value) {
         PlayerData data = ensureLoaded(uuid);
         if (data == null) return;
         cache.put(uuid, data.withLevel(SkillsDataUtils.getLevel(type, data.level, value)));
     }
 
-    /**
-     * Updates stored player name (used for DB & logs).
-     */
     public void updateName(@NotNull UUID uuid, String name) {
         PlayerData data = ensureLoaded(uuid);
         if (data == null) return;
         cache.put(uuid, data.withName(name));
     }
 
-    /**
-     * Updates XPM (exp multiplier).
-     */
     public void updateXPM(@NotNull UUID uuid, @NotNull EnumsLib.UpdateType type, double value) {
         PlayerData data = ensureLoaded(uuid);
         if (data == null) return;
         cache.put(uuid, data.withXpm(SkillsDataUtils.getXPM(type, data.xpm, value)));
     }
 
-    /**
-     * Updates bonus exp (BXP).
-     */
     public void updateBXP(@NotNull UUID uuid, @NotNull EnumsLib.UpdateType type, double value) {
         PlayerData data = ensureLoaded(uuid);
         if (data == null) return;
@@ -359,24 +340,37 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
         return bonus;
     }
 
-    private void checkAndApplyLevelUp(@NotNull Player player) {
-        UUID id = player.getUniqueId();
-        PlayerData data = cache.get(id);
+    private void checkLevelUp(@NotNull UUID uuid) {
+        PlayerData data = cache.get(uuid);
         if (data == null || data.level >= MAX_LEVEL) return;
 
         boolean levelUp = false;
         int prev = data.level;
 
+        int finalLevel = data.level;
+        int finalTraitPoints = data.traitPoints;
+
         while (data.exp >= getNextEXP(data.level) && data.level < MAX_LEVEL) {
             int nextLevel = data.level + 1;
             int nextTrait = data.traitPoints + traitPoints.get(nextLevel);
+
             data = data.withLevel(nextLevel).withTraitPoints(nextTrait);
+
+            finalLevel = nextLevel;
+            finalTraitPoints = nextTrait;
             levelUp = true;
         }
-        cache.put(id, data);
+        cache.put(uuid, data);
 
         if (levelUp) {
-            SkillsUtils.levelup(player, skillDisplayName, prev, data.level, data.traitPoints);
+            int newLevel = finalLevel;
+            int newTraitPoints = finalTraitPoints;
+
+            plugin.getServer().getGlobalRegionScheduler().run(plugin, task -> {
+                Bukkit.getPluginManager().callEvent(
+                        new SkillLevelUpEvent(uuid, skill, prev, newLevel, newTraitPoints)
+                );
+            });
         }
     }
 
