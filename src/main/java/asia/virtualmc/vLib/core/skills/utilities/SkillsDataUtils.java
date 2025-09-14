@@ -81,9 +81,9 @@ public class SkillsDataUtils {
 
         value = DecimalUtils.precise(value, 2);
         switch (type) {
-            case ADD -> { return currentBXP + value; }
+            case ADD -> { return Math.min(MAX_EXP, currentBXP + value); }
             case SUBTRACT -> { return Math.max(0, currentBXP - value); }
-            case SET -> { return Math.max(0, value); }
+            case SET -> { return Math.max(0, Math.min(value, MAX_EXP)); }
             default -> { return currentBXP; }
         }
     }

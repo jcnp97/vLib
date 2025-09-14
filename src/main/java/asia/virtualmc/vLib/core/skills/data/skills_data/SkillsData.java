@@ -14,8 +14,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class SkillsData implements SkillsWriter, SkillsReader {
-    private static final int MIN_LEVEL = 1;
-
     private final Plugin plugin;
     private final SkillsDatabase database;
     private final EnumsLib.Skills skill;
@@ -262,7 +260,7 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
 
     public int getLevel(@NotNull UUID uuid) {
         PlayerData data = cache.get(uuid);
-        return data != null ? data.level : MIN_LEVEL;
+        return data != null ? data.level : 1;
     }
 
     public double getBXP(@NotNull UUID uuid) {
@@ -310,11 +308,12 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
      * @return exp required to reach next level
      */
     public int getNextEXP(int level) {
-        if (level < MAX_LEVEL) {
-            Integer n = expTable.get(level);
-            return n != null ? n : Integer.MAX_VALUE / 4;
+        Integer exp = expTable.get(level);
+        if (exp != null) {
+            return exp;
         }
-        return 1_000_000_000;
+
+        return Integer.MAX_VALUE;
     }
 
     public Map<String, InnateTraitConfig.InnateTrait> getTraits() {
@@ -342,7 +341,7 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
 
     private void checkLevelUp(@NotNull UUID uuid) {
         PlayerData data = cache.get(uuid);
-        if (data == null || data.level >= MAX_LEVEL) return;
+        if (data == null) return;
 
         boolean levelUp = false;
         int prev = data.level;
@@ -350,9 +349,14 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
         int finalLevel = data.level;
         int finalTraitPoints = data.traitPoints;
 
-        while (data.exp >= getNextEXP(data.level) && data.level < MAX_LEVEL) {
+        while (data.exp >= getNextEXP(data.level)) {
             int nextLevel = data.level + 1;
-            int nextTrait = data.traitPoints + traitPoints.get(nextLevel);
+
+            // only give trait points if below 120
+            int nextTrait = data.traitPoints;
+            if (nextLevel <= MAX_LEVEL) {
+                nextTrait += traitPoints.getOrDefault(nextLevel, 0);
+            }
 
             data = data.withLevel(nextLevel).withTraitPoints(nextTrait);
 
