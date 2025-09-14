@@ -15,7 +15,7 @@ modules:
   hologram_lib: false
   ultimate_advancement: false
   ray_trace: false
-  uni_dialog: false
+  uni_dialogs: false
 
 # --------------------------------------------------------------------------------------
 

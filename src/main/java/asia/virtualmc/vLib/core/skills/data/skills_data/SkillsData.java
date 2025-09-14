@@ -150,14 +150,16 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
         PlayerData data = ensureLoaded(uuid);
         if (data == null) return;
 
-        if (type == EnumsLib.UpdateType.ADD) {
-            double bonus = consumeBonusXp(uuid, value);
-            double newExp = SkillsDataUtils.getEXP(type, data.exp, value + bonus);
-            cache.put(uuid, data.withExp(newExp));
-            checkLevelUp(uuid);
-        } else {
-            cache.put(uuid, data.withExp(SkillsDataUtils.getEXP(type, data.exp, value)));
-        }
+        cache.put(uuid, data.withExp(SkillsDataUtils.getEXP(type, data.exp, value)));
+        if (type == EnumsLib.UpdateType.ADD) checkLevelUp(uuid);
+//        if (type == EnumsLib.UpdateType.ADD) {
+//            //double bonus = consumeBonusXp(uuid, value);
+//            double newExp = SkillsDataUtils.getEXP(type, data.exp, value + bonus);
+//            cache.put(uuid, data.withExp(newExp));
+//
+//        } else {
+//
+//        }
     }
 
     public void updateLevel(@NotNull UUID uuid, @NotNull EnumsLib.UpdateType type, int value) {

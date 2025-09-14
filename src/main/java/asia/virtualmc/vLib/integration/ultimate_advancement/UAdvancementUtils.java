@@ -1,6 +1,7 @@
 package asia.virtualmc.vLib.integration.ultimate_advancement;
 
 import asia.virtualmc.vLib.Main;
+import asia.virtualmc.vLib.utilities.annotations.Internal;
 import asia.virtualmc.vLib.utilities.bukkit.SoundUtils;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import com.fren_gor.ultimateAdvancementAPI.UltimateAdvancementAPI;
@@ -16,6 +17,7 @@ public class UAdvancementUtils {
      * Initializes the UltimateAdvancementAPI integration by checking if the plugin is present
      * and acquiring its API instance. Logs success or failure accordingly.
      */
+    @Internal
     public static void load() {
         Plugin plugin = Main.getInstance();
         if (plugin.getServer().getPluginManager().getPlugin("UltimateAdvancementAPI") == null) {

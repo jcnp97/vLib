@@ -16,7 +16,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 
 public class Registry {
     private static final Map<String, Boolean> modules = new HashMap<>();
