@@ -1,7 +1,6 @@
 package asia.virtualmc.vLib.integration.inventory_framework;
 
 import asia.virtualmc.vLib.core.guis.GUIConfig;
-import asia.virtualmc.vLib.core.guis.GUIUtils;
 import asia.virtualmc.vLib.utilities.items.ItemStackUtils;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
@@ -30,10 +29,10 @@ public class IFUtils {
         UUID uuid = player.getUniqueId();
         responseCache.remove(uuid);
 
-        ChestGui gui = new ChestGui(3, GUIConfig.get("confirmation_gui"));
+        ChestGui gui = new ChestGui(1, GUIConfig.get("confirmation_gui"));
         gui.setOnGlobalClick(event -> event.setCancelled(true));
 
-        StaticPane pane = new StaticPane(0, 0, 9, 3);
+        StaticPane pane = new StaticPane(0, 0, 9, 1);
 
         // Confirm buttons
         for (int i = 1; i <= 3; i++) {
@@ -42,7 +41,7 @@ public class IFUtils {
                 callback.accept(true);
                 event.getWhoClicked().closeInventory();
             });
-            pane.addItem(confirm, i, 1);
+            pane.addItem(confirm, i, 0);
         }
 
         // Cancel buttons
@@ -52,7 +51,7 @@ public class IFUtils {
                 callback.accept(false);
                 event.getWhoClicked().closeInventory();
             });
-            pane.addItem(cancel, i, 1);
+            pane.addItem(cancel, i, 0);
         }
 
         gui.setOnClose(event -> {

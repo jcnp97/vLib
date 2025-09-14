@@ -76,6 +76,7 @@ dependencies {
     implementation "redis.clients:jedis:5.2.0"
     implementation "com.jeff-media:MorePersistentDataTypes:2.4.0"
     implementation "com.frengor:ultimateadvancementapi:2.6.0"
+    implementation "io.github.projectunified:uni-dialog-paper:1.4.0"
 
     // system scope → file dependency
     compileOnly files("libs/RealisticSeasons-api.jar")

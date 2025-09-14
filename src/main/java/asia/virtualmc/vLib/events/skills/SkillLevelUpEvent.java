@@ -11,7 +11,6 @@ import java.util.UUID;
 public class SkillLevelUpEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
     private final Player player;
-    private final UUID uuid;
     private final EnumsLib.Skills skill;
     private final int previousLevel;
     private final int newLevel;
@@ -19,7 +18,6 @@ public class SkillLevelUpEvent extends Event {
 
     public SkillLevelUpEvent(UUID uuid, EnumsLib.Skills skill, int previousLevel, int newLevel, int traitPoints) {
         this.player = Bukkit.getPlayer(uuid);
-        this.uuid = uuid;
         this.skill = skill;
         this.previousLevel = previousLevel;
         this.newLevel = newLevel;
@@ -27,7 +25,6 @@ public class SkillLevelUpEvent extends Event {
     }
 
     public Player getPlayer() { return player; }
-    public UUID getUUID() { return uuid; }
     public EnumsLib.Skills getSkill() { return skill; }
     public int getPreviousLevel() { return previousLevel; }
     public int getNewLevel() { return newLevel; }

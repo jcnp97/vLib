@@ -5,9 +5,8 @@ import asia.virtualmc.vLib.utilities.enums.EnumsLib;
 import org.jetbrains.annotations.NotNull;
 
 public class SkillsDataUtils {
-    private static final int MIN_LEVEL = 1;
-    private static final int MAX_LEVEL = 120;
-    private static final int MAX_EXP = 2_147_483_647;
+    private static final int MAX_LEVEL = Integer.MAX_VALUE;
+    private static final double MAX_EXP = Double.MAX_VALUE;
 
     /**
      * Updates the player's experience (EXP) based on the update type and given value.
@@ -42,8 +41,8 @@ public class SkillsDataUtils {
 
         switch (type) {
             case ADD -> { return Math.min(MAX_LEVEL, currentLevel + value); }
-            case SUBTRACT -> { return Math.max(MIN_LEVEL, currentLevel - value); }
-            case SET -> { return Math.min(value, MAX_LEVEL); }
+            case SUBTRACT -> { return Math.max(1, currentLevel - value); }
+            case SET -> { return Math.max(1, value); }
             default -> { return currentLevel; }
         }
     }
@@ -164,7 +163,6 @@ public class SkillsDataUtils {
         }
     }
 
-    public static int getMinLevel() { return MIN_LEVEL; }
     public static int getMaxLevel() { return MAX_LEVEL; }
-    public static int getMaxExp() { return MAX_EXP; }
+    public static double getMaxExp() { return MAX_EXP; }
 }

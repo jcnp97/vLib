@@ -17,58 +17,6 @@ import org.jetbrains.annotations.NotNull;
 public class SkillsUtils {
 
     /**
-     * Handles player level-up actions by sending messages, titles, spawning fireworks,
-     * and playing level-up sounds depending on the skill and level.
-     *
-     * @param player        The player who leveled up.
-     * @param skillName     The name of the skill that leveled up.
-     * @param previousLevel The player's previous level in the skill.
-     * @param newLevel      The player's new level in the skill.
-     * @param traitPoints   The number of trait points the player has after leveling up.
-     */
-    public static void levelup(Player player, String skillName, int previousLevel, int newLevel, int traitPoints) {
-        if (player == null || !player.isOnline()) return;
-
-        levelupMessage(player, skillName, traitPoints);
-        TitleUtils.send(player,
-                "<shadow:#C96868:0.5><gradient:#C6FFDD:#FBD786:#f7797d>" + skillName,
-                "<white>ʟᴇᴠᴇʟ " + previousLevel + " <gray>➛ <white>ʟᴇᴠᴇʟ " + newLevel);
-
-        if (newLevel == 99 || newLevel == SkillsDataUtils.getMaxLevel()) {
-            FireworkUtils.spawn(player, 12, 3);
-            SoundUtils.play(player, "cozyvanilla.all.master_levelup");
-        } else {
-            FireworkUtils.spawn(player, 5, 5);
-            SoundUtils.play(player, "cozyvanilla." + skillName.toLowerCase() + ".default_levelup");
-        }
-    }
-
-    /**
-     * Sends a message to the player indicating their available trait points
-     * and a relevant command to spend them, based on the skill.
-     *
-     * @param player      The player to send the message to.
-     * @param skillName   The name of the skill.
-     * @param traitPoints The number of trait points the player has available.
-     */
-    public static void levelupMessage(Player player, String skillName, int traitPoints) {
-        if (player == null || !player.isOnline()) return;
-
-        String command = "";
-        switch (skillName.toLowerCase()) {
-            case "fishing" -> { command = "/vfish traits"; }
-            case "farming" -> { command = "/vfarm traits"; }
-            case "mining" -> { command = "/vmine traits"; }
-            case "archaeology" -> { command = "/varch traits"; }
-            case "cooking" -> { command = "/vcook traits"; }
-            case "invention" -> { command = "/vinv traits"; }
-        }
-
-        MessageUtils.sendMessage(player,"You have " + traitPoints +
-                " trait points that you can spend on " + command);
-    }
-
-    /**
      * Generates an EXP progress message for a skill, showing the current level,
      * progress percentage, EXP gained, and hourly EXP rate.
      *
