@@ -10,6 +10,7 @@ import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class FireworkUtils {
-    private static Main plugin = null;
+    private static final Main plugin = Main.getInstance();
     private static final List<Color> colorList = new ArrayList<>(Arrays.asList(
             Color.AQUA, Color.LIME, Color.YELLOW, Color.BLUE, Color.BLACK, Color.FUCHSIA,
             Color.GRAY, Color.GREEN, Color.MAROON, Color.NAVY, Color.OLIVE, Color.ORANGE,
@@ -31,13 +32,9 @@ public class FireworkUtils {
      * @param location the location where the firework should be spawned
      */
     public static void spawn(Location location) {
-        if (plugin == null) {
-            plugin = Main.getInstance();
-        }
-
         World world = location.getWorld();
         Firework firework = world.spawn(location, Firework.class);
-        firework.setMetadata("nodamage", new FixedMetadataValue(plugin, true));
+        firework.setMetadata("no_damage", new FixedMetadataValue(plugin, true));
         FireworkMeta meta = firework.getFireworkMeta();
         Color[] colors = getColors();
 
@@ -75,14 +72,10 @@ public class FireworkUtils {
      *
      * @param player   the player whose location will be used as the spawn point
      * @param count    the number of fireworks to spawn
-     * @param interval the delay between each firework spawn, in ticks
+     * @param ticks the delay between each firework spawn, in ticks
      */
-    public static void spawn(@NotNull Player player, int count, long interval) {
-        if (plugin == null) {
-            plugin = Main.getInstance();
-        }
-
+    public static void spawn(@NotNull Player player, int count, long ticks) {
         Location location = player.getLocation().clone();
-        TaskUtils.repeating(plugin, () -> spawn(location), interval, count);
+        TaskUtils.repeating(plugin, () -> spawn(location), ticks, count);
     }
 }

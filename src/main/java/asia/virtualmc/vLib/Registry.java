@@ -5,6 +5,7 @@ import asia.virtualmc.vLib.core.ray_trace.RayTraceManager;
 import asia.virtualmc.vLib.core.utilities.LevelTagUtils;
 import asia.virtualmc.vLib.core.utilities.ProgressBarUtils;
 import asia.virtualmc.vLib.integration.IntegrationManager;
+import asia.virtualmc.vLib.listeners.FireworkDamageListener;
 import asia.virtualmc.vLib.listeners.ServerJoinListener;
 import asia.virtualmc.vLib.storage.StorageManager;
 import asia.virtualmc.vLib.tasks.TaskManager;
@@ -53,6 +54,7 @@ public class Registry {
 
         // Listeners
         new ServerJoinListener(plugin);
+        new FireworkDamageListener(plugin);
     }
 
     public void disable() {

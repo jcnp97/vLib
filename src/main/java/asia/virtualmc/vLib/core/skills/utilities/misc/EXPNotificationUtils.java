@@ -52,6 +52,8 @@ public class EXPNotificationUtils {
     }
 
     private void sendAll() {
+        if (cache.isEmpty()) return;
+
         cache.forEach((uuid, totalExp) -> {
             Player player = Bukkit.getPlayer(uuid);
 
@@ -66,8 +68,8 @@ public class EXPNotificationUtils {
     private void show(Player player, double addedExp) {
         UUID uuid = player.getUniqueId();
         double currentExp = handler.getCurrentExp(uuid);
-        double nextLevelExp = handler.getNextLevelExp(uuid);
         int currentLevel = handler.getCurrentLevel(uuid);
+        double nextLevelExp = handler.getNextLevelExp(currentLevel);
         float progress = (float) (currentExp / nextLevelExp);
 
         String message = getMessage(skillName, progress, addedExp, currentLevel);
@@ -80,6 +82,6 @@ public class EXPNotificationUtils {
                 Math.min(100.0, (progress) * 100.0), true) + "%";
         String hourlyExp = StringDigitUtils.formatDouble(addedEXP * 240, true);
         return "<white>" + skillName + " Lv. " + currentLevel + " <gray>(<yellow>" + percentage +
-                "<gray>) | <green>+ " + addedEXP + " XP <gray>| <red>" + hourlyExp + " XP/HR";
+                "<gray>) | <green>+ " + StringDigitUtils.formatDouble(addedEXP, true) + " XP <gray>| <red>" + hourlyExp + " XP/HR";
     }
 }

@@ -19,7 +19,7 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
     private final EnumsLib.Skills skill;
     private final int MAX_LEVEL;
 
-    private final Map<Integer, Integer> expTable;
+    private final Map<Integer, Double> expTable;
     private final Map<String, InnateTraitConfig.InnateTrait> traits;
     private final Map<Integer, Integer> traitPoints;
 
@@ -64,7 +64,7 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
     public SkillsData(
             @NotNull Plugin plugin,
             @NotNull SkillsDatabase database,
-            @NotNull Map<Integer, Integer> expTable,
+            @NotNull Map<Integer, Double> expTable,
             @NotNull Map<String, InnateTraitConfig.InnateTrait> traits,
             @NotNull Map<Integer, Integer> traitPoints,
             @NotNull EnumsLib.Skills skill,
@@ -309,13 +309,13 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
      * @param level current level
      * @return exp required to reach next level
      */
-    public int getNextEXP(int level) {
-        Integer exp = expTable.get(level);
-        if (exp != null) {
+    public double getNextEXP(int level) {
+        double exp = expTable.getOrDefault(level + 1, 0.0);
+        if (exp > 0) {
             return exp;
         }
 
-        return Integer.MAX_VALUE;
+        return 9999999999.00;
     }
 
     public Map<String, InnateTraitConfig.InnateTrait> getTraits() {
@@ -366,8 +366,8 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
             finalTraitPoints = nextTrait;
             levelUp = true;
         }
-        cache.put(uuid, data);
 
+        cache.put(uuid, data);
         if (levelUp) {
             int newLevel = finalLevel;
             int newTraitPoints = finalTraitPoints;

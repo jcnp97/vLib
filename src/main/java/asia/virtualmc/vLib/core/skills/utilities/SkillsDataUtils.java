@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class SkillsDataUtils {
     private static final int MAX_LEVEL = Integer.MAX_VALUE;
-    private static final double MAX_EXP = Double.MAX_VALUE;
+    private static final double MAX_EXP = 9999999999.0;
 
     /**
      * Updates the player's experience (EXP) based on the update type and given value.
@@ -21,9 +21,9 @@ public class SkillsDataUtils {
 
         value = DecimalUtils.precise(value, 2);
         switch (type) {
-            case ADD -> { return Math.min(MAX_EXP, currentEXP + value); }
-            case SUBTRACT -> { return Math.max(0, currentEXP - value); }
-            case SET -> { return Math.max(0, Math.min(value, MAX_EXP)); }
+            case ADD -> { return Math.min(MAX_EXP, DecimalUtils.format(currentEXP + value)); }
+            case SUBTRACT -> { return Math.max(0, DecimalUtils.format((currentEXP - value))); }
+            case SET -> { return Math.max(0, Math.min(DecimalUtils.format((value)), MAX_EXP)); }
             default -> { return currentEXP; }
         }
     }
@@ -80,9 +80,9 @@ public class SkillsDataUtils {
 
         value = DecimalUtils.precise(value, 2);
         switch (type) {
-            case ADD -> { return Math.min(MAX_EXP, currentBXP + value); }
-            case SUBTRACT -> { return Math.max(0, currentBXP - value); }
-            case SET -> { return Math.max(0, Math.min(value, MAX_EXP)); }
+            case ADD -> { return Math.min(MAX_EXP, DecimalUtils.format(currentBXP + value)); }
+            case SUBTRACT -> { return Math.max(0, DecimalUtils.format(currentBXP - value)); }
+            case SET -> { return Math.max(0, Math.min(DecimalUtils.format(value), MAX_EXP)); }
             default -> { return currentBXP; }
         }
     }

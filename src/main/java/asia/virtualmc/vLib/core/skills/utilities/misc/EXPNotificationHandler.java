@@ -5,6 +5,6 @@ import java.util.UUID;
 public interface EXPNotificationHandler {
     String getSkillName();
     double getCurrentExp(UUID uuid);
-    double getNextLevelExp(UUID uuid);
     int getCurrentLevel(UUID uuid);
+    double getNextLevelExp(int level);
 }

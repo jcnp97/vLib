@@ -106,4 +106,33 @@ public class TaskUtils {
                 intervalTicks
         );
     }
+
+    /**
+     * Runs a repeating task using the Paper GlobalRegionScheduler at a fixed interval,
+     * and cancels it automatically after executing the specified number of times.
+     *
+     * @param plugin   the plugin instance running the task
+     * @param task     the task to execute
+     * @param intervalTicks the interval between executions in ticks
+     * @param count    the number of times the task should execute before cancelling
+     * @return the scheduled repeating task
+     */
+    public static ScheduledTask repeating(Plugin plugin, Runnable task, long intervalTicks, int count) {
+        AtomicInteger executionCount = new AtomicInteger(0);
+
+        return plugin.getServer().getGlobalRegionScheduler().runAtFixedRate(
+                plugin,
+                scheduledTask -> {
+                    // increment and run
+                    if (executionCount.incrementAndGet() >= count) {
+                        task.run();
+                        scheduledTask.cancel();
+                    } else {
+                        task.run();
+                    }
+                },
+                intervalTicks,
+                intervalTicks
+        );
+    }
 }

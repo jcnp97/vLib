@@ -16,5 +16,5 @@ public interface SkillsReader {
     int getCharisma(UUID uuid);
     int getKarma(UUID uuid);
     int getDexterity(UUID uuid);
-    int getNextEXP(int level);
+    double getNextEXP(int level);
 }
