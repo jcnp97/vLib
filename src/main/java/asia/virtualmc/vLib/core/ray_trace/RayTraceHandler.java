@@ -5,8 +5,6 @@ import org.bukkit.entity.Player;
 public interface RayTraceHandler<RayTrace> {
     /**
      * Perform the actual raytrace for this plugin.
-     * Each plugin can decide whether it cares about blocks, entities, etc.,
-     * and return its own result type.
      */
     RayTrace rayTrace(Player player);
 
@@ -27,8 +25,7 @@ public interface RayTraceHandler<RayTrace> {
 
     /**
      * Called once when this player is completely unregistered
-     * from the RayTraceManager (logout, no longer active, etc.).
-     * Use this to remove holograms, particles, etc.
+     * from the RayTraceManager (logout, override, etc.).
      */
     void cleanup(Player player);
 }

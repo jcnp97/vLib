@@ -21,9 +21,8 @@ import java.util.List;
 
 public class PlayerHologramUtils {
     private static HologramManager hologramManager;
-    private static final Map<UUID, ActiveHologram> activeHolograms = new HashMap<>();
+    private static final Map<UUID, List<Hologram<?>>> activeHolograms = new HashMap<>();
     private static final Set<Hologram<?>> holograms = new HashSet<>();
-    private record ActiveHologram(Location location, List<Hologram<?>> holograms) {}
 
     @Internal
     public static void load() {
@@ -33,10 +32,6 @@ public class PlayerHologramUtils {
     public static void register(Player player, String text, Material material,
                                 String itemModel, float x, float y, float z, Location location) {
         UUID uuid = player.getUniqueId();
-        ActiveHologram current = activeHolograms.get(uuid);
-        if (current != null && current.location.equals(location)) {
-            return;
-        }
 
         // Remove old holograms if it exists first
         removeHolograms(uuid);
@@ -70,7 +65,7 @@ public class PlayerHologramUtils {
         parts.add(itemHologram);
         parts.add(textHologram);
 
-        activeHolograms.put(uuid, new ActiveHologram(location, parts));
+        activeHolograms.put(uuid, parts);
         holograms.add(itemHologram);
         holograms.add(textHologram);
     }
@@ -78,10 +73,6 @@ public class PlayerHologramUtils {
     public static void register(Player player, List<String> texts,
                                 float x, float y, float z, Location location) {
         UUID uuid = player.getUniqueId();
-        ActiveHologram current = activeHolograms.get(uuid);
-        if (current != null && current.location.equals(location)) {
-            return;
-        }
 
         // Remove old holograms if it exists first
         removeHolograms(uuid);
@@ -105,16 +96,12 @@ public class PlayerHologramUtils {
             holograms.add(textHologram);
         }
 
-        activeHolograms.put(uuid, new ActiveHologram(location, parts));
+        activeHolograms.put(uuid, parts);
     }
 
     public static void register(Player player, String text,
                                 float x, float y, float z, Location location) {
         UUID uuid = player.getUniqueId();
-        ActiveHologram current = activeHolograms.get(uuid);
-        if (current != null && current.location.equals(location)) {
-            return;
-        }
 
         // Remove old holograms if it exists first
         removeHolograms(uuid);
@@ -132,16 +119,16 @@ public class PlayerHologramUtils {
         hologramManager.spawn(textHologram, location);
         parts.add(textHologram);
 
-        activeHolograms.put(uuid, new ActiveHologram(location, parts));
+        activeHolograms.put(uuid, parts);
         holograms.add(textHologram);
     }
 
     public static void removeHolograms(UUID uuid) {
-        ActiveHologram active = activeHolograms.remove(uuid);
-        if (active != null && !active.holograms.isEmpty()) {
-            for (Hologram<?> holo : active.holograms) {
-                hologramManager.remove(holo);
-            }
+        List<Hologram<?>> holograms = activeHolograms.get(uuid);
+        if (holograms == null || holograms.isEmpty()) return;
+
+        for (Hologram<?> holo : holograms) {
+            hologramManager.remove(holo);
         }
     }
 
