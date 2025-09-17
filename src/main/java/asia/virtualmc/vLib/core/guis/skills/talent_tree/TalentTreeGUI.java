@@ -1,6 +1,7 @@
 package asia.virtualmc.vLib.core.guis.skills.talent_tree;
 
 import asia.virtualmc.vLib.core.configs.TalentTreeConfig;
+import asia.virtualmc.vLib.core.guis.GUIConfig;
 import asia.virtualmc.vLib.integration.inventory_framework.IFUtils;
 import asia.virtualmc.vLib.services.bukkit.ComponentService;
 import asia.virtualmc.vLib.utilities.bukkit.SoundUtils;
@@ -88,7 +89,7 @@ public class TalentTreeGUI {
         private final Player player;
         private final TalentSnapshot snap;
         private final boolean hasTalent19;
-        private final ChestGui gui = new ChestGui(6, "§f<shift:-48>\uE0E8");
+        private final ChestGui gui = new ChestGui(6, GUIConfig.getMenu("talent_menu"));
         private final StaticPane pane = new StaticPane(9, 6);
 
         TalentTree(Player player, TalentSnapshot snap) {

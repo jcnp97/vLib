@@ -25,15 +25,31 @@ public class GUIConfig {
         unicodes.putAll(file.stringKeyStringMap(section.getSection("titles"), false));
     }
 
-    public static String getItemModel() {
+    public static String getInvisibleModel() {
         return (invisibleItemModel != null) ? invisibleItemModel : "cozyvanilla_guiitems:invisible_item";
     }
 
-    public static ItemStack getItem(String name) {
-        return ComponentService.get(Material.PAPER, name, new ArrayList<>(), getItemModel());
+    public static String getLeftClickAnim() {
+        return (invisibleItemModel != null) ? invisibleItemModel : "cozyvanilla_guiitems:left_click_anim_menu";
     }
 
-    public static String get(String title) {
+    public static String getRightClickAnim() {
+        return (invisibleItemModel != null) ? invisibleItemModel : "cozyvanilla_guiitems:right_click_anim_menu";
+    }
+
+    public static ItemStack getInvisibleItem(String name) {
+        return ComponentService.get(Material.PAPER, name, new ArrayList<>(), getInvisibleModel());
+    }
+
+    public static ItemStack getLeftClickItem(String name) {
+        return ComponentService.get(Material.PAPER, name, new ArrayList<>(), getLeftClickAnim());
+    }
+
+    public static ItemStack getRightClickItem(String name) {
+        return ComponentService.get(Material.PAPER, name, new ArrayList<>(), getRightClickAnim());
+    }
+
+    public static String getMenu(String title) {
         String guiTitle = unicodes.get(title);
         if (guiTitle == null) {
             return "";

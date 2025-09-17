@@ -100,9 +100,9 @@ public class RankGUI {
         public ChestGui getGui() {
             ChestGui gui;
             if (snap.currentPts >= snap.nextPts) {
-                gui = new ChestGui(2, GUIConfig.get("ranks_gui_allow"));
+                gui = new ChestGui(2, GUIConfig.getMenu("ranks_menu_allow"));
             } else {
-                gui = new ChestGui(2, GUIConfig.get("ranks_gui_deny"));
+                gui = new ChestGui(2, GUIConfig.getMenu("ranks_menu_deny"));
             }
 
             // Progress Bar
@@ -119,7 +119,7 @@ public class RankGUI {
 
             // Rank-up button
             if (snap.currentPts >= snap.nextPts) {
-                pane.addItem(new GuiItem(GUIConfig.getItem("<green>Click to Rank-up"), event -> {
+                pane.addItem(new GuiItem(GUIConfig.getLeftClickItem("<green>Click to Rank-up"), event -> {
                     IFUtils.confirmGui(player, result -> {
                         if (result) {
                             process();
@@ -130,11 +130,11 @@ public class RankGUI {
                     });
                 }), Slot.fromIndex(11));
             } else {
-                pane.addItem(new GuiItem(GUIConfig.getItem("<red>Not enough points!")), Slot.fromIndex(11));
+                pane.addItem(new GuiItem(GUIConfig.getInvisibleItem("<red>Not enough points!")), Slot.fromIndex(11));
             }
 
             // Exit
-            pane.addItem(new GuiItem(GUIConfig.getItem("<red>Exit"), event -> {
+            pane.addItem(new GuiItem(GUIConfig.getLeftClickItem("<red>Exit"), event -> {
                 event.getWhoClicked().closeInventory();
             }), Slot.fromIndex(15));
 
@@ -169,7 +169,7 @@ public class RankGUI {
         }
 
         private ItemStack getRankItem() {
-            if (snap.rankId == 0) return GUIConfig.getItem(snap.currentRankName);
+            if (snap.rankId == 0) return GUIConfig.getInvisibleItem(snap.currentRankName);
             String itemModel = "cozyvanilla_guiitems:skill_rank_" + Math.min(snap.rankId, 70);
             return ComponentService.get(Material.PAPER, "<gray>Current Rank: " + snap.currentRankName, new ArrayList<>(), itemModel);
         }

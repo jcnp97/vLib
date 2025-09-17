@@ -16,6 +16,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
+import com.github.stefvanschie.inventoryframework.pane.util.Slot;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -92,11 +93,9 @@ public class InnateTraitGUI {
         }
 
         public ChestGui getGui() {
+            gui.setTitle(GUIConfig.getMenu("traits_menu"));
             if (data.traitPoints > 0) {
-                gui.setTitle(GUIConfig.get("traits_gui_allow"));
                 upgradeButton();
-            } else {
-                gui.setTitle(GUIConfig.get("traits_gui_deny"));
             }
 
             // Progress Bar & Items
@@ -166,21 +165,17 @@ public class InnateTraitGUI {
         }
 
         private void upgradeButton() {
-            for (int i = 1; i <= 3; i++) {
-                pane.addItem(new GuiItem(GUIConfig.getItem(
-                        "<green>Enable Upgrade Mode"), event -> {
-                    upgradeMode();
-                }), i, 4);
-            }
+            pane.addItem(new GuiItem(GUIConfig.getLeftClickItem(
+                    "<green>Enable Upgrade Mode"), event -> {
+                upgradeMode();
+            }), Slot.fromIndex(2));
         }
 
         private void exitButton() {
-            for (int i = 1; i <= 3; i++) {
-                pane.addItem(new GuiItem(GUIConfig.getItem(
-                        "<red>Exit"), event -> {
-                    event.getWhoClicked().closeInventory();
-                }), i + 4, 4);
-            }
+            pane.addItem(new GuiItem(GUIConfig.getLeftClickItem(
+                    "<red>Exit"), event -> {
+                upgradeMode();
+            }), Slot.fromIndex(6));
         }
 
         private void applyUpgradeToTraitItem(String traitName) {
@@ -234,30 +229,27 @@ public class InnateTraitGUI {
         }
 
         private void confirmButton() {
-            for (int i = 1; i <= 3; i++) {
-                // Remove existing item first
-                pane.removeItem(i, 4);
-                pane.addItem(new GuiItem(GUIConfig.getItem(
-                        "<green>Confirm"), event -> {
-                    if (remainingPoints == data.traitPoints) {
-                        SoundUtils.play(player, "minecraft:entity.villager.no");
-                        MessageUtils.sendMessage(player, "You didn't allocate any trait points!", EnumsLib.MessageType.RED);
-                        return;
+            pane.removeItem(Slot.fromIndex(2));
+            pane.addItem(new GuiItem(GUIConfig.getLeftClickItem(
+                    "<green>Confirm"), event -> {
+                if (remainingPoints == data.traitPoints) {
+                    SoundUtils.play(player, "minecraft:entity.villager.no");
+                    MessageUtils.sendMessage(player, "You didn't allocate any trait points!", EnumsLib.MessageType.RED);
+                    return;
+                }
+
+                IFUtils.confirmGui(player, result -> {
+                    if (result) {
+                        process();
                     }
 
-                    IFUtils.confirmGui(player, result -> {
-                        if (result) {
-                            process();
-                        }
-
-                        event.getWhoClicked().closeInventory();
-                    });
-                }), i, 4);
-            }
+                    event.getWhoClicked().closeInventory();
+                });
+            }), Slot.fromIndex(2));
         }
 
         private void upgradeMode() {
-            gui.setTitle(GUIConfig.get("traits_gui_upgrade"));
+            gui.setTitle(GUIConfig.getMenu("traits_menu_upgrade"));
             confirmButton();
             for (String traitName : data.traits.keySet()) {
                 applyUpgradeToTraitItem(traitName);

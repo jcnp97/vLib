@@ -5,6 +5,8 @@ import org.bukkit.inventory.ItemStack;
 import java.util.UUID;
 
 public interface SellGUIHandler {
-    double getValue(ItemStack item);
+    int getRarityId(ItemStack item);
+    double getValue(int rarityId);
+    double getBonusValue(ItemStack item);
     double getSellMultiplier(UUID uuid);
 }

@@ -1,8 +1,6 @@
-package asia.virtualmc.vLib.core.guis.skills.sell;
+package asia.virtualmc.vLib.core.guis.skills.salvage;
 
 import asia.virtualmc.vLib.core.guis.GUIConfig;
-import asia.virtualmc.vLib.integration.vault.EconomyUtils;
-import asia.virtualmc.vLib.services.bukkit.ComponentService;
 import asia.virtualmc.vLib.utilities.bukkit.SoundUtils;
 import asia.virtualmc.vLib.utilities.enums.EnumsLib;
 import asia.virtualmc.vLib.utilities.items.LoreUtils;
@@ -17,14 +15,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-public class SellGUI {
-    private final SellGUIHandler handler;
+public class SalvageGUI {
+    private final SalvageGUIHandler handler;
     private final String prefix;
-    private record Sellable(int rarityId, int amount) {}
+    private record Salvageable(int rarityId, int amount) {}
 
-    public SellGUI(Plugin plugin, SellGUIHandler handler) {
+    public SalvageGUI(Plugin plugin, SalvageGUIHandler handler) {
         this.handler = handler;
         this.prefix = "[" + plugin.getName() + "]";
     }
@@ -36,27 +35,25 @@ public class SellGUI {
             return;
         }
 
-        MessageUtils.sendMessage(player, "You don't have any sellables.", EnumsLib.MessageType.RED);
+        MessageUtils.sendMessage(player, "You don't have any salvageables.", EnumsLib.MessageType.RED);
     }
 
     private ChestGui buildGui(Player player) {
-        return new SellProcess(player).getGui();
+        return new SalvageProcess(player).getGui();
     }
 
-    public class SellProcess {
+    public class SalvageProcess {
         private final Player player;
-        private final double sellMultiplier;
-        private final Map<Integer, Sellable> snapshot;
+        private final Map<Integer, Salvageable> snapshot;
+        private final Map<Integer, Integer> components;
 
-        private double totalAmount;
-        private final ChestGui gui = new ChestGui(6, GUIConfig.getMenu("sell_menu"));
+        private final ChestGui gui = new ChestGui(6, GUIConfig.getMenu("salvage_menu"));
         private final StaticPane staticPane = new StaticPane(9, 6);
 
-        SellProcess(Player player) {
+        SalvageProcess(Player player) {
             this.player = player;
-            this.sellMultiplier = handler.getSellMultiplier(player.getUniqueId());
             this.snapshot = new HashMap<>();
-            totalAmount = 0;
+            this.components = new HashMap<>();
         }
 
         public ChestGui getGui() {
@@ -72,43 +69,43 @@ public class SellGUI {
                     int amount = clone.getAmount();
 
                     // Create a snapshot: Used to check if player has the same inventory before processing sell.
-                    snapshot.put(i, new Sellable(rarityId, amount));
+                    snapshot.put(i, new Salvageable(rarityId, amount));
 
                     // Add value to total amount
-                    double value = handler.getValue(rarityId) + handler.getBonusValue(clone);
-                    totalAmount += value * amount;
+                    components.merge(rarityId, amount, Integer::sum);
 
                     // Append value to clone's lore
-                    clone = LoreUtils.appendLore(clone, "<gray>Value: <green>$" + value + " <gray>× <green>"
-                            + amount + "<gray>: <yellow>$" + (value * amount));
+                    clone = LoreUtils.appendLore(clone, "<green>" + handler.getComponent(rarityId)
+                            + " <gray>× <green>" + amount);
 
                     // Create GuiItem for IF GUI
-                    staticPane.addItem(sellableItem(clone, i, value * amount, guiSlot), Slot.fromIndex(guiSlot));
+                    staticPane.addItem(salvageableItem(clone, i, guiSlot, rarityId, amount), Slot.fromIndex(guiSlot));
 
                     // Increment slot for static pane
                     guiSlot++;
                 }
             }
 
-            if (snapshot.isEmpty() || totalAmount <= 0) return null;
+            if (snapshot.isEmpty() || components.isEmpty()) return null;
 
             // Add buttons
             confirmButton();
-            exitButton();
 
             gui.addPane(staticPane);
             gui.setOnGlobalClick(event -> event.setCancelled(true));
             return gui;
         }
 
-        private GuiItem sellableItem(ItemStack item, int snapshotSlot, double value, int guiSlot) {
+        private GuiItem salvageableItem(ItemStack item, int snapshotSlot, int guiSlot, int rarityId, int amount) {
             return new GuiItem(item, event -> {
-                // Remove value from total amount
-                totalAmount -= value;
-                updateTotalAmount();
-
                 // Remove from snapshot
                 snapshot.remove(snapshotSlot);
+
+                // Remove from components
+                components.merge(rarityId, amount, (oldValue, newValue) -> {
+                    int updated = oldValue + newValue;
+                    return updated > 0 ? updated : null;
+                });
 
                 // Remove from the pane
                 staticPane.removeItem(Slot.fromIndex(guiSlot));
@@ -119,11 +116,10 @@ public class SellGUI {
         }
 
         private void confirmButton() {
-            staticPane.addItem(new GuiItem(GUIConfig.getLeftClickItem(
-                    "<gray>Total Amount: <green>$" + totalAmount), event -> {
+            staticPane.addItem(new GuiItem(GUIConfig.getLeftClickItem("<green>Confirm process"), event -> {
                 process(player);
                 event.getWhoClicked().closeInventory();
-            }), Slot.fromIndex(52));
+            }), Slot.fromIndex(53));
         }
 
         private void exitButton() {
@@ -132,20 +128,23 @@ public class SellGUI {
             }), Slot.fromIndex(53));
         }
 
-        private void updateTotalAmount() {
-            staticPane.removeItem(Slot.fromIndex(52));
-            confirmButton();
-        }
-
         private void process(Player player) {
-            if (totalAmount <= 0) {
-                MessageUtils.sendMessage(player, "Couldn't process your request because there are no sellables found.", EnumsLib.MessageType.RED);
+            if (components.isEmpty()) {
+                MessageUtils.sendMessage(player, "Couldn't process your request because there are no salvageables found.", EnumsLib.MessageType.RED);
                 return;
             }
 
             if (checkIntegrity() && deleteItems()) {
-                EconomyUtils.add(player, totalAmount * sellMultiplier);
-                SoundUtils.play(player, "cozyvanilla:money_gain");
+                for (Map.Entry<Integer, Integer> entry : components.entrySet()) {
+                    String componentName = handler.getComponent(entry.getKey());
+                    int amount = entry.getValue();
+
+                    handler.addComponent(player.getUniqueId(), componentName, amount);
+                    MessageUtils.sendMessage(player, "You have received: "
+                            + componentName + " × " + amount);
+                }
+
+                SoundUtils.play(player, "minecraft:block.anvil.use");
             }
         }
 
@@ -154,7 +153,7 @@ public class SellGUI {
                 try {
                     player.getInventory().setItem(slot, new ItemStack(Material.AIR));
                 } catch (Exception e) {
-                    ConsoleUtils.severe(prefix, "An error occurred when trying to delete and sell items on slot " + slot + ": " + e);
+                    ConsoleUtils.severe(prefix, "An error occurred when trying to delete and salvage items on slot " + slot + ": " + e);
                     return false;
                 }
             }
@@ -164,18 +163,15 @@ public class SellGUI {
 
         // Check if player has the same inventory from snapshot
         private boolean checkIntegrity() {
-            for (Map.Entry<Integer, Sellable> entry : snapshot.entrySet()) {
+            for (Map.Entry<Integer, Salvageable> entry : snapshot.entrySet()) {
                 ItemStack currentItem = player.getInventory().getItem(entry.getKey());
-                if (currentItem == null) {
-                    MessageUtils.sendMessage(player, "Your inventory had changed. Please re-open GUI.", EnumsLib.MessageType.RED);
-                    return false;
-                }
+                if (currentItem == null) return false;
 
                 int rarityId = handler.getRarityId(currentItem);
                 int amount = currentItem.getAmount();
-                Sellable sellable = entry.getValue();
+                Salvageable salvageable = entry.getValue();
 
-                if (sellable.amount != amount || sellable.rarityId != rarityId) {
+                if (salvageable.amount != amount || salvageable.rarityId != rarityId) {
                     MessageUtils.sendMessage(player, "Your inventory had changed. Please re-open GUI.", EnumsLib.MessageType.RED);
                     return false;
                 }
