@@ -322,6 +322,11 @@ public final class SkillsData implements SkillsWriter, SkillsReader {
         return traits;
     }
 
+    public double getTraitEffect(String traitName, String effectName) {
+        Map<String, Double> effects = traits.get(traitName).effects();
+        return effects == null ? 0.0 : effects.getOrDefault(effectName, 0.0);
+    }
+
     // ---------- Internals ----------
 
     private PlayerData ensureLoaded(UUID uuid) {

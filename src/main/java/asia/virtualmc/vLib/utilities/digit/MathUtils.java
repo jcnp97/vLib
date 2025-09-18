@@ -89,6 +89,18 @@ public class MathUtils {
     }
 
     /**
+     * Multiplies the given long by the specified multiplier and returns
+     * the result rounded to the nearest integer.
+     *
+     * @param value      the long value to multiply
+     * @param multiplier the multiplier to apply
+     * @return the rounded result of (value * multiplier)
+     */
+    public static long multiply(long value, double multiplier) {
+        return Math.round(value * multiplier);
+    }
+
+    /**
      * Multiplies the given value based on a percentage-like multiplier.
      * For example, a multiplier of 25 means +25% (1.25x), and -25 means -25% (0.75x).
      *

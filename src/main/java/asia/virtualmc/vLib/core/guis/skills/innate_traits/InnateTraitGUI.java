@@ -11,6 +11,7 @@ import asia.virtualmc.vLib.utilities.enums.EnumsLib;
 import asia.virtualmc.vLib.utilities.messages.MessageUtils;
 import asia.virtualmc.vLib.utilities.paper.AsyncUtils;
 import asia.virtualmc.vLib.utilities.paper.SyncUtils;
+import asia.virtualmc.vLib.utilities.text.StringListUtils;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
@@ -72,11 +73,11 @@ public class InnateTraitGUI {
     }
 
     private ChestGui buildGui(Player player, PlayerData snap) {
-        Rank rank = new Rank(player, snap);
+        InnateTrait rank = new InnateTrait(player, snap);
         return rank.getGui();
     }
 
-    public class Rank {
+    public class InnateTrait {
         private final Player player;
         private final PlayerData data;
         private final StaticPane pane = new StaticPane(9, 5);
@@ -86,7 +87,7 @@ public class InnateTraitGUI {
         private final int[] traitValues = new int[]{0, 0, 0, 0};
         private int remainingPoints;
 
-        public Rank(Player player, PlayerData data) {
+        public InnateTrait(Player player, PlayerData data) {
             this.player = player;
             this.data = data;
             this.remainingPoints = data.traitPoints;
@@ -100,8 +101,11 @@ public class InnateTraitGUI {
 
             // Progress Bar & Items
             for (String traitName : data.traits.keySet()) {
-                applyProgressBar(traitName);
-                applyTraitItem(traitName);
+                InnateTraitConfig.InnateTrait trait = data.traits.get(traitName);
+                int id = getTraitId(traitName);
+
+                applyProgressBar(id, traitName, trait);
+                applyTraitItem(id, trait);
             }
 
             // Exit
@@ -135,32 +139,25 @@ public class InnateTraitGUI {
             };
         }
 
-        private void applyProgressBar(String traitName) {
-            int id = getTraitId(traitName);
-            if (id == 0) return;
-
+        private void applyProgressBar(int id, String traitName, InnateTraitConfig.InnateTrait trait) {
+            if (id == 0 || trait == null) return;
             int current = data.currentTraits[id - 1];
-            InnateTraitConfig.InnateTrait trait = data.traits.get(traitName);
-            if (trait == null) return;
-
             int maxLevel = trait.maxLevel();
-            String title = trait.name() + " Level: <green>" +
-                    current + "<gray>/<red>" + maxLevel;
+
+            String title = "Level: <green>" + current + "<gray>/<red>" + maxLevel;
             double progress = MathUtils.percent(current, maxLevel);
             ProgressBarUtils.getAsItem(pane, progress, 6,
                     2, id - 1, title, "cozyvanilla_guiitems:bar_outlined_" +
-                            getTraitColor(traitName), trait.lore());
+                            getTraitColor(traitName), new ArrayList<>());
         }
 
-        private void applyTraitItem(String traitName) {
-            int id = getTraitId(traitName);
-            if (id == 0) return;
+        private void applyTraitItem(int id, InnateTraitConfig.InnateTrait trait) {
+            if (id == 0 || trait == null) return;
 
-            InnateTraitConfig.InnateTrait trait = data.traits.get(traitName);
-            if (trait == null) return;
-
+            List<String> lore = StringListUtils.replaceWithDouble(trait.lore(),
+                    trait.effects(), data.currentTraits[id - 1], "max_level");
             GuiItem item = new GuiItem(ComponentService.get(Material.PAPER, "<gray>" + trait.name(),
-                    new ArrayList<>(), trait.itemModel()));
+                    lore, trait.itemModel()));
             pane.addItem(item, 1, id - 1);
         }
 
@@ -168,14 +165,14 @@ public class InnateTraitGUI {
             pane.addItem(new GuiItem(GUIConfig.getLeftClickItem(
                     "<green>Enable Upgrade Mode"), event -> {
                 upgradeMode();
-            }), Slot.fromIndex(2));
+            }), 2, 4);
         }
 
         private void exitButton() {
             pane.addItem(new GuiItem(GUIConfig.getLeftClickItem(
                     "<red>Exit"), event -> {
                 upgradeMode();
-            }), Slot.fromIndex(6));
+            }), 6, 4);
         }
 
         private void applyUpgradeToTraitItem(String traitName) {
@@ -229,7 +226,7 @@ public class InnateTraitGUI {
         }
 
         private void confirmButton() {
-            pane.removeItem(Slot.fromIndex(2));
+            pane.removeItem(2, 4);
             pane.addItem(new GuiItem(GUIConfig.getLeftClickItem(
                     "<green>Confirm"), event -> {
                 if (remainingPoints == data.traitPoints) {
@@ -245,7 +242,7 @@ public class InnateTraitGUI {
 
                     event.getWhoClicked().closeInventory();
                 });
-            }), Slot.fromIndex(2));
+            }), 2, 4);
         }
 
         private void upgradeMode() {

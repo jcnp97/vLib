@@ -6,6 +6,7 @@ import asia.virtualmc.vLib.utilities.enums.EnumsLib;
 import asia.virtualmc.vLib.utilities.items.LoreUtils;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
 import asia.virtualmc.vLib.utilities.messages.MessageUtils;
+import asia.virtualmc.vLib.utilities.text.StringUtils;
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
@@ -75,8 +76,8 @@ public class SalvageGUI {
                     components.merge(rarityId, amount, Integer::sum);
 
                     // Append value to clone's lore
-                    clone = LoreUtils.appendLore(clone, "<green>" + handler.getComponent(rarityId)
-                            + " <gray>× <green>" + amount);
+                    clone = LoreUtils.appendLore(clone, "<green>" +
+                            getComponentName(handler.getComponent(rarityId)) + " <gray>× <green>" + amount);
 
                     // Create GuiItem for IF GUI
                     staticPane.addItem(salvageableItem(clone, i, guiSlot, rarityId, amount), Slot.fromIndex(guiSlot));
@@ -90,6 +91,7 @@ public class SalvageGUI {
 
             // Add buttons
             confirmButton();
+            exitButton();
 
             gui.addPane(staticPane);
             gui.setOnGlobalClick(event -> event.setCancelled(true));
@@ -119,7 +121,7 @@ public class SalvageGUI {
             staticPane.addItem(new GuiItem(GUIConfig.getLeftClickItem("<green>Confirm process"), event -> {
                 process(player);
                 event.getWhoClicked().closeInventory();
-            }), Slot.fromIndex(53));
+            }), Slot.fromIndex(52));
         }
 
         private void exitButton() {
@@ -128,9 +130,13 @@ public class SalvageGUI {
             }), Slot.fromIndex(53));
         }
 
+        private String getComponentName(String componentName) {
+            return StringUtils.format(componentName);
+        }
+
         private void process(Player player) {
             if (components.isEmpty()) {
-                MessageUtils.sendMessage(player, "Couldn't process your request because there are no salvageables found.", EnumsLib.MessageType.RED);
+                MessageUtils.sendMessage(player, "Your salvage inventory is empty!", EnumsLib.MessageType.RED);
                 return;
             }
 
@@ -141,7 +147,7 @@ public class SalvageGUI {
 
                     handler.addComponent(player.getUniqueId(), componentName, amount);
                     MessageUtils.sendMessage(player, "You have received: "
-                            + componentName + " × " + amount);
+                            + getComponentName(componentName) + " × " + amount, EnumsLib.MessageType.GREEN);
                 }
 
                 SoundUtils.play(player, "minecraft:block.anvil.use");

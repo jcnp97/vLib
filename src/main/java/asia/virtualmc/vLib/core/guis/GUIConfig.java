@@ -13,7 +13,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class GUIConfig {
-    private static String invisibleItemModel;
+    private static String invisibleModel;
+    private static String leftClickAnimModel;
+    private static String rightClickAnimModel;
     private static final Map<String, String> unicodes = new HashMap<>();
 
     @Internal
@@ -21,20 +23,23 @@ public class GUIConfig {
         YamlFileService.YamlFile file = YamlFileService.get(Main.getInstance(), "skills-core/default-gui.yml");
         Section section = file.getSection("settings");
 
-        invisibleItemModel = section.getString("invisible-item-model");
+        invisibleModel = section.getString("invisible-model");
+        leftClickAnimModel = section.getString("left-click-model");
+        rightClickAnimModel = section.getString("right-click-model");
+
         unicodes.putAll(file.stringKeyStringMap(section.getSection("titles"), false));
     }
 
     public static String getInvisibleModel() {
-        return (invisibleItemModel != null) ? invisibleItemModel : "cozyvanilla_guiitems:invisible_item";
+        return (invisibleModel != null) ? invisibleModel : "cozyvanilla_guiitems:invisible_item";
     }
 
     public static String getLeftClickAnim() {
-        return (invisibleItemModel != null) ? invisibleItemModel : "cozyvanilla_guiitems:left_click_anim_menu";
+        return (leftClickAnimModel != null) ? leftClickAnimModel : "cozyvanilla_guiitems:left_click_anim_menu";
     }
 
     public static String getRightClickAnim() {
-        return (invisibleItemModel != null) ? invisibleItemModel : "cozyvanilla_guiitems:right_click_anim_menu";
+        return (rightClickAnimModel != null) ? rightClickAnimModel : "cozyvanilla_guiitems:right_click_anim_menu";
     }
 
     public static ItemStack getInvisibleItem(String name) {

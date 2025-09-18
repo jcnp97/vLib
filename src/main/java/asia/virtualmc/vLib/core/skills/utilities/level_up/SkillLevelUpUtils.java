@@ -1,5 +1,6 @@
 package asia.virtualmc.vLib.core.skills.utilities.level_up;
 
+import asia.virtualmc.vLib.core.utilities.LevelTagUtils;
 import asia.virtualmc.vLib.utilities.bukkit.FireworkUtils;
 import asia.virtualmc.vLib.utilities.bukkit.SoundUtils;
 import asia.virtualmc.vLib.utilities.messages.MessageUtils;
@@ -40,8 +41,12 @@ public class SkillLevelUpUtils {
 
         private void titleMessage() {
             TitleUtils.send(player,
-                    "<shadow:#C96868:0.5><gradient:#C6FFDD:#FBD786:#f7797d>" + handler.getSkillName(),
-                    "<white>ʟᴇᴠᴇʟ " + previousLevel + " <gray>➛ <white>ʟᴇᴠᴇʟ " + newLevel);
+                    "<bold><shadow:#C96868:0.5><gradient:#C6FFDD:#FBD786:#f7797d>" + handler.getSkillName(),
+                    "<white>ʟᴇᴠᴇʟ " + getLevelIcon(previousLevel) + " <gray>➛ <white>" + getLevelIcon(newLevel));
+        }
+
+        private String getLevelIcon(int level) {
+            return LevelTagUtils.get(level);
         }
 
         private void fireworks() {

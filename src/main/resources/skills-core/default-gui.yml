@@ -1,5 +1,7 @@
 settings:
-  invisible-item-model: "§f<shift:-48>cozyvanilla_guiitems:invisible_item"
+  invisible-model: "cozyvanilla_guiitems:invisible_item"
+  left-click-model: "cozyvanilla_guiitems:left_click_anim_menu"
+  right-click-model: "cozyvanilla_guiitems:right_click_anim_menu"
   titles:
     # General
     collection_menu: "§f<shift:-48>"

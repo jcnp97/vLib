@@ -139,7 +139,7 @@ public class SellGUI {
 
         private void process(Player player) {
             if (totalAmount <= 0) {
-                MessageUtils.sendMessage(player, "Couldn't process your request because there are no sellables found.", EnumsLib.MessageType.RED);
+                MessageUtils.sendMessage(player, "Your sell inventory is empty!", EnumsLib.MessageType.RED);
                 return;
             }
 
