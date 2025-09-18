@@ -2,13 +2,10 @@ package asia.virtualmc.vLib.core.items.custom_items;
 
 import asia.virtualmc.vLib.core.items.ItemCoreUtils;
 import asia.virtualmc.vLib.services.file.YamlFileService;
-import asia.virtualmc.vLib.utilities.files.FileUtils;
-import asia.virtualmc.vLib.utilities.files.YAMLUtils;
 import asia.virtualmc.vLib.utilities.items.ItemStackUtils;
 import asia.virtualmc.vLib.utilities.items.MaterialUtils;
 import asia.virtualmc.vLib.utilities.items.PDCUtils;
 import asia.virtualmc.vLib.utilities.messages.ConsoleUtils;
-import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -16,7 +13,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
-import java.io.File;
 import java.util.*;
 
 public class CustomResourceUtils {

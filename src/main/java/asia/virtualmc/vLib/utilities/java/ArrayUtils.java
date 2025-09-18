@@ -34,4 +34,36 @@ public class ArrayUtils {
 
         return result;
     }
+
+    /**
+     * Performs element-wise summation of two double arrays.
+     * <p>
+     * Both input arrays must have the same length. The result is a new array
+     * where each index contains the sum of the corresponding elements from
+     * {@code arr1} and {@code arr2}.
+     * </p>
+     *
+     * <p>
+     * If {@code positiveOnly} is {@code true}, any negative result is replaced
+     * with {@code 0.0}. If {@code false}, results can be negative.
+     * </p>
+     *
+     * @param arr1         the first array (must have the same length as arr2)
+     * @param arr2         the second array (must have the same length as arr1)
+     * @param positiveOnly if true, negative results are clamped to zero
+     * @return a new double array containing the element-wise sums
+     * @throws IllegalArgumentException if the arrays are not the same length
+     */
+    public static double[] sum(double[] arr1, double[] arr2, boolean positiveOnly) {
+        if (arr1.length != arr2.length) {
+            throw new IllegalArgumentException("Arrays must have the same length.");
+        }
+
+        double[] result = new double[arr1.length];
+        for (int i = 0; i < arr1.length; i++) {
+            double sum = arr1[i] + arr2[i];
+            result[i] = positiveOnly && sum < 0 ? 0 : sum;
+        }
+        return result;
+    }
 }

@@ -171,7 +171,7 @@ public class InnateTraitGUI {
         private void exitButton() {
             pane.addItem(new GuiItem(GUIConfig.getLeftClickItem(
                     "<red>Exit"), event -> {
-                upgradeMode();
+                event.getWhoClicked().closeInventory();
             }), 6, 4);
         }
 
@@ -232,6 +232,7 @@ public class InnateTraitGUI {
                 if (remainingPoints == data.traitPoints) {
                     SoundUtils.play(player, "minecraft:entity.villager.no");
                     MessageUtils.sendMessage(player, "You didn't allocate any trait points!", EnumsLib.MessageType.RED);
+                    event.getWhoClicked().closeInventory();
                     return;
                 }
 
