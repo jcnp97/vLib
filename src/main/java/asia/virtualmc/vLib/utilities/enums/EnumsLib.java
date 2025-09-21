@@ -5,6 +5,10 @@ public class EnumsLib {
         DAY, DUSK, MORNING, NIGHT;
     }
 
+    public enum WeatherType {
+        CLEAR, RAIN, THUNDER;
+    }
+
     public enum FramePosition {
         POS1, POS2;
     }

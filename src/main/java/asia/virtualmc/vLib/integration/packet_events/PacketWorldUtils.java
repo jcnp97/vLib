@@ -1,11 +1,10 @@
 package asia.virtualmc.vLib.integration.packet_events;
 
+import asia.virtualmc.vLib.utilities.enums.EnumsLib;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.player.PlayerManager;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChangeGameState;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerInitializeWorldBorder;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTimeUpdate;
-import org.bukkit.WeatherType;
 import org.bukkit.entity.Player;
 
 public class PacketWorldUtils {
@@ -35,26 +34,13 @@ public class PacketWorldUtils {
     }
 
     /**
-     * Sends fake daylight info (time) to a specific player.
-     *
-     * @param player      the player
-     * @param dayTime     current time of day (0-24000)
-     */
-    public static void createDaylight(Player player, long dayTime) {
-        WrapperPlayServerTimeUpdate packet =
-                new WrapperPlayServerTimeUpdate(0, dayTime, true);
-        pm.sendPacket(player, packet);
-    }
-
-    /**
-     * Sends fake weather to a specific player using Bukkit's WeatherType.
+     * Sends fake weather to a specific player using EnumsLib's WeatherType.
      *
      * @param player   the player
-     * @param type     CLEAR = no weather, DOWNFALL = rain
-     * @param hasThunder  only applies if type == DOWNFALL, adds thunder
+     * @param type     the weather type
      */
-    public static void createWeather(Player player, WeatherType type, boolean hasThunder) {
-        if (type == WeatherType.CLEAR) {
+    public static void createWeather(Player player, EnumsLib.WeatherType type) {
+        if (type == EnumsLib.WeatherType.CLEAR) {
             // Stop raining
             pm.sendPacket(player,
                     new WrapperPlayServerChangeGameState(
@@ -68,7 +54,7 @@ public class PacketWorldUtils {
                     new WrapperPlayServerChangeGameState(
                             WrapperPlayServerChangeGameState.Reason.THUNDER_LEVEL_CHANGE, 0f));
 
-        } else if (type == WeatherType.DOWNFALL) {
+        } else if (type == EnumsLib.WeatherType.RAIN) {
             // Start raining
             pm.sendPacket(player,
                     new WrapperPlayServerChangeGameState(
@@ -78,18 +64,15 @@ public class PacketWorldUtils {
             pm.sendPacket(player,
                     new WrapperPlayServerChangeGameState(
                             WrapperPlayServerChangeGameState.Reason.RAIN_LEVEL_CHANGE, 1.0f));
-
-            if (hasThunder) {
-                // Full thunder
-                pm.sendPacket(player,
-                        new WrapperPlayServerChangeGameState(
-                                WrapperPlayServerChangeGameState.Reason.THUNDER_LEVEL_CHANGE, 1.0f));
-            } else {
-                // No thunder
-                pm.sendPacket(player,
-                        new WrapperPlayServerChangeGameState(
-                                WrapperPlayServerChangeGameState.Reason.THUNDER_LEVEL_CHANGE, 0f));
-            }
+        } else if (type == EnumsLib.WeatherType.THUNDER) {
+            // No thunder
+            pm.sendPacket(player,
+                    new WrapperPlayServerChangeGameState(
+                            WrapperPlayServerChangeGameState.Reason.THUNDER_LEVEL_CHANGE, 0f));
+            // Full thunder
+            pm.sendPacket(player,
+                    new WrapperPlayServerChangeGameState(
+                            WrapperPlayServerChangeGameState.Reason.THUNDER_LEVEL_CHANGE, 1.0f));
         }
     }
 }

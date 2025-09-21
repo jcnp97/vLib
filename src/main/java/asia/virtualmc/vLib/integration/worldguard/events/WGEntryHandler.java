@@ -31,25 +31,37 @@ public class WGEntryHandler extends Handler implements Listener {
 
     @Override
     public boolean onCrossBoundary(LocalPlayer player, Location from, Location to, ApplicableRegionSet toSet, Set<ProtectedRegion> entered, Set<ProtectedRegion> left, MoveType moveType) {
-        RegionsEnterEvent regionsEnterEvent = new RegionsEnterEvent(player.getUniqueId(), entered);
-        pm.callEvent(regionsEnterEvent);
-        if (regionsEnterEvent.isCancelled()) return false;
+        boolean sameWorld = true;
+        if (from != null && to != null) {
+            sameWorld = from.getExtent().equals(to.getExtent());
+        }
 
-        RegionsLeaveEvent regionsLeaveEvent = new RegionsLeaveEvent(player.getUniqueId(), left);
-        pm.callEvent(regionsLeaveEvent);
-        if(regionsLeaveEvent.isCancelled()) return false;
-
-        for (ProtectedRegion r : entered) {
-            RegionEnterEvent regionEnterEvent = new RegionEnterEvent(player.getUniqueId(), r);
+        for (ProtectedRegion protectedRegion : entered) {
+            RegionEnterEvent regionEnterEvent = new RegionEnterEvent(
+                    player.getUniqueId(),
+                    protectedRegion,
+                    sameWorld);
             pm.callEvent(regionEnterEvent);
             if(regionEnterEvent.isCancelled()) return false;
         }
 
         for (ProtectedRegion protectedRegion : left) {
-            RegionLeaveEvent regionLeaveEvent = new RegionLeaveEvent(player.getUniqueId(), protectedRegion);
+            RegionLeaveEvent regionLeaveEvent = new RegionLeaveEvent(
+                    player.getUniqueId(),
+                    protectedRegion,
+                    sameWorld);
             pm.callEvent(regionLeaveEvent);
             if(regionLeaveEvent.isCancelled()) return false;
         }
+
+//        RegionsEnterEvent regionsEnterEvent = new RegionsEnterEvent(player.getUniqueId(), entered);
+//        pm.callEvent(regionsEnterEvent);
+//        if (regionsEnterEvent.isCancelled()) return false;
+//
+//        RegionsLeaveEvent regionsLeaveEvent = new RegionsLeaveEvent(player.getUniqueId(), left);
+//        pm.callEvent(regionsLeaveEvent);
+//        if(regionsLeaveEvent.isCancelled()) return false;
+
         return true;
     }
 }

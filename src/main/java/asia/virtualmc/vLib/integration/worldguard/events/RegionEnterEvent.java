@@ -20,18 +20,13 @@ public class RegionEnterEvent extends Event implements Cancellable {
     private final UUID uuid;
     private final ProtectedRegion region;
     private final String regionName;
+    private final boolean sameWorld;
 
-    /**
-     * This even is fired whenever a region is entered.
-     * It may be fired multiple times per tick, if several
-     * regions are entered at the same time.
-     * @param playerUUID The UUID of the player entering the region.
-     * @param region WorldGuard's ProtectedRegion region.
-     */
-    public RegionEnterEvent(UUID playerUUID, @NotNull ProtectedRegion region) {
+    public RegionEnterEvent(UUID playerUUID, @NotNull ProtectedRegion region, boolean sameWorld) {
         this.uuid = playerUUID;
         this.region = region;
         this.regionName = region.getId();
+        this.sameWorld = sameWorld;
     }
 
     @Contract (pure = true)
@@ -63,6 +58,8 @@ public class RegionEnterEvent extends Event implements Cancellable {
     public ProtectedRegion getRegion() {
         return region;
     }
+
+    public boolean getSameWorld() { return sameWorld; }
 
     @Override
     public boolean isCancelled() {
