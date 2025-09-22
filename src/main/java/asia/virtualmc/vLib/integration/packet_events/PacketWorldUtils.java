@@ -65,10 +65,16 @@ public class PacketWorldUtils {
                     new WrapperPlayServerChangeGameState(
                             WrapperPlayServerChangeGameState.Reason.RAIN_LEVEL_CHANGE, 1.0f));
         } else if (type == EnumsLib.WeatherType.THUNDER) {
-            // No thunder
+            // Start raining
             pm.sendPacket(player,
                     new WrapperPlayServerChangeGameState(
-                            WrapperPlayServerChangeGameState.Reason.THUNDER_LEVEL_CHANGE, 0f));
+                            WrapperPlayServerChangeGameState.Reason.BEGIN_RAINING, 0f));
+
+            // Full rain
+            pm.sendPacket(player,
+                    new WrapperPlayServerChangeGameState(
+                            WrapperPlayServerChangeGameState.Reason.RAIN_LEVEL_CHANGE, 1.0f));
+
             // Full thunder
             pm.sendPacket(player,
                     new WrapperPlayServerChangeGameState(

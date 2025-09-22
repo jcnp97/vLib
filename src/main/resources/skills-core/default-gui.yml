@@ -23,3 +23,8 @@ settings:
     traits_menu_upgrade: "§f<shift:-48>"
     # Farming
     farmland_status_menu: "§f<shift:-48>"
+    # Realms
+    realms_menu: "§f<shift:-48>"
+    realms_settings_menu: "§f<shift:-48>"
+    realms_visit_menu: "§f<shift:-48>"
+    realms_own_menu: "§f<shift:-48>"

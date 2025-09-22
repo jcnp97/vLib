@@ -1,6 +1,8 @@
 package asia.virtualmc.vLib.utilities.items;
 
+import asia.virtualmc.vLib.services.bukkit.ComponentService;
 import asia.virtualmc.vLib.utilities.messages.AdventureUtils;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -31,6 +33,7 @@ public class ItemStackUtils {
      * @return a cloned {@link ItemStack} with the provided metadata, or {@code null} if the item meta could not be retrieved
      */
     @NotNull
+    @Deprecated
     public static ItemStack create(Material material, String displayName,
                                    List<String> lore, int modelData) {
         ItemStack item = new ItemStack(material);
@@ -54,6 +57,7 @@ public class ItemStackUtils {
      * @param modelData  the custom model data value to apply
      * @return a cloned {@link ItemStack} with the updated model data, or the original item if its meta is null
      */
+    @Deprecated
     public static ItemStack setModelData(@NotNull ItemStack item, int modelData) {
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
@@ -155,6 +159,13 @@ public class ItemStackUtils {
         world.dropItemNaturally(location, drop);
     }
 
+    /**
+     * Drops a clone of the given {@link ItemStack} naturally at the specified {@link Location}.
+     *
+     * @param item     the item to drop
+     * @param location the location where the item should be dropped
+     * @return the dropped {@link Item}, or {@code null} if the item or location is invalid
+     */
     public static Item drop(ItemStack item, Location location) {
         if (item == null || location == null) return null;
 
@@ -162,5 +173,77 @@ public class ItemStackUtils {
         if (world == null) return null;
 
         return world.dropItemNaturally(location, item.clone());
+    }
+
+    /**
+     * Sets a custom item model on the given {@link ItemStack} using a namespaced key string.
+     *
+     * @param item      the item to modify
+     * @param itemModel the resource location string of the model to apply
+     */
+    public static void setItemModel(ItemStack item, String itemModel) {
+        if (item == null || itemModel == null || itemModel.isEmpty()) return;
+
+        NamespacedKey key = NamespacedKey.fromString(itemModel);
+        if (key == null) return;
+
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
+
+        meta.setItemModel(key);
+        item.setItemMeta(meta);
+    }
+
+    /**
+     * Creates an {@link ItemStack} with a custom display name and a specified
+     * item model (resource pack model override).
+     * <p>
+     * This uses the modern item component API introduced in Minecraft 1.20.5+, where
+     * {@code item_model} replaces the older {@code customModelData} integer.
+     * The provided {@code itemModel} must be a valid namespaced key string
+     * (e.g. {@code "mynamespace:my_model"}).
+     *
+     * @param material   the base {@link Material} of the item
+     * @param displayName the text to display as the item's custom name
+     * @param itemModel   the resource location string of the model to apply
+     * @return a new {@link ItemStack} with the specified properties
+     */
+    public static ItemStack getItemStack(Material material, String displayName, String itemModel) {
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            Component name = AdventureUtils.toComponent("<!i>" + displayName);
+            meta.displayName(name);
+            meta.setItemModel(NamespacedKey.fromString(itemModel));
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    /**
+     * Creates an {@link ItemStack} with a custom display name, model, and lore.
+     * <p>
+     * This method uses the modern item component API introduced in Minecraft 1.20.5+,
+     * where {@code item_model} is defined by a namespaced key instead of the legacy
+     * {@code customModelData} integer. The provided {@code itemModel} must be a valid
+     * resource location string (e.g. {@code "mynamespace:my_item"}).
+     *
+     * @param material    the base {@link Material} of the item
+     * @param displayName the text to display as the item's custom name
+     * @param itemModel   the resource location string of the model to apply
+     * @param lore        a list of lore lines to display under the item's name
+     * @return a new {@link ItemStack} with the specified properties
+     */
+    public static ItemStack getItemStack(Material material, String displayName,
+                                         String itemModel, List<String> lore) {
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.displayName(AdventureUtils.toComponent("<!i>" + displayName));
+            meta.setItemModel(NamespacedKey.fromString(itemModel));
+            meta.lore(AdventureUtils.toComponent(lore));
+            item.setItemMeta(meta);
+        }
+        return item;
     }
 }

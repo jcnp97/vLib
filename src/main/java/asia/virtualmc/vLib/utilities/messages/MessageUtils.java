@@ -4,6 +4,9 @@ import asia.virtualmc.vLib.Main;
 import asia.virtualmc.vLib.utilities.enums.EnumsLib;
 import asia.virtualmc.vLib.utilities.files.YAMLUtils;
 import dev.dejvokep.boostedyaml.YamlDocument;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -117,5 +120,11 @@ public class MessageUtils {
      */
     public static String severe() {
         return prefixes[2];
+    }
+
+    public static void sendCommand(Player player, String message, String command) {
+        Component first = Component.text(message, NamedTextColor.GREEN)
+                .clickEvent(ClickEvent.suggestCommand(command));
+        player.sendMessage(first);
     }
 }
